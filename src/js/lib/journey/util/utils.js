@@ -132,6 +132,18 @@ define(function (require) {
 		}
 	};
 	
+	that.logWarn =  function() {
+		if (mode.DEBUG) {
+			Function.apply.call(console.info, console, arguments);
+		}
+	};
+	
+	that.logInfo =  function() {
+		if (mode.DEBUG) {
+			Function.apply.call(console.warn, console, arguments);
+		}
+	};
+	
 	that.logError = function() {
 		if (mode.DEBUG) {
 			Function.apply.call(console.error, console, arguments);

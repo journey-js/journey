@@ -83,12 +83,40 @@ define( function ( require ) {
 			return promise;
 		}
 	};
+	
+	journey.on("error", function(options) {
+		console.log("onError",options)
+	});
+	
+	journey.on("beforeenter", function(options) {
+		console.log("onBeforeenter",options)
+	});
+	
+	journey.on("beforeenterComplete", function(options) {
+		console.log("onBeforeenterComplete",options)
+	});
+	
+	journey.on("enter", function(options) {
+		console.log("onEnter",options)
+	});
+	
+	journey.on("leave", function(options) {
+		console.log("onLeave",options)
+	});
+	
+	journey.on("left", function(options) {
+		console.log("onLeft",options)
+	});
+	
+	journey.on("entered", function(options) {
+		console.log("onEntered",options)
+	});
 
 	//roadtrip
 	journey
 			// the home screen of our contacts app
-			.add( '/a', enterA )
-			.add( '/', enterA )
+			//.add( '/a', enterA )
+			//.add( '/', enterA )
 			.add( '/b', {
 				beforeenter: function ( route, previousRoute ) {
 			//throw new Error("beforeenterB");

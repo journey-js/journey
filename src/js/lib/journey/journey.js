@@ -22,9 +22,10 @@ define( function ( require ) {
 	var origEmit = journey.emit;
 
 	journey.add = function add( path, options ) {
-		roadtrip.add( path, options );
-
+		options = utils.extend({}, options);
 		wrap( options );
+
+		roadtrip.add( path, options );
 
 		return journey;
 	};
@@ -54,8 +55,27 @@ define( function ( require ) {
 		//(options.view, prefix + eventName, triggerOptions);
 	};
 
-	function raiseEvent( eventName, options ) {
+	function raiseError( options ) {
 		utils.logError( options.error );
+		journey.emit( journey, "error", options );
+	}
+
+	function raiseEvent( eventName, args ) {
+		var options = {};
+		if (eventName === "beforeenter" || "beforeenterComplete") {
+			options.to = args[0];
+			options.from = args[1];
+			
+		} else if (eventName === "enter" || eventName === "entered") {
+			options.to = args[0];
+			options.from = args[1];
+				
+		} else if (eventName === "leave" || eventName === "left") {
+			options.from = args[0];
+			options.to = args[1];
+			
+		}
+
 		journey.emit( journey, eventName, options );
 	}
 	
@@ -63,20 +83,7 @@ define( function ( require ) {
 		addErrorHandling( "enter", options );
 		addErrorHandling( "beforeenter", options );
 		addErrorHandling( "leave", options );
-
-		/*
-		 Promise.all([
-		 currentRoute.leave( currentData, data ),
-		 newRoute.beforeenter( data, currentData )
-		 ])
-		 .then( function () { return newRoute.enter( data, currentData ); } )
-		 .then( function () {
-		 
-		 }).catch(function(e) {
-		 
-		 });*/
 	}
-	;
 
 	function wrapHandlerWithTrashingSupport( options ) {
 
@@ -122,34 +129,62 @@ define( function ( require ) {
 
 		options.leave._wrapped = true;
 	}
-	;
 
 	function addErrorHandling( name, options ) {
 		var handler = options[name];
-		if ( handler == null || handler._wrapped ) {
+		
+		// remove this wrapper stuff and rather copy options
+		if ( handler == null ) {
 			return;
 		}
 
 		var wrapper = function ( ) {
 			var that = this;
-			var origArguments = arguments;
+			var thatArgs = arguments;
 
 			// Handle errors thrown by handler: enter, leave or beforeenter
 			try {
-				var result = handler.apply( that, origArguments );
+				raiseEvent(name,  thatArgs );
+				
+				// Call handler
+				var result = handler.apply( that, thatArgs );
+
+				result = Promise.all([result]); // Ensure handler result can be handled as promise
+				result.then(function() {
+					
+					if (name === "beforeenter") {
+						raiseEvent("beforeenterComplete",  thatArgs );
+					} else if (name === "enter") {
+						raiseEvent("entered",  thatArgs );
+					} else if (name === "leave") {
+						raiseEvent("left",  thatArgs );
+					}
+				});
+
 				return result;
 
 			} catch ( e ) {
 				utils.log( "JA journey got this one: " + name );
-				var options = { error: e, handler: name };
-				raiseEvent( "onerror", options );
+				var route, from, to;
+
+				if (name === "beforeenter" || "enter") {
+					route = thatArgs[0];
+					to = thatArgs[0];
+					from = thatArgs[1];
+				} else {
+					route = thatArgs[1];
+					to = thatArgs[1];
+					from = thatArgs[0];
+				}
+				var options = { error: e, handler: name, from: from, to: to, route:  route};
+				raiseError( options );
 				return Promise.reject( "error occurred in [" + name + "] - " + e.message ); // let others handle further up the stack
 			}
 		};
 
 		options[name] = wrapper;
 
-		handler._wrapped = true;
+		//wrapper._wrapped = true;
 	}
 
 	function disableAnimations() {

@@ -22,6 +22,9 @@ app.get("/a", function (req, res, next) {
 	res.sendFile(__dirname + "/src/index.html"); 
 });
 
+app.get("/b/m", function (req, res, next) {
+	res.sendFile(__dirname + "/src/index.html"); 
+});
 app.get("/b", function (req, res, next) {
 	res.sendFile(__dirname + "/src/index.html"); 
 });
