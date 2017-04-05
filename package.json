@@ -1,13 +1,38 @@
 {
-  "name": "kudu-examples",
-  "description": "Kudu Examples",
+  "name": "test",
+  "description": "test",
   "version": "0.0.1",
-  "dependencies": {},
+  "main": "dist/js/app/test.js",
+  "module": "dist/js/app/test.js",
+  "jsnext:main": "dist/js/app/test.js",
   "devDependencies": {
     "body-parser": "^1.14.1",
+    "chokidar": "^1.6.1",
     "cookie-parser": "^1.4.0",
+    "cpx": "^1.5.0",
     "express": "^4.13.3",
     "express-session": "^1.12.1",
-    "open": "0.0.5"
-  }
+    "fs-extra": "^2.0.0",
+    "gobble": "^0.12.0",
+    "gobble-rollup": "^0.40.0",
+    "node-cmd": "^2.0.0",
+    "open": "0.0.5",
+    "rollup": "^0.36.1",
+    "rollup-plugin-buble": "^0.14.0",
+    "rollup-plugin-string": "^2.0.2",
+    "rollup-watch": "^3.2.2",
+    "simulant": "^0.2.2"
+  },
+  "scripts": {
+    "pretest": "npm run build",
+    "build": "rollup -c",
+    "dev": "node server",
+    "prepublish.old": "npm run rm -rf dist",
+    "lint": "eslint src"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ]
 }

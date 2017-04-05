@@ -1,121 +1,76 @@
-var express = require("express");
-var open = require('open');
-var cookieParser = require('cookie-parser')
-var bodyParser = require('body-parser')
-var session = require('express-session')
+var express = require( "express" );
+var open = require( 'open' );
+var chokidar = require( "chokidar" );
+var fs = require( "fs-extra" );
+var cmd = require( 'node-cmd' );
+const execSync = require( 'child_process' ).execSync;
+const exec = require( 'child_process' ).exec;
+var rollup = require( 'rollup' );
+var buble = require( 'rollup-plugin-buble' );
+var string = require( 'rollup-plugin-string' );
+var watch = require( 'rollup-watch' );
+var config = require( './rollup.config.js' );
+const pkg = require( './package.json' );
 
-var app = express();
-app.use(cookieParser());
+let starting = true;
 
-app.use(bodyParser.urlencoded({
-	extended: true
-}));
-app.use(bodyParser.json());
+transpileJS();
 
-app.use(session({
-	secret: '1234567890QWERTY',
-	resave: true,
-	saveUninitialized: true
-}));
+function transpileJS() {
 
-app.get("/a", function (req, res, next) {
-	res.sendFile(__dirname + "/src/index.html"); 
-});
+	watch( rollup, config )
+			.on( 'event', e => {
+				if ( e.code === 'ERROR' ) {
+					console.log( e );
+				}
+			} )
+			.on( 'event', e => {
+				if ( e.code == 'BUILD_END' ) {
+					setupServer();
+				}
+			} );
+}
 
-app.get("/b/m", function (req, res, next) {
-	res.sendFile(__dirname + "/src/index.html"); 
-});
-app.get("/b", function (req, res, next) {
-	res.sendFile(__dirname + "/src/index.html"); 
-});
-app.get("/c", function (req, res, next) {
-	res.sendFile(__dirname + "/src/index.html"); 
-});
+function setupServer() {
+	if ( starting ) {
+		watchAssets();
+		startServer();
+		// Only start servier once
+		starting = false;
+	}
+}
 
-app.get("index.html", function (req, res) {
-	//res.redirect("/index.html");
-	res.sendFile(__dirname + "/src/index.html"); 
-});
+function watchAssets() {
 
-app.get("/data/hello.json", function (req, res) {
-	var sleep =  req.query.delay || 0;	
- setTimeout(function() {
-	 res.sendFile(__dirname + "/src" + req.path); 
- }, sleep);
-});
+	chokidar.watch( 'src/**/*', { ignored: [ 'src/**/*.js' ] } ).on( 'all', ( event, path ) => {
 
-app.get('/js/app/views/home/home.js', function(req, res) {
- //var sleep = 2000;
- var sleep = 0;
- setTimeout(function() {
- res.sendFile(__dirname + "/src" + req.path);
- //res.sendFile(__dirname + "/src/" + req.path);	
- 
- }, sleep);
- });
+		if ( ! fs.lstatSync( path ).isDirectory() ) {
+			var dest = path.replace( /^(src\\)/, "dist/" );
+			fs.copySync( path, dest );
+		}
+	} );
 
-/*
- app.get("/", checkAuth, function (req, res) {
-	res.redirect("/index.html");
-});
- 
- app.get('/data/customer:id.json', checkAuth, function(req, res) {
- var sleep = 0;
- setTimeout(function() {
- res.sendfile("." + req.path);
- 
- }, sleep);
- });
- 
- 
- app.get('/data/product:id.json', checkAuth, function(req, res) {
- var sleep = 0;
- setTimeout(function() {
- res.sendfile("." + req.path);
- 
- }, sleep);
- });
- 
- 
- app.get('/data/person.json', checkAuth, function(req, res) {
- //var body = "hello";
- //res.setHeader('Content-Type', 'application/json');
- var sleep = 0;
- setTimeout(function() {
- res.sendfile("." + req.path);
- 
- }, sleep);
- //res.setHeader('Content-Length', Buffer.byteLength(body));
- //res.end(body);
- });
- 
- function checkAuth(req, res, next) {
- if (!req.session.user_id) {
- res.redirect("/login.html");
- } else {
- next();
- }
- }
- 
- app.post('/login', function(req, res) {
- var post = req.body;
- if (post.user == 'test' && post.password == 'test') {
- req.session.user_id = 'test';
- res.redirect('/index.html');
- // Simulate J2EE server continuing orig request
- //res.redirect('/data/person.json');
- } else {
- console.log(post.user, post.password)
- res.send('Bad user/pass');
- }
- });
- 
- app.get('/logout', function(req, res) {
- delete req.session.user_id;
- res.redirect('/login.html');
- });*/
+}
 
-app.use(express.static(__dirname + "/src"));
+function startServer() {
+	
+	var root = "/dist";
 
-app.listen(9988);
-open('http://localhost:9988/');
+	var app = express();
+	
+	// requests with . in them is passed to original request eg: my.js -> my.js, my.css -> my.css etc. Requests without an extension
+	// are handled below
+	app.get( "*.*", function ( req, res, next ) {
+		res.sendFile( __dirname + root + req.url );
+	} );
+
+	// Catchall request: always return index.html. Thus we can support PUSHSTATE requests such as host/a and host/b. If user refresh browser
+	// express will return index.html and the JS router can route to the neccessary controller
+	app.get( "*", function ( req, res, next ) {
+		res.sendFile( __dirname + root + "/index.html" );
+	} );
+
+	app.use( express.static( __dirname + "/dist" ) );
+	app.listen( 9988 );
+	open( 'http://localhost:9988/' );
+}

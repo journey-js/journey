@@ -1,30 +1,22 @@
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	global.Ractive.transitions.fade = factory();
-}(this, function () { 'use strict';
+var DEFAULTS = {
+	delay: 0,
+	duration: 300,
+	easing: 'linear'
+};
 
-	var DEFAULTS = {
-		delay: 0,
-		duration: 300,
-		easing: 'linear'
-	};
+function fade( t, params ) {
+	var targetOpacity;
 
-	function fade(t, params) {
-		var targetOpacity;
+	params = t.processParams( params, DEFAULTS );
 
-		params = t.processParams(params, DEFAULTS);
-
-		if (t.isIntro) {
-			targetOpacity = t.getStyle('opacity');
-			t.setStyle('opacity', 0);
-		} else {
-			targetOpacity = 0;
-		}
-
-		t.animateStyle('opacity', targetOpacity, params).then(t.complete);
+	if ( t.isIntro ) {
+		targetOpacity = t.getStyle( 'opacity' );
+		t.setStyle( 'opacity', 0 );
+	} else {
+		targetOpacity = 0;
 	}
 
-	return fade;
+	t.animateStyle( 'opacity', targetOpacity, params ).then( t.complete );
+}
 
-}));
+export default fade;

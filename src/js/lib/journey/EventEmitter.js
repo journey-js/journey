@@ -6,7 +6,6 @@
  * @preserve
  */
 
-;(function () {
     'use strict';
 
     /**
@@ -16,11 +15,10 @@
      * @class EventEmitter Manages event registering and emitting.
      */
     function EventEmitter() {}
+	
 
     // Shortcuts to improve speed and size
     var proto = EventEmitter.prototype;
-    var exports = this;
-    var originalGlobalValue = exports.EventEmitter;
 
     /**
      * Finds the index of the listener for the event in its storage array.
@@ -455,26 +453,10 @@
         return this._events || (this._events = {});
     };
 
-    /**
-     * Reverts the global {@link EventEmitter} to its previous value and returns a reference to this version.
-     *
-     * @return {Function} Non conflicting EventEmitter class.
-     */
-    EventEmitter.noConflict = function noConflict() {
-        exports.EventEmitter = originalGlobalValue;
-        return EventEmitter;
-    };
-
-    // Expose the class either via AMD, CommonJS or the global object
-    if (typeof define === 'function' && define.amd) {
-        define(function () {
-            return EventEmitter;
-        });
-    }
-    else if (typeof module === 'object' && module.exports){
+    if (typeof module === 'object' && module.exports) {
         module.exports = EventEmitter;
     }
-    else {
-        exports.EventEmitter = EventEmitter;
-    }
-}.call(this));
+    
+
+export default EventEmitter;
+

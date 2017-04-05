@@ -9,12 +9,6 @@
 */
 
 
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	((function() { var current = global.Ractive; var next = factory(); next.noConflict = function() { global.Ractive = current; return next; }; return global.Ractive = next; })());
-}(this, (function () { 'use strict';
-
 var defaults = {
 	// render placement:
 	el:                     void 0,
@@ -16096,6 +16090,4 @@ Object.defineProperties( Ractive, {
 	transitions:    { writable: true, value: {} }
 });
 
-return Ractive;
-
-})));
+export default Ractive;
