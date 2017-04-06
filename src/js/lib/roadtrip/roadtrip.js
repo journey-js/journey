@@ -123,6 +123,10 @@ function _goto ( target ) {
 
 	let promise;
 	if ( ( newRoute === currentRoute ) && newRoute.updateable ) {
+
+		// For updates, copy merge newData into currentData, in order to peserve custom data that was set during enter or beforeenter events
+		newData = newData.extend({}, currentData, newData);
+
 		promise = newRoute.update( newData );
 	} else {
 		promise = roadtrip.Promise.all([

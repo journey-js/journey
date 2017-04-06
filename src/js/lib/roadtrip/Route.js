@@ -6,7 +6,7 @@ const HANDLERS = [ 'beforeenter', 'enter', 'leave', 'update' ];
 
 let isInitial = true;
 
-function RouteData ({ route, pathname, params, query, hash, scrollX, scrollY }) {
+function RouteData( { route, pathname, params, query, hash, scrollX, scrollY } ) {
 	this.pathname = pathname;
 	this.params = params;
 	this.query = query;
@@ -21,12 +21,12 @@ function RouteData ({ route, pathname, params, query, hash, scrollX, scrollY }) 
 }
 
 RouteData.prototype = {
-	matches ( href ) {
+	matches( href ) {
 		return this._route.matches( href );
 	}
 };
 
-export default function Route ( path, options ) {
+export default function Route( path, options ) {
 	// strip leading slash
 	if ( path[0] === '/' ) {
 		path = path.slice( 1 );
@@ -53,11 +53,11 @@ export default function Route ( path, options ) {
 
 			return roadtrip.Promise.resolve( value );
 		};
-	});
+	} );
 }
 
 Route.prototype = {
-	matches ( href ) {
+	matches( href ) {
 		a.href = href;
 
 		const pathname = a.pathname.slice( 1 );
@@ -66,7 +66,7 @@ Route.prototype = {
 		return segmentsMatch( segments, this.segments );
 	},
 
-	exec ( target ) {
+	exec( target ) {
 		a.href = target.href;
 
 		const pathname = a.pathname.slice( 1 );
@@ -78,7 +78,7 @@ Route.prototype = {
 			return false;
 		}
 
-		const params = {};
+		const params = { };
 
 		for ( let i = 0; i < segments.length; i += 1 ) {
 			const segment = segments[i];
@@ -86,14 +86,12 @@ Route.prototype = {
 
 			if ( toMatch[0] === ':' ) {
 				params[ toMatch.slice( 1 ) ] = segment;
-			}
-
-			else if ( segment !== toMatch ) {
+			} else if ( segment !== toMatch ) {
 				return false;
 			}
 		}
 
-		const query = {};
+		const query = { };
 		const queryPairs = search.split( '&' );
 
 		for ( let i = 0; i < queryPairs.length; i += 1 ) {
@@ -109,15 +107,13 @@ Route.prototype = {
 					}
 
 					query[ key ].push( value );
-				}
-
-				else {
+				} else {
 					query[ key ] = value;
 				}
 			}
 		}
 
-		return new RouteData({
+		return new RouteData( {
 			route: this,
 			pathname,
 			params,
@@ -125,15 +121,16 @@ Route.prototype = {
 			hash: a.hash.slice( 1 ),
 			scrollX: target.scrollX,
 			scrollY: target.scrollY
-		});
+		} );
 	}
 };
 
-function segmentsMatch ( a, b ) {
-	if ( a.length !== b.length ) return;
+function segmentsMatch( a, b ) {
+	if ( a.length !== b.length )
+		return;
 
 	let i = a.length;
-	while ( i-- ) {
+	while ( i -- ) {
 		if ( ( a[i] !== b[i] ) && ( b[i][0] !== ':' ) ) {
 			return false;
 		}
@@ -141,3 +138,35 @@ function segmentsMatch ( a, b ) {
 
 	return true;
 }
+
+//
+//const skip = [ "isInitial", "_route", "pathname", "params", "query", "hash" ];
+//
+//RouteData.prototype.extend = function ( src ) {
+//	for ( var nextKey in src ) {
+//		if ( src.hasOwnProperty( nextKey ) ) {
+//
+//			if ( skip.indexOf( nextKey ) < 0 ) {
+//				this[nextKey] = src[nextKey];
+//			}
+//		}
+//	}
+//	return this;
+//};
+
+
+RouteData.prototype.extend = function( target ) {
+	var output = Object( target );
+
+	for ( var i = 1; i < arguments.length; i++ ) {
+		var src = arguments[i];
+		if ( src === undefined || src === null )
+			continue;
+		for ( var nextKey in src ) {
+			if ( src.hasOwnProperty( nextKey ) ) {
+				output[nextKey] = src[nextKey];
+			}
+		}
+	}
+	return output;
+};

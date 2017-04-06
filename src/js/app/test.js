@@ -60,6 +60,7 @@ var enterA = {
 	},
 
 	update: function ( route ) {
+		console.log("UPDATE", route)
 
 	},
 
@@ -82,6 +83,7 @@ var enterA = {
 
 			} else {
 				console.log( "going SERIOUS", random );
+				
 				reject( "serious" );
 			}
 		} );
@@ -91,39 +93,39 @@ var enterA = {
 };
 
 journey.on( "error", function ( options ) {
-	console.log( "onError", options );
+//	console.log( "onError", options );
 } );
 
 journey.on( "beforeenter", function ( options ) {
-	console.log( "onBeforeenter", options );
+//	console.log( "onBeforeenter", options );
 } );
 
 journey.on( "beforeenterComplete", function ( options ) {
-	console.log( "onBeforeenterComplete", options );
+//	console.log( "onBeforeenterComplete", options );
 } );
 
 journey.on( "enter", function ( options ) {
-	console.log( "onEnter", options );
+	//console.log( "onEnter", options );
 } );
 
 journey.on( "entered", function ( options ) {
-	console.log( "onEntered", options );
+	//console.log( "onEntered", options );
 } );
 
 journey.on( "update", function ( options ) {
-	console.log( "onUpdate", options );
+	//console.log( "onUpdate", options );
 } );
 
 journey.on( "updated", function ( options ) {
-	console.log( "onUpdated", options );
+	//console.log( "onUpdated", options );
 } );
 
 journey.on( "leave", function ( options ) {
-	console.log( "onLeave", options );
+	//console.log( "onLeave", options );
 } );
 
 journey.on( "left", function ( options ) {
-	console.log( "onLeft", options );
+	//console.log( "onLeft", options );
 } );
 
 
@@ -162,21 +164,9 @@ journey
 					slideOutTo: 'left'
 				} );
 
-				var promise = new Promise( function ( resolve, reject ) {
-					//reject( "sorry" );
-				} );
-
-				promise.then( function () {
-					console.log( "TRHEN" );
-				} ).catch( function ( e ) {
-					console.log( e );
-				} );
-
-				promise.then( function () {
-
-				} ).catch( function ( e ) {
-					console.log( e );
-				} );
+//				var promise = new Promise( function ( resolve, reject ) {
+//					reject( "sorry" );
+//				} );
 
 				return promise;
 			}
