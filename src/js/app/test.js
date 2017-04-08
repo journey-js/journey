@@ -105,7 +105,7 @@ journey.on( "beforeenterComplete", function ( options ) {
 } );
 
 journey.on( "enter", function ( options ) {
-	//console.log( "onEnter", options );
+	console.log( "onEnter", this, options );
 } );
 
 journey.on( "entered", function ( options ) {

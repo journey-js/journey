@@ -60,12 +60,16 @@ const roadtrip = {
 				reject
 			};
 		});
-
+		
+		promise._locked = false;
 		if ( isTransitioning ) {
+			promise._locked = true;
 			return promise;
 		}
 
 		_goto( target );
+
+		promise._sameRoute = target._sameRoute;
 		return promise;
 	}
 };
@@ -109,8 +113,10 @@ function _goto ( target ) {
 		}
 	}
 
+	target._sameRoute = false;
 	if ( !newRoute || isSameRoute( newRoute, currentRoute, newData, currentData ) ) {
 		target.fulfil();
+		target._sameRoute = true;
 		return;
 	}
 

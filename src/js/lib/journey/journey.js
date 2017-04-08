@@ -1,10 +1,10 @@
 import roadtrip from  "../roadtrip/roadtrip";
 import Ractive from  "../ractive";
-import EventEmitter from  "./EventEmitter";
+import eventer from "./handler/eventer";
 import utils from "./util/utils";
 import mode from "./util/mode";
-import rapidClickHandler from "./handler/rapidClick";
-import callstack from "./handler/callstack";
+import "./handler/routeAbuseMonitor";
+import  "./handler/animationMonitor";
 
 var initOptions = {
 	target: null,
@@ -12,9 +12,12 @@ var initOptions = {
 	debug: true
 };
 
-var journey = new EventEmitter();
+// Enables HTML5-History-API polyfill: https://github.com/devote/HTML5-History-API
+const location = window && ( window.history.location || window.location );
 
-var origEmit = journey.emit;
+var journey = { };
+
+eventer.init( journey );
 
 journey.add = function add( path, options ) {
 	options = utils.extend( { }, options );
@@ -33,29 +36,24 @@ journey.start = function ( options ) {
 
 	roadtrip._goto = roadtrip.goto;
 	roadtrip.goto = journey.goto;
-	
-	callstack.init({journey: journey});
-	rapidClickHandler.init({journey: journey});
 
 	roadtrip.start( options );
 };
 
-journey.goto = function goto( href, options ) {
-	callstack.push();
-	callstack.check();
+journey.goto = function ( href, options ) {
+
 	var promise = roadtrip._goto( href, options );
 
-	return promise;
-};
-
-
-journey.emit = function ( that ) {
-	if ( typeof that === 'string' ) {
-		var args = Array.prototype.slice.call( arguments );
-		args.unshift( this );
-		return origEmit.apply( this, args );
+	if (promise._sameRoute) {
+		return promise;
 	}
-	origEmit.apply( this, arguments );
+
+	journey.emit( journey, "goto", {href: location.href} );
+
+	//routeAbuseMonitor.push();
+	//callstack.check();
+
+	return promise;
 };
 
 function raiseError( options ) {
@@ -105,7 +103,7 @@ function addErrorHandling( name, options ) {
 		// Handle errors thrown by handler: enter, leave, update or beforeenter
 		try {
 			raiseEvent( name, thatArgs );
-			
+
 			// Pass default target to events events
 			thatArgs.target = initOptions.target;
 
