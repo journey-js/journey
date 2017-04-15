@@ -9,6 +9,8 @@ const location = window && ( window.history.location || window.location );
 
 function noop () {}
 
+let initOptions;
+
 let currentData = {};
 let currentRoute = {
 	enter: () => roadtrip.Promise.resolve(),
@@ -36,6 +38,8 @@ const roadtrip = {
 			location.href :
 			options.fallback;
 
+	initOptions = options;
+
 		return roadtrip.goto( href, {
 			replaceState: true,
 			scrollX: window.scrollX,
@@ -56,6 +60,7 @@ const roadtrip = {
 				scrollX: options.scrollX || 0,
 				scrollY: options.scrollY || 0,
 				options,
+				initOptions,
 				fulfil,
 				reject
 			};
@@ -91,7 +96,8 @@ if ( window ) {
 			scrollY: scroll.y,
 			popstate: true, // so we know not to manipulate the history
 			fulfil: noop,
-			reject: noop
+			reject: noop,
+			options: initOptions
 		};
 
 		_goto( _target );
@@ -99,10 +105,10 @@ if ( window ) {
 	}, false );
 }
 
-function _goto ( target ) {
-	let newRoute;
+function getNewData(target) {
 	let newData;
-
+	let newRoute;
+			
 	for ( let i = 0; i < routes.length; i += 1 ) {
 		const route = routes[i];
 		newData = route.exec( target );
@@ -112,6 +118,27 @@ function _goto ( target ) {
 			break;
 		}
 	}
+
+	return {
+		newRoute: newRoute,
+		newData: newData
+	};
+}
+
+function _goto ( target ) {
+	let newRoute;
+	let newData;
+
+	var result = getNewData(target);
+
+	if (!result.newData) {
+		let tempHref = target.href;
+		target.href = initOptions.fallback;
+		result = getNewData(target);
+		target.href = tempHref;
+	}
+	newData = result.newData;
+	newRoute = result.newRoute;
 
 	target._sameRoute = false;
 	if ( !newRoute || isSameRoute( newRoute, currentRoute, newData, currentData ) ) {
@@ -133,12 +160,12 @@ function _goto ( target ) {
 		// For updates, copy merge newData into currentData, in order to peserve custom data that was set during enter or beforeenter events
 		newData = newData.extend({}, currentData, newData);
 
-		promise = newRoute.update( newData );
+		promise = newRoute.update( newData, target.options );
 	} else {
 		promise = roadtrip.Promise.all([
-			currentRoute.leave( currentData, newData ),
-			newRoute.beforeenter( newData, currentData )
-		]).then( () => newRoute.enter( newData, currentData ) );
+			currentRoute.leave( currentData, newData, target.options ),
+			newRoute.beforeenter( newData, currentData, target.options )
+		]).then( () => newRoute.enter( newData, currentData, target.options ) );
 	}
 
 	promise

@@ -44,11 +44,11 @@ export default function Route( path, options ) {
 	this.updateable = typeof options.update === 'function';
 
 	HANDLERS.forEach( handler => {
-		this[ handler ] = ( route, other ) => {
+		this[ handler ] = ( route, other, opts ) => {
 			let value;
 
 			if ( options[ handler ] ) {
-				value = options[ handler ]( route, other );
+				value = options[ handler ]( route, other, opts );
 			}
 
 			return roadtrip.Promise.resolve( value );

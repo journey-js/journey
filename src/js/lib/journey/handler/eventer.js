@@ -23,13 +23,19 @@ eventer.init = ( arg ) => {
 		//eventer.on.call( journey, event, listener );
 		eventer.on( event, listener );
 	};
+	
 	journey.off = ( event, listener ) => {
 		eventer.off( event, listener );
 	};
-
+	
+journey.once = ( event, listener ) => {
+		eventer.off( event, listener );
+	};
+	
 	journey.emit = function () {
 		eventer.emit.apply( eventer, arguments );
 	};
+
 	journey.emitEvent = function () {
 		eventer.emitEvent.apply( eventer, arguments );
 	};

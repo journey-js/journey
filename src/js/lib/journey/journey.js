@@ -1,10 +1,8 @@
 import roadtrip from  "../roadtrip/roadtrip";
-import Ractive from  "../ractive";
 import eventer from "./handler/eventer";
 import utils from "./util/utils";
 import mode from "./util/mode";
 import "./handler/routeAbuseMonitor";
-import  "./handler/animationMonitor";
 
 var initOptions = {
 	target: null,
@@ -20,6 +18,15 @@ var journey = { };
 eventer.init( journey );
 
 journey.add = function add( path, options ) {
+	
+	if (path == null) {
+		throw new Error("journey.add does not accept 'null' path");
+	}
+	
+	if (options == null) {
+		throw new Error("journey.add does not accept 'null' options");
+	}
+	
 	options = utils.extend( { }, options );
 	wrap( options );
 
@@ -32,7 +39,7 @@ journey.start = function ( options ) {
 
 	initOptions = utils.extend( { }, initOptions, options );
 
-	mode.DEBUG = Ractive.DEBUG = initOptions.debug;
+	mode.DEBUG = initOptions.debug;
 
 	roadtrip._goto = roadtrip.goto;
 	roadtrip.goto = journey.goto;
@@ -42,7 +49,7 @@ journey.start = function ( options ) {
 
 journey.goto = function ( href, options ) {
 
-	var promise = roadtrip._goto( href, options );
+		var promise = roadtrip._goto( href, options );
 
 	if (promise._sameRoute) {
 		return promise;
@@ -83,13 +90,13 @@ function raiseEvent( event, args ) {
 }
 
 function wrap( options ) {
-	addErrorHandling( "enter", options );
-	addErrorHandling( "update", options );
-	addErrorHandling( "beforeenter", options );
-	addErrorHandling( "leave", options );
+	enhanceEvent( "enter", options );
+	enhanceEvent( "update", options );
+	enhanceEvent( "beforeenter", options );
+	enhanceEvent( "leave", options );
 }
 
-function addErrorHandling( name, options ) {
+function enhanceEvent( name, options ) {
 	var handler = options[name];
 
 	if ( handler == null ) {
@@ -98,42 +105,57 @@ function addErrorHandling( name, options ) {
 
 	var wrapper = function ( ) {
 		var that = this;
-		var thatArgs = arguments;
+		//var thatArgs = arguments;
 
 		// Handle errors thrown by handler: enter, leave, update or beforeenter
 		try {
-			raiseEvent( name, thatArgs );
+			// convert arguments into a proper array
+			var args = Array.prototype.slice.call(arguments);
+			
+			var options;
+			
+			if (name === "update") { // update only accepts one argument
+				options = args[1];
 
-			// Pass default target to events events
-			thatArgs.target = initOptions.target;
+			} else {
+				options = args[2];
+			}
+
+			var options = options || {};
+
+			// Ensure default target is passed to events, but don't override if already present
+			options.target = options.target || initOptions.target;
+			args.push(options);
+
+			raiseEvent( name, args );
 
 			// Call handler
-			var result = handler.apply( that, thatArgs );
+			var result = handler.apply( that, args );
 
 			result = Promise.all( [ result ] ); // Ensure handler result can be handled as promise
-			result.then( function () {
+			result.then( () => {
 
 				if ( name === "beforeenter" ) {
-					raiseEvent( "beforeenterComplete", thatArgs );
+					raiseEvent( "beforeenterComplete", args );
 
 				} else if ( name === "enter" ) {
-					raiseEvent( "entered", thatArgs );
+					raiseEvent( "entered", args );
 
 				} else if ( name === "leave" ) {
-					raiseEvent( "left", thatArgs );
+					raiseEvent( "left", args );
 
 				} else if ( name === "update" ) {
-					raiseEvent( "updated", thatArgs );
+					raiseEvent( "updated", args );
 				}
 			} ).catch( err => {
-				var options = gatherErrorOptions( name, thatArgs, err );
+				var options = gatherErrorOptions( name, args, err );
 				raiseError( options );
 			} );
 
 			return result;
 
 		} catch ( err ) {
-			var options = gatherErrorOptions( name, thatArgs, err );
+			var options = gatherErrorOptions( name, args, err );
 			raiseError( options );
 			return Promise.reject( "error occurred in [" + name + "] - " + err.message ); // let others handle further up the stack
 		}
