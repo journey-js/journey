@@ -128,6 +128,7 @@ function getNewData(target) {
 function _goto ( target ) {
 	let newRoute;
 	let newData;
+	let forceReloadRoute = target.options.forceReload || false;
 
 	var result = getNewData(target);
 
@@ -141,7 +142,7 @@ function _goto ( target ) {
 	newRoute = result.newRoute;
 
 	target._sameRoute = false;
-	if ( !newRoute || isSameRoute( newRoute, currentRoute, newData, currentData ) ) {
+	if ( !newRoute || (isSameRoute( newRoute, currentRoute, newData, currentData ) && !forceReloadRoute) ) {
 		target.fulfil();
 		target._sameRoute = true;
 		return;
