@@ -76,6 +76,10 @@ const roadtrip = {
 
 		promise._sameRoute = target._sameRoute;
 		return promise;
+	},
+
+	getCurrentRoute () {
+		return currentData;
 	}
 };
 
