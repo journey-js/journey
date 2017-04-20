@@ -4,9 +4,7 @@ console.log("TEST CALLED1");
 import Ractive from '../lib/ractive';
 import journey  from '../lib/journey/journey';
 import tpl from './tpl.html';
-import fade from '../lib/ractive-transitions-fade';
-
-Ractive.transitions.fade = fade;
+import './animationMonitor';
 
 /*
 window.onerror = function ( e ) {
@@ -40,8 +38,19 @@ var b = Ractive.extend( {
 	data: { name: 'world' }
 } );
 
+var notFound = {
+	enter: function(route) {
+		route.view = new Ractive( {
+			el: '#container',
+			template: "<div>NOT FOUND</div>",
+			
+		} );
+	}
+}
+
 var enterA = {
-	enter: function ( route, previousRoute ) {
+	enter: function ( route, previousRoute, options ) {
+		console.log("ENTER A", options)
 		//throw new Error("enterA");
 
 		// roadtrip captures scroll position on every navigation, 
@@ -65,7 +74,6 @@ var enterA = {
 	},
 
 	leave: function ( route, nextRoute ) {
-
 		var promise = new Promise( function ( resolve, reject ) {
 
 			var random = Math.random() >= 0.5;
@@ -133,7 +141,7 @@ journey.on( "left", function ( options ) {
 journey
 		// the home screen of our contacts app
 		.add( '/a', enterA )
-		.add( '/', enterA )
+		.add( '/', notFound )
 		.add( '/b', {
 			beforeenter: function ( route, previousRoute ) {
 				//throw new Error("beforeenterB");
@@ -172,7 +180,10 @@ journey
 			}
 		} )
 		.start( {
+			debug: Ractive.DEBUG = true,
+			target: "container",
 			fallback: '/' // if the current URL matches no route, use this one
+	
 		} );
 
 
