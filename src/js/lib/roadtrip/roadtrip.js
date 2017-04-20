@@ -92,7 +92,7 @@ if ( window ) {
 	// watch history
 	window.addEventListener( 'popstate', event => {
 		if ( !event.state ) return; // hashchange, or otherwise outside roadtrip's control
-		const scroll = scrollHistory[ event.state.uid ];
+		const scroll = scrollHistory[ event.state.uid ] || {x: 0, y: 0};
 
 		_target = {
 			href: location.href,
@@ -160,7 +160,7 @@ function _goto ( target ) {
 	isTransitioning = true;
 
 	let promise;
-	if ( ( newRoute === currentRoute ) && newRoute.updateable ) {
+	if ( !forceReloadRoute && ( newRoute === currentRoute ) && newRoute.updateable ) {
 
 		// For updates, copy merge newData into currentData, in order to peserve custom data that was set during enter or beforeenter events
 		newData = newData.extend({}, currentData, newData);
