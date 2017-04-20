@@ -13,7 +13,19 @@ var initOptions = {
 // Enables HTML5-History-API polyfill: https://github.com/devote/HTML5-History-API
 const location = window && ( window.history.location || window.location );
 
-var journey = { };
+var journey = {	};
+
+const events = {
+	BEFORE_ENTER: "beforeenter",
+	BEFORE_ENTER_COMPLETE: "beforeenterComplete",
+	ENTER: "enter",	
+	ENTERED: "entered",
+	UPDATE: "update",
+	UPDATED: "updated",
+	LEAVE: "leave",
+	LEFT: "left",
+	ERROR: "error"
+};
 
 eventer.init( journey );
 
@@ -35,13 +47,14 @@ journey.add = function add( path, options ) {
 	return journey;
 };
 
-journey.start = function ( options ) {
+journey.start = function( options ) {
 
 	initOptions = utils.extend( { }, initOptions, options );
 
 	mode.DEBUG = initOptions.debug;
 
-	roadtrip._goto = roadtrip.goto;
+	roadtrip.origGoto = roadtrip.goto;
+
 	roadtrip.goto = journey.goto;
 
 	roadtrip.start( options );
@@ -49,7 +62,7 @@ journey.start = function ( options ) {
 
 journey.goto = function ( href, options ) {
 
-		var promise = roadtrip._goto( href, options );
+		var promise = roadtrip.origGoto( href, options );
 
 	if (promise._sameRoute) {
 		return promise;
@@ -63,6 +76,10 @@ journey.goto = function ( href, options ) {
 	return promise;
 };
 
+journey.getCurrentRoute = function( ) {
+	return roadtrip.getCurrentRoute();
+};
+
 function raiseError( options ) {
 	utils.logError( options.error );
 	journey.emit( journey, "error", options );
@@ -70,18 +87,18 @@ function raiseError( options ) {
 
 function raiseEvent( event, args ) {
 	var options = { };
-	if ( event === "update" || event === "updated" ) {
+	if ( event === events.UPDATE || event === events.UPDATED ) {
 		options.route = args[0];
 
-	} else if ( event === "beforeenter" || event === "beforeenterComplete" ) {
+	} else if ( event === events.BEFORE_ENTER || event === events.BEFORE_ENTER_COMPLETE ) {
 		options.to = args[0];
 		options.from = args[1];
 
-	} else if ( event === "enter" || event === "entered" ) {
+	} else if ( event === events.ENTER || event === events.ENTERED ) {
 		options.to = args[0];
 		options.from = args[1];
 
-	} else if ( event === "leave" || event === "left" ) {
+	} else if ( event === events.LEAVE || event === events.LEFT ) {
 		options.from = args[0];
 		options.to = args[1];
 	}
@@ -90,10 +107,10 @@ function raiseEvent( event, args ) {
 }
 
 function wrap( options ) {
-	enhanceEvent( "enter", options );
-	enhanceEvent( "update", options );
-	enhanceEvent( "beforeenter", options );
-	enhanceEvent( "leave", options );
+	enhanceEvent( events.ENTER, options );
+	enhanceEvent( events.UPDATE, options );
+	enhanceEvent( events.BEFORE_ENTER, options );
+	enhanceEvent( events.LEAVE, options );
 }
 
 function enhanceEvent( name, options ) {
@@ -114,7 +131,7 @@ function enhanceEvent( name, options ) {
 			
 			var options;
 			
-			if (name === "update") { // update only accepts one argument
+			if (name === events.UPDATE) { // update only accepts one argument
 				options = args[1];
 
 			} else {
@@ -125,7 +142,7 @@ function enhanceEvent( name, options ) {
 
 			// Ensure default target is passed to events, but don't override if already present
 			options.target = options.target || initOptions.target;
-			args.push(options);
+			//args.push(options);
 
 			raiseEvent( name, args );
 
@@ -135,17 +152,17 @@ function enhanceEvent( name, options ) {
 			result = Promise.all( [ result ] ); // Ensure handler result can be handled as promise
 			result.then( () => {
 
-				if ( name === "beforeenter" ) {
-					raiseEvent( "beforeenterComplete", args );
+				if ( name === events.BEFORE_ENTER ) {
+					raiseEvent( events.BEFORE_ENTER_COMPLETE, args );
 
-				} else if ( name === "enter" ) {
-					raiseEvent( "entered", args );
+				} else if ( name === events.ENTER ) {
+					raiseEvent( events.ENTERED, args );
 
-				} else if ( name === "leave" ) {
-					raiseEvent( "left", args );
+				} else if ( name === events.LEAVE ) {
+					raiseEvent( events.LEFT, args );
 
-				} else if ( name === "update" ) {
-					raiseEvent( "updated", args );
+				} else if ( name === events.UPDATE ) {
+					raiseEvent( events.UPDATED, args );
 				}
 			} ).catch( err => {
 				var options = gatherErrorOptions( name, args, err );
@@ -165,13 +182,13 @@ function enhanceEvent( name, options ) {
 }
 
 function gatherErrorOptions( event, args, err ) {
-	utils.log( "JA journey got this one: " + event );
+	//utils.log( "JA journey got this one: " + event );
 	var route, from, to;
 
-	if ( event === "update" ) {
+	if ( event === events.UPDATE ) {
 		route = args[0];
 
-	} else if ( event === "beforeenter" || event === "enter" ) {
+	} else if ( event === events.BEFORE_ENTER || event === events.ENTER ) {
 		route = args[0];
 		to = args[0];
 		from = args[1];
@@ -185,6 +202,6 @@ function gatherErrorOptions( event, args, err ) {
 
 }
 
-
 export default journey;
 
+export {events};
