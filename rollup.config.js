@@ -6,22 +6,9 @@ var string = require( 'rollup-plugin-string' );
 const pkg = require( './package.json' );
 
 module.exports = {
-//export default {
-	//entry: 'src/test.es.js',
-	entry: 'src/js/app/test.js',
+	entry: 'src/js/lib/journey/journey.js',
 	plugins: [
-		buble( {
-			exclude: [ '**/*.html']
-		}),
-
-		string( {
-			// Required to be specified
-			include: '**/*.html',
-
-			// Undefined by default
-			exclude: [ '**/index.html' ]
-		} )
-
+		buble(	)
 	],
 	moduleName: 'journey',
 	targets: [

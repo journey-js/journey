@@ -3,13 +3,15 @@ import watchLinks from './utils/watchLinks.js';
 import isSameRoute from './utils/isSameRoute.js';
 import window from './utils/window.js';
 import routes from './routes.js';
+import watchHistory from './utils/watchHistory.js';
+import util from './utils/util.js';
 
 // Enables HTML5-History-API polyfill: https://github.com/devote/HTML5-History-API
 const location = window && ( window.history.location || window.location );
 
 function noop () {}
 
-let initOptions;
+let startOptions;
 
 let currentData = {};
 let currentRoute = {
@@ -34,20 +36,66 @@ const roadtrip = {
 	},
 
 	start ( options = {} ) {
-		const href = routes.some( route => route.matches( location.href ) ) ?
-			location.href :
-			options.fallback;
+		startOptions = options;
 
-	initOptions = options;
+		roadtrip.base = startOptions.base || roadtrip.base;// || location.pathname;
+		
+		watchHistory.start(startOptions);
+		watchHistory.setListener(historyListener);
 
-		return roadtrip.goto( href, {
-			replaceState: true,
-			scrollX: window.scrollX,
-			scrollY: window.scrollY
-		});
+//		if (watchHistory.useHash) {
+//			//roadtrip.base = util.suffixWithSlash(roadtrip.base);
+//		} else {
+//		}
+		//roadtrip.base = util.stripSlashOrHashSuffix(roadtrip.base);
+
+		let relUrl = watchHistory.useHash? location.hash : util.getLocationAsRelativeUrl();
+		let path = util.stripBase(relUrl, roadtrip.base);
+
+		if (startOptions.defaultRoute && util.useDefaultRoute(path)) {
+			path = startOptions.defaultRoute || path;
+
+			/*
+			if (watchHistory.useHash) {
+				path = util.prefixWithHash(path);
+			} else {
+				path = util.prefixWithSlash(path);
+			}
+			path = util.prefixWithSlash(path);
+			*/
+		}
+		
+		let matchFound = routes.some( route => route.matches( path) );
+		const href = matchFound ?
+			path :
+			startOptions.fallback;
+
+			const internalOptions = {
+				replaceState: true,
+				scrollX: window.scrollX,
+				scrollY: window.scrollY
+			};
+			const otherOptions = {};
+
+		return roadtrip.goto( href, otherOptions, internalOptions);
 	},
 
-	goto ( href, options = {} ) {
+	goto ( href, otherOptions = {}, internalOptions = {} ) {
+		if (href == null) return roadtrip.Promise.resolve();
+
+		if (watchHistory.useHash) {
+			href = util.prefixWithHash(href);
+		} else {
+			// Should we support users specifying hash bsed paths eg. goto("#home"); Probably should force using slashes eg. goto("/home")
+			if (href[0] == '/' && href[1] == '#') { // cater for url: /#someHash
+				href  = href.slice(1);
+			}
+
+			//href = util.prefixWithSlash(href);
+		}
+
+		//href = util.prefixWithBase(href, roadtrip.base);
+
 		scrollHistory[ currentID ] = {
 			x: window.scrollX,
 			y: window.scrollY
@@ -57,10 +105,10 @@ const roadtrip = {
 		const promise = new roadtrip.Promise( ( fulfil, reject ) => {
 			target = _target = {
 				href,
-				scrollX: options.scrollX || 0,
-				scrollY: options.scrollY || 0,
-				options,
-				initOptions,
+				scrollX: internalOptions.scrollX || 0,
+				scrollY: internalOptions.scrollY || 0,
+				internalOptions,
+				otherOptions,
 				fulfil,
 				reject
 			};
@@ -84,35 +132,50 @@ const roadtrip = {
 };
 
 if ( window ) {
-	watchLinks( href => roadtrip.goto( href )
+	watchLinks( href => {
+		roadtrip.goto( href )
+
 			.catch(e => {
 				isTransitioning = false; 
-	} ) );
+	} ) });
 
 	// watch history
+	/*
 	window.addEventListener( 'popstate', event => {
+		console.log("*****************************************")
+		return;// TODO remove this hack, just testing watchHistory :)
 		if ( !event.state ) return; // hashchange, or otherwise outside roadtrip's control
 		const scroll = scrollHistory[ event.state.uid ] || {x: 0, y: 0};
 
+		//const url = watchHistory.useHash ? location.hash : location.href;
+			let url = watchHistory.useHash ? location.hash : location.pathname;
+			
+		// TODO work on hash history
+		url = util.stripBase(url, roadtrip.base);	
+		
+	const otherOptions = {};
+	const internalOptions = {};
+
 		_target = {
-			href: location.href,
+			href: url,
 			scrollX: scroll.x,
 			scrollY: scroll.y,
 			popstate: true, // so we know not to manipulate the history
 			fulfil: noop,
 			reject: noop,
-			options: initOptions
+			otherOptions,
+			internalOptions
 		};
 
 		_goto( _target );
 		currentID = event.state.uid;
-	}, false );
+	}, false );*/
 }
 
 function getNewData(target) {
 	let newData;
 	let newRoute;
-			
+
 	for ( let i = 0; i < routes.length; i += 1 ) {
 		const route = routes[i];
 		newData = route.exec( target );
@@ -129,19 +192,60 @@ function getNewData(target) {
 	};
 }
 
+function historyListener(options) {
+
+		let url = util.stripBase(options.url, roadtrip.base);
+
+	const otherOptions = {};
+	const internalOptions = {};
+
+		_target = {
+			href: url,
+			hashChange: options.hashChange, // so we know not to manipulate the history
+			popState: options.popState, // so we know not to manipulate the history
+			fulfil: noop,
+			reject: noop,
+			otherOptions,
+			internalOptions
+		};
+
+		if(options.popEvent != null) {
+			const scroll = scrollHistory[ options.popEvent.state.uid ] || {x: 0, y: 0};
+			_target.scrollX = scroll.x;
+			_target.scrollY = scroll.y;
+
+		} else {
+			_target.scrollX = 0;
+			_target.scrollY = 0;
+		}
+
+		_goto( _target );
+
+		if(options.popEvent != null) {
+			currentID = options.popEvent.state.uid;
+		}
+}
+
 function _goto ( target ) {
 	let newRoute;
 	let newData;
-	let forceReloadRoute = target.options.forceReload || false;
+	let forceReloadRoute = target.otherOptions.forceReload || false;
+
+	//let targetHref = util.stripBase(target.href, roadtrip.base);
+	targetHref = util.prefixWithSlash(target.href);
+	target.href = targetHref;
 
 	var result = getNewData(target);
 
 	if (!result.newData) {
+		// If we cannot find data, it is because the requested url isn't mapped to a route. Use fallback to render page. Keep url pointing to requested url for 
+		// debugging.
 		let tempHref = target.href;
-		target.href = initOptions.fallback;
+		target.href = startOptions.fallback;
 		result = getNewData(target);
 		target.href = tempHref;
 	}
+
 	newData = result.newData;
 	newRoute = result.newRoute;
 
@@ -165,12 +269,12 @@ function _goto ( target ) {
 		// For updates, copy merge newData into currentData, in order to peserve custom data that was set during enter or beforeenter events
 		newData = newData.extend({}, currentData, newData);
 
-		promise = newRoute.update( newData, target.options );
+		promise = newRoute.update( newData, target.otherOptions );
 	} else {
 		promise = roadtrip.Promise.all([
-			currentRoute.leave( currentData, newData, target.options ),
-			newRoute.beforeenter( newData, currentData, target.options )
-		]).then( () => newRoute.enter( newData, currentData, target.options ) );
+			currentRoute.leave( currentData, newData, target.otherOptions ),
+			newRoute.beforeenter( newData, currentData, target.otherOptions )
+		]).then( () => newRoute.enter( newData, currentData, target.otherOptions ) );
 	}
 
 	promise
@@ -184,19 +288,34 @@ function _goto ( target ) {
 			// place, we need to do it all again
 			if ( _target !== target ) {
 				_goto( _target );
+
 			} else {
 				target.fulfil();
 			}
 		})
 		.catch( e => {
 			isTransitioning = false;
-			target.reject(e); 
+			target.reject(e);
 		});
 
-	if ( target.popstate ) return;
+	if ( target.popState || target.hashChange ) return;
 
-	const uid = target.options.replaceState ? currentID : ++uniqueID;
-	history[ target.options.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
+	const uid = target.internalOptions.replaceState ? currentID : ++uniqueID;
+
+	let targetHref = target.href;
+
+	if (watchHistory.useHash) {
+		targetHref = util.prefixWithHash(targetHref);
+		target.href = targetHref;
+		watchHistory.setHash( targetHref, target.internalOptions.replaceState );
+
+	} else {
+		targetHref = util.prefixWithSlash(targetHref);
+		// Add base path for pushstate, as we are routing to an absolute path '/' eg. /base/page1
+		targetHref = util.prefixWithBase(targetHref, roadtrip.base);
+		target.href = targetHref;
+		window.history[ target.internalOptions.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
+	}
 
 	currentID = uid;
 	scrollHistory[ currentID ] = {

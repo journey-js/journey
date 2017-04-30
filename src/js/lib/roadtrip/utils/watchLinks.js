@@ -1,6 +1,8 @@
 import window from './window.js';
 import roadtrip from '../roadtrip.js';
 import routes from '../routes.js';
+import util from './util.js';
+import watchHistory from './watchHistory.js';
 
 // Adapted from https://github.com/visionmedia/page.js
 // MIT license https://github.com/visionmedia/page.js#license
@@ -38,8 +40,18 @@ export default function watchLinks ( callback ) {
 		// x-origin
 		if ( !sameOrigin( el.href ) ) return;
 
-		// rebuild path
-		let path = el.pathname + el.search + ( el.hash || '' );
+		let path;
+
+		if (watchHistory.useHash) {
+			path = toHash(el);
+
+		} else {
+		path = el.getAttribute('href');
+		//path = util.prefixWithSlash(path);
+		
+		// TODO below is original code which builds up path from the a.href property. Above we instead simply use the <a href> attribute
+		//path = el.pathname + el.search + ( el.hash || '' );
+		}
 
 		// strip leading '/[drive letter]:' on NW.js on Windows
 		if ( typeof process !== 'undefined' && path.match( /^\/[a-zA-Z]:\// ) ) {
@@ -47,20 +59,54 @@ export default function watchLinks ( callback ) {
 		}
 
 		// same page
-		const orig = path;
+		//const orig = path;
 
-		if ( path.indexOf( roadtrip.base ) === 0 ) {
-			path = path.substr( roadtrip.base.length );
-		}
+		/*
+		if ( roadtrip.base && orig === path ) {
+			return;
+		}*/
 
-		if ( roadtrip.base && orig === path ) return;
+		path = util.stripBase(path, roadtrip.base);
 
 		// no match? allow navigation
-		if ( !routes.some( route => route.matches( orig ) ) ) return;
+		let matchFound = routes.some( route => route.matches( path ) );
 
-		event.preventDefault();
-		callback( orig );
+		if ( matchFound ) {
+			event.preventDefault();
+
+			//path = util.prefixWithBase(path, roadtrip.base);
+			callback( path );
+		}
+
+		return;
 	}
+}
+
+function toHash(link) {
+	let href = link.getAttribute('href');
+	href = util.prefixWithHash(href);
+	return href;
+
+	// TODO below code probably unnessasary
+	if (href[0] === '#') {
+		return href;
+	}
+
+	let relPath = util.stripSlashOrHashPrefix(href);
+	relPath = util.prefixWithHash(relPath);
+
+	relPath = util.stripSearch(relPath);
+
+	let path = location.pathname + relPath + link.search;
+	path = util.stripSlashOrHashPrefix(path);
+
+	if (link.hash != href) {
+		let hash = link.hash || '';
+		hash = hash.replace('#', "/");
+		path = path + ( hash );
+	}
+
+	return path;
 }
 
 function which ( event ) {

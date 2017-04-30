@@ -2,9 +2,10 @@ import roadtrip from  "../roadtrip/roadtrip";
 import eventer from "./handler/eventer";
 import utils from "./util/utils";
 import mode from "./util/mode";
+import events from "./util/events";
 import "./handler/routeAbuseMonitor";
 
-var initOptions = {
+let startOptions = {
 	target: null,
 	defaultRoute: null,
 	debug: true
@@ -14,18 +15,6 @@ var initOptions = {
 const location = window && ( window.history.location || window.location );
 
 var journey = {	};
-
-const events = {
-	BEFORE_ENTER: "beforeenter",
-	BEFORE_ENTER_COMPLETE: "beforeenterComplete",
-	ENTER: "enter",	
-	ENTERED: "entered",
-	UPDATE: "update",
-	UPDATED: "updated",
-	LEAVE: "leave",
-	LEFT: "left",
-	ERROR: "error"
-};
 
 eventer.init( journey );
 
@@ -49,20 +38,18 @@ journey.add = function add( path, options ) {
 
 journey.start = function( options ) {
 
-	initOptions = utils.extend( { }, initOptions, options );
+	startOptions = utils.extend( { }, startOptions, options );
 
-	mode.DEBUG = initOptions.debug;
+	mode.DEBUG = startOptions.debug;
+	
+	wrapRoadtripGoto();
 
-	roadtrip.origGoto = roadtrip.goto;
-
-	roadtrip.goto = journey.goto;
-
-	roadtrip.start( options );
+	return roadtrip.start( options );
 };
 
-journey.goto = function ( href, options ) {
-
-		var promise = roadtrip.origGoto( href, options );
+journey.goto = function ( href, otherOptions = {}, internalOptions = {}) {
+	console.log("GOTO:", href)
+		var promise = roadtrip._origGoto( href, otherOptions, internalOptions );
 
 	if (promise._sameRoute) {
 		return promise;
@@ -75,6 +62,10 @@ journey.goto = function ( href, options ) {
 
 	return promise;
 };
+
+journey.getBase = function( ) {
+	return roadtrip.base;
+}
 
 journey.getCurrentRoute = function( ) {
 	return roadtrip.getCurrentRoute();
@@ -89,18 +80,22 @@ function raiseEvent( event, args ) {
 	var options = { };
 	if ( event === events.UPDATE || event === events.UPDATED ) {
 		options.route = args[0];
+		options.other = args[1];
 
 	} else if ( event === events.BEFORE_ENTER || event === events.BEFORE_ENTER_COMPLETE ) {
 		options.to = args[0];
 		options.from = args[1];
+		options.other = args[2];
 
 	} else if ( event === events.ENTER || event === events.ENTERED ) {
 		options.to = args[0];
 		options.from = args[1];
+		options.other = args[2];
 
 	} else if ( event === events.LEAVE || event === events.LEFT ) {
 		options.from = args[0];
 		options.to = args[1];
+		options.other = args[2];
 	}
 
 	journey.emit( journey, event, options );
@@ -133,15 +128,20 @@ function enhanceEvent( name, options ) {
 			
 			if (name === events.UPDATE) { // update only accepts one argument
 				options = args[1];
+				if (options == null) {
+					options = args[1] = {};
+				}
 
 			} else {
 				options = args[2];
+				if (options == null) {
+					options = args[2] = {};
+				}
 			}
 
-			var options = options || {};
-
 			// Ensure default target is passed to events, but don't override if already present
-			options.target = options.target || initOptions.target;
+			options.target = options.target || startOptions.target;
+			options.startOptions = options.startOptions || startOptions;
 			//args.push(options);
 
 			raiseEvent( name, args );
@@ -202,6 +202,15 @@ function gatherErrorOptions( event, args, err ) {
 
 }
 
+function wrapRoadtripGoto() {
+	// Ensure to only wrap goto once, in case journey.start is called more than once
+	if (roadtrip._origGoto != null) return;
+
+	roadtrip._origGoto = roadtrip.goto;
+	roadtrip.goto = journey.goto;
+
+	
+}
+
 export default journey;
 
-export {events};
