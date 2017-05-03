@@ -43,28 +43,13 @@ const roadtrip = {
 		watchHistory.start(startOptions);
 		watchHistory.setListener(historyListener);
 
-//		if (watchHistory.useHash) {
-//			//roadtrip.base = util.suffixWithSlash(roadtrip.base);
-//		} else {
-//		}
-		//roadtrip.base = util.stripSlashOrHashSuffix(roadtrip.base);
-
 		let relUrl = watchHistory.useHash? location.hash : util.getLocationAsRelativeUrl();
 		let path = util.stripBase(relUrl, roadtrip.base);
 
 		if (startOptions.defaultRoute && util.useDefaultRoute(path)) {
 			path = startOptions.defaultRoute || path;
-
-			/*
-			if (watchHistory.useHash) {
-				path = util.prefixWithHash(path);
-			} else {
-				path = util.prefixWithSlash(path);
-			}
-			path = util.prefixWithSlash(path);
-			*/
 		}
-		
+
 		let matchFound = routes.some( route => route.matches( path) );
 		const href = matchFound ?
 			path :
@@ -90,11 +75,7 @@ const roadtrip = {
 			if (href[0] == '/' && href[1] == '#') { // cater for url: /#someHash
 				href  = href.slice(1);
 			}
-
-			//href = util.prefixWithSlash(href);
 		}
-
-		//href = util.prefixWithBase(href, roadtrip.base);
 
 		scrollHistory[ currentID ] = {
 			x: window.scrollX,
@@ -142,7 +123,6 @@ if ( window ) {
 	// watch history
 	/*
 	window.addEventListener( 'popstate', event => {
-		console.log("*****************************************")
 		return;// TODO remove this hack, just testing watchHistory :)
 		if ( !event.state ) return; // hashchange, or otherwise outside roadtrip's control
 		const scroll = scrollHistory[ event.state.uid ] || {x: 0, y: 0};
@@ -304,16 +284,24 @@ function _goto ( target ) {
 
 	let targetHref = target.href;
 
-	if (watchHistory.useHash) {
+	if (watchHistory.useOnHashChange) {
 		targetHref = util.prefixWithHash(targetHref);
 		target.href = targetHref;
 		watchHistory.setHash( targetHref, target.internalOptions.replaceState );
 
 	} else {
-		targetHref = util.prefixWithSlash(targetHref);
-		// Add base path for pushstate, as we are routing to an absolute path '/' eg. /base/page1
-		targetHref = util.prefixWithBase(targetHref, roadtrip.base);
-		target.href = targetHref;
+
+		if (watchHistory.useHash) {
+			targetHref = util.prefixWithHash(targetHref);
+			target.href = targetHref;					
+						
+		} else {
+			targetHref = util.prefixWithSlash(targetHref);
+			// Add base path for pushstate, as we are routing to an absolute path '/' eg. /base/page1
+			targetHref = util.prefixWithBase(targetHref, roadtrip.base);
+			target.href = targetHref;
+		}
+
 		window.history[ target.internalOptions.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
 	}
 

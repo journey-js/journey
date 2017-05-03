@@ -48,7 +48,9 @@ journey.start = function( options ) {
 };
 
 journey.goto = function ( href, otherOptions = {}, internalOptions = {}) {
-	console.log("GOTO:", href)
+	if (roadtrip._origGoto == null) {
+		throw new Error("call start() before using journey");
+	}
 		var promise = roadtrip._origGoto( href, otherOptions, internalOptions );
 
 	if (promise._sameRoute) {

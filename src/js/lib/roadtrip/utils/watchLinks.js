@@ -86,27 +86,6 @@ function toHash(link) {
 	let href = link.getAttribute('href');
 	href = util.prefixWithHash(href);
 	return href;
-
-	// TODO below code probably unnessasary
-	if (href[0] === '#') {
-		return href;
-	}
-
-	let relPath = util.stripSlashOrHashPrefix(href);
-	relPath = util.prefixWithHash(relPath);
-
-	relPath = util.stripSearch(relPath);
-
-	let path = location.pathname + relPath + link.search;
-	path = util.stripSlashOrHashPrefix(path);
-
-	if (link.hash != href) {
-		let hash = link.hash || '';
-		hash = hash.replace('#', "/");
-		path = path + ( hash );
-	}
-
-	return path;
 }
 
 function which ( event ) {

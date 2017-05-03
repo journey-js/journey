@@ -7,10 +7,12 @@ let watchHistory = {
 	_ignoreHashChange: false,
 
 	useHash: false,
+	
+	useOnHashChange: false,
 
 	hash: '#',
 	
-	history:   !!(window.history && window.history.pushState),
+	supportHistory:   !!(window.history && window.history.pushState),
 
 	noop() {},
 
@@ -18,24 +20,39 @@ let watchHistory = {
 
 		watchHistory.useHash = options.useHash || watchHistory.useHash;
 		watchHistory.hash = options.hash || watchHistory.hash;
+		watchHistory.useOnHashChange = watchHistory.shouldUseOnHashChange(options.useOnHashChange || false);
 		watchHistory.listener = options.listener || watchHistory.noop;
 
 		watchHistory.startListening();
 	},
 
 	startListening() {
-		if (watchHistory.useHash) {// TODO change check to wathcUrl.history, we only want to use ohashchange if popstate is not available, even for hashes
+
+		if (watchHistory.useOnHashChange) {
 			window.addEventListener( 'hashchange', watchHistory.hashchangeEventLisener, false );
 
 		} else {
 			window.addEventListener( 'popstate', watchHistory.popstateEventLisener, false );
 		}
 	},
+	
+	shouldUseOnHashChange(value) {
+		// Use override if present
+		if (value) {
+			return true;
+		}
+
+		 if (watchHistory.supportHistory) {
+			 return false;
+		 }
+		 return true;
+	},
 
 	popstateEventLisener( e ) {
 		if ( e.state == null ) return; // hashchange, or otherwise outside roadtrip's control
 
-		let url = location.pathname;
+		//let url = location.pathname;
+		let url = watchHistory.useHash ? location.hash : location.pathname;
 		let options = {
 			url: url,
 			popEvent: e,
