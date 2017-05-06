@@ -9,6 +9,8 @@ require( 'console-group' ).install();
 const journeysrc = fs.readFileSync( path.resolve( __dirname, '../dist/journey.js' ), 'utf-8' );
 //const simulantSrc = fs.readFileSync( require.resolve( 'simulant' ), 'utf-8' );
 
+let global;
+
 describe( 'history', () => {
 	function createTestEnvironment( initial ) {
 		return new Promise( ( fulfil, reject ) => {
@@ -18,6 +20,8 @@ describe( 'history', () => {
 				url: 'http://journey.com' + ( initial || '' ),
 				src: [ journeysrc ],
 				done( err, window ) {
+					global = window;
+
 					if ( err ) {
 						reject( err );
 					} else {
@@ -77,22 +81,6 @@ describe( 'history', () => {
 							}
 						} );
 
-				function goto( href ) {
-					return () => {
-						return journey.goto( href );
-					};
-				}
-
-				function back() {
-					window.history.back();
-					return wait();
-				}
-
-				function forward() {
-					window.history.forward();
-					return wait();
-				}
-
 				return journey.start().then( goto( 'foo' ) )
 						.then( back )    // root
 						.then( forward )    // foo
@@ -106,7 +94,7 @@ describe( 'history', () => {
 			} );
 		} );
 
-		it( 'journey start() option, onHashChange, wont be able to store scroll positions when navigating between routes', () => {
+		it( 'journey start( { onHashChange: true } ), wont be able to store scroll positions when navigating between routes', () => {
 			return createTestEnvironment( "/" ).then( window => {
 
 				const journey = window.journey;
@@ -156,12 +144,12 @@ describe( 'history', () => {
 					window.history.forward();
 					return wait();
 				}
-				
+
 				let options = {
 					useOnHashChange: true
 				};
 
-				return journey.start(options).then( goto( 'foo' ) )
+				return journey.start( options ).then( goto( 'foo' ) )
 						.then( back )    // root
 						.then( forward )    // foo
 
@@ -174,49 +162,139 @@ describe( 'history', () => {
 			} );
 		} );
 	} );
-	
-	describe( 'journey.start( useHash: true )', () => {
-		it( 'navigates to the current route', done => {
-			createTestEnvironment().then( window => {
+
+	describe( 'est ojurney.start( { useHash: true } )', () => {
+
+		it( 'ensure hash is appended to route', () => {
+			return createTestEnvironment().then( window => {
 				const journey = window.journey;
+
+				let hashAppended = false;
 
 				journey
 						.add( '/', {
 							enter() {
-								assert.ok( true );
-								done();
+								let href = window.location.href;
+								hashAppended = href[href.length - 1] === '#';
 							}
 						} )
-						.start({useHash: true});
+						.start( { useHash: true } ).then( () => {
+					assert.ok( hashAppended );
+					window.close();
+				} );
 
-				window.close();
 			} );
 		} );
-	});
 
-	describe( 'journey.start( useHash: true, useOnHashChange: true )', () => {
-		it( 'navigates to the current route', done => {
-			createTestEnvironment().then( window => {
+		it( 'ensure hash history works', () => {
+			return createTestEnvironment( ).then( window => {
+
 				const journey = window.journey;
+				const routes = [ ];
 
 				journey
 						.add( '/', {
-							enter() {
-								assert.ok( true );
-								done();
+							enter: ( ) => {
+								routes.push( 'root' );
+
+								let href = window.location.href;
+								assert.ok( href.endsWith( "#" ) );
 							}
 						} )
-						.start( {
-							useHash: true,
-							useOnHashChange: true
+
+						.add( '/foo', {
+							enter: ( ) => {
+								let href = window.location.href;
+								assert.ok( href.endsWith( "#foo" ) );
+								routes.push( 'foo' );
+							}
 						} );
 
-				window.close();
+				return journey.start( { useHash: true } ).then( goto( 'foo' ) )
+						.then( back )    // root
+						.then( forward )    // foo
+
+						.then( () => {
+							assert.deepEqual( routes, [ 'root', 'foo', 'root', 'foo' ] );
+							window.close();
+						} );
 			} );
 		} );
-	});
+	} );
 
-} );
+	describe( 'test journey.start( useHash: true, useOnHashChange: true )', ( ) => {
+
+		it( 'ensure hash is appended to route', ( ) => {
+			return createTestEnvironment( ).then( window => {
+				global = window;
+				const journey = window.journey;
+				let hashAppended = false;
+				journey
+						.add( '/', {
+							enter( ) {
+								let href = window.location.href;
+								hashAppended = href[href.length - 1] === '#';
+							}
+						} )
+						.start( { useHash: true, useOnHashChange: true } ).then( ( ) => {
+					assert.ok( hashAppended );
+					window.close( );
+				} );
+			} );
+		} );
+		
+		it( 'ensure hash history works', () => {
+			return createTestEnvironment( ).then( window => {
+
+				const journey = window.journey;
+				const routes = [ ];
+
+				journey
+						.add( '/', {
+							enter: ( ) => {
+								routes.push( 'root' );
+
+								let href = window.location.href;
+								assert.ok( href.endsWith( "#" ) );
+							}
+						} )
+
+						.add( '/foo', {
+							enter: ( ) => {
+								let href = window.location.href;
+								assert.ok( href.endsWith( "#foo" ) );
+								routes.push( 'foo' );
+							}
+						} );
+
+				return journey.start( { useHash: true, useOnHashChange: true } ).then( goto( 'foo' ) )
+						.then( back )    // root
+						.then( forward )    // foo
+
+						.then( () => {
+							assert.deepEqual( routes, [ 'root', 'foo', 'root', 'foo' ] );
+							window.close();
+						} );
+			} );
+		} );
+	} );
+});
+
+function goto( href ) {
+	return () => {
+		return global.journey.goto( href );
+	};
+}
+
+function back() {
+	global.history.back();
+	return wait();
+}
+
+function forward() {
+	global.history.forward();
+	return wait();
+}
 
 function wait( ms ) {
 	return new Promise( fulfil => setTimeout( fulfil, ms || 50 ) );
