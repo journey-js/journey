@@ -210,7 +210,7 @@ describe( 'journey', () => {
 				const entered = [ ];
 				const left = [ ];
 
-				journey
+				return journey
 						.add( '/foo', {
 							enter( route ) {
 								entered.push( route.query.a );

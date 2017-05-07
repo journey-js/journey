@@ -1,6 +1,7 @@
 import roadtrip from './roadtrip.js';
-import util from "./utils/util.js";
+import pathHelper from "./utils/pathHelper.js";
 import watchHistory from "./utils/watchHistory.js";
+
 
 const a = typeof document !== 'undefined' && document.createElement( 'a' );
 const QUERYPAIR_REGEX = /^([\w\-]+)(?:=([^&]*))?$/;
@@ -29,8 +30,7 @@ RouteData.prototype = {
 };
 
 export default function Route( path, options ) {
-	// strip leading slash
-	path = util.stripSlashOrHashPrefix(path);	
+	path = pathHelper.stripSlashOrHashPrefix(path);	
 
 	this.path = path;
 	this.segments = path.split( '/' );
@@ -58,9 +58,7 @@ export default function Route( path, options ) {
 
 Route.prototype = {
 	matches( href ) {
-		a.href = util.prefixWithSlash(href); // This works for the options useHash: false + contextPath: true
-		//a.href = util.stripSlashOrHashPrefix(href);
-		//a.href = href;
+		a.href = pathHelper.prefixWithSlash(href); // This works for the options useHash: false + contextPath: true
 
 		const pathname = a.pathname.slice( 1 );
 		const segments = pathname.split( '/' );
@@ -69,16 +67,10 @@ Route.prototype = {
 	},
 
 	exec( target ) {
-		//let href = util.stripBase(target.href, roadtrip.base);
-		//a.href = href;
 		a.href = target.href;
-		
-		// TODO this method must cater for hashes
 
-		//let pathname = util.stripBase(a.pathname, roadtrip.base);
 		let pathname = a.pathname;
-		pathname = util.stripSlashOrHashPrefix(pathname);
-		//pathname = pathname.slice( 1 );
+		pathname = pathHelper.stripSlashOrHashPrefix(pathname);
 		const search = a.search.slice( 1 );
 
 		const segments = pathname.split( '/' );

@@ -1,15 +1,11 @@
 import roadtrip from  "../roadtrip/roadtrip";
 import eventer from "./handler/eventer";
-import utils from "./util/utils";
-import mode from "./util/mode";
-import events from "./util/events";
+import journeyUtils from "./utils/util.js";
+import roadtripUtils from "../roadtrip/utils/util.js";
+import mode from "./utils/mode";
+import events from "./utils/events";
 import "./handler/routeAbuseMonitor";
-
-let startOptions = {
-	target: null,
-	defaultRoute: null,
-	debug: true
-};
+import config from "./utils/config.js";
 
 // Enables HTML5-History-API polyfill: https://github.com/devote/HTML5-History-API
 const location = window && ( window.history.location || window.location );
@@ -28,7 +24,7 @@ journey.add = function add( path, options ) {
 		throw new Error("journey.add does not accept 'null' options");
 	}
 	
-	options = utils.extend( { }, options );
+	options = roadtripUtils.extend( { }, options );
 	wrap( options );
 
 	roadtrip.add( path, options );
@@ -38,9 +34,9 @@ journey.add = function add( path, options ) {
 
 journey.start = function( options ) {
 
-	startOptions = utils.extend( { }, startOptions, options );
+	roadtripUtils.extend( config, options );
 
-	mode.DEBUG = startOptions.debug;
+	mode.DEBUG = config.debug;
 	
 	wrapRoadtripGoto();
 
@@ -74,7 +70,7 @@ journey.getCurrentRoute = function( ) {
 };
 
 function raiseError( options ) {
-	utils.logError( options.error );
+	journeyUtils.logError( options.error );
 	journey.emit( journey, "error", options );
 }
 
@@ -142,8 +138,8 @@ function enhanceEvent( name, options ) {
 			}
 
 			// Ensure default target is passed to events, but don't override if already present
-			options.target = options.target || startOptions.target;
-			options.startOptions = options.startOptions || startOptions;
+			options.target = options.target || config.target;
+			options.startOptions = options.startOptions || config;
 			//args.push(options);
 
 			raiseEvent( name, args );

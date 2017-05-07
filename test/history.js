@@ -20,11 +20,11 @@ describe( 'history', () => {
 				url: 'http://journey.com' + ( initial || '' ),
 				src: [ journeysrc ],
 				done( err, window ) {
-					global = window;
 
 					if ( err ) {
 						reject( err );
 					} else {
+						global = window;
 						window.Promise = window.journey.Promise = Promise;
 						window.console = console;
 						fulfil( window );
@@ -129,22 +129,6 @@ describe( 'history', () => {
 							}
 						} );
 
-				function goto( href ) {
-					return () => {
-						return journey.goto( href );
-					};
-				}
-
-				function back() {
-					window.history.back();
-					return wait();
-				}
-
-				function forward() {
-					window.history.forward();
-					return wait();
-				}
-
 				let options = {
 					useOnHashChange: true
 				};
@@ -163,7 +147,7 @@ describe( 'history', () => {
 		} );
 	} );
 
-	describe( 'est ojurney.start( { useHash: true } )', () => {
+	describe( 'test journey.start( { useHash: true } )', () => {
 
 		it( 'ensure hash is appended to route', () => {
 			return createTestEnvironment().then( window => {
@@ -171,7 +155,7 @@ describe( 'history', () => {
 
 				let hashAppended = false;
 
-				journey
+				return journey
 						.add( '/', {
 							enter() {
 								let href = window.location.href;
@@ -226,10 +210,9 @@ describe( 'history', () => {
 
 		it( 'ensure hash is appended to route', ( ) => {
 			return createTestEnvironment( ).then( window => {
-				global = window;
 				const journey = window.journey;
 				let hashAppended = false;
-				journey
+				return journey
 						.add( '/', {
 							enter( ) {
 								let href = window.location.href;
@@ -242,7 +225,7 @@ describe( 'history', () => {
 				} );
 			} );
 		} );
-		
+
 		it( 'ensure hash history works', () => {
 			return createTestEnvironment( ).then( window => {
 
@@ -278,7 +261,46 @@ describe( 'history', () => {
 			} );
 		} );
 	} );
-});
+
+	describe( 'misc tests', ( ) => {
+		it( 'ensure routes with prefix "/#" is supported eg. "/#home"', ( ) => {
+			return createTestEnvironment( '/#foo' ).then( window => {
+				const journey = window.journey;
+				let fooEntered = false;
+				return journey
+						.add( '/foo', {
+							enter( ) {
+								fooEntered = true;
+							}
+						} )
+						.start().then( ( ) => {
+					assert.ok( fooEntered );
+					window.close( );
+				} );
+			} );
+		} );
+		
+		it( 'ensure goto "/#" routes work eg goto(/#foo) "', ( ) => {
+			return createTestEnvironment( ).then( window => {
+				const journey = window.journey;
+				let fooEntered = false;
+				return journey
+						.add( '/foo', {
+							enter( ) {
+								fooEntered = true;
+							}
+						} )
+						.start().then( goto("/#foo") )
+						.then( () => {
+					assert.ok( fooEntered );
+					window.close( );
+				} );
+			} );
+		} );
+
+	} );
+} );
+
 
 function goto( href ) {
 	return () => {

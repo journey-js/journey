@@ -1,5 +1,5 @@
 import eventer from "./eventer";
-import utils from  "../util/utils";
+import utils from  "../utils/util";
 
 var callstack = [ ];
 

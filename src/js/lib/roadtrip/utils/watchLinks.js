@@ -3,6 +3,8 @@ import roadtrip from '../roadtrip.js';
 import routes from '../routes.js';
 import util from './util.js';
 import watchHistory from './watchHistory.js';
+import path from "./pathHelper.js";
+import config from "./config.js";
 
 // Adapted from https://github.com/visionmedia/page.js
 // MIT license https://github.com/visionmedia/page.js#license
@@ -42,14 +44,13 @@ export default function watchLinks ( callback ) {
 
 		let path;
 
-		if (watchHistory.useHash) {
+		if (config.useHash) {
 			path = toHash(el);
 
 		} else {
 		path = el.getAttribute('href');
-		//path = util.prefixWithSlash(path);
 		
-		// TODO below is original code which builds up path from the a.href property. Above we instead simply use the <a href> attribute
+		// below is original code which builds up path from the a.href property. Above we instead simply use the <a href> attribute
 		//path = el.pathname + el.search + ( el.hash || '' );
 		}
 
@@ -62,11 +63,11 @@ export default function watchLinks ( callback ) {
 		//const orig = path;
 
 		/*
-		if ( roadtrip.base && orig === path ) {
+		if ( config.base && orig === path ) {
 			return;
 		}*/
 
-		path = util.stripBase(path, roadtrip.base);
+		path = util.stripBase(path, config.base);
 
 		// no match? allow navigation
 		let matchFound = routes.some( route => route.matches( path ) );
@@ -74,7 +75,7 @@ export default function watchLinks ( callback ) {
 		if ( matchFound ) {
 			event.preventDefault();
 
-			//path = util.prefixWithBase(path, roadtrip.base);
+			//path = util.prefixWithBase(path, config.base);
 			callback( path );
 		}
 
@@ -84,7 +85,7 @@ export default function watchLinks ( callback ) {
 
 function toHash(link) {
 	let href = link.getAttribute('href');
-	href = util.prefixWithHash(href);
+	href = path.prefixWithHash(href);
 	return href;
 }
 

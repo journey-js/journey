@@ -1,25 +1,19 @@
-setupLegacyEventUrls();
+import config from "./config.js";
 
 let listener;
 
 let watchHistory = {
-	
+
 	_ignoreHashChange: false,
 
-	useHash: false,
-	
 	useOnHashChange: false,
 
-	hash: '#',
-	
 	supportHistory:   !!(window.history && window.history.pushState),
 
 	noop() {},
 
 	start( options = {} ) {
 
-		watchHistory.useHash = options.useHash || watchHistory.useHash;
-		watchHistory.hash = options.hash || watchHistory.hash;
 		watchHistory.useOnHashChange = watchHistory.shouldUseOnHashChange(options.useOnHashChange || false);
 		watchHistory.listener = options.listener || watchHistory.noop;
 
@@ -52,7 +46,7 @@ let watchHistory = {
 		if ( e.state == null ) return; // hashchange, or otherwise outside roadtrip's control
 
 		//let url = location.pathname;
-		let url = watchHistory.useHash ? location.hash : location.pathname;
+		let url = config.useHash ? location.hash : location.pathname;
 		let options = {
 			url: url,
 			popEvent: e,
@@ -93,23 +87,6 @@ let watchHistory = {
 			location.hash = hash;
 		}
 	}
-};
-
-function setupLegacyEventUrls( ) {
-	// from https://developer.mozilla.org/en/docs/Web/API/WindowEventHandlers/onhashchange
-
-	if ( ! window.HashChangeEvent )
-		( function () {
-
-			var lastURL = document.URL;
-
-			window.addEventListener( "hashchange", function ( event ) {
-				Object.defineProperty( event, "oldURL", { enumerable: true, configurable: true, value: lastURL } );
-				Object.defineProperty( event, "newURL", { enumerable: true, configurable: true, value: document.URL } );
-
-				lastURL = document.URL;
-			} );
-		}() );
 }
 
 export default watchHistory;
