@@ -8,6 +8,7 @@ Note: Journey does not support [Nested Routes](). If you need a more sopysticate
 A live demo can be viewed at [https://journey-js.github.io/journey-examples/](https://journey-js.github.io/journey-examples/).
 
 # Introduction
+If you are new to Single Page Applications and ES6 modules you can read through the [Single Page Application Intro](SPA-INTRO.md)
 
 Tirst things first, you are only going to use a Client-side router when building a [Single Page Application](https://en.wikipedia.org/wiki/Single-page_application).
 
