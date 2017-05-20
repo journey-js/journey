@@ -30,7 +30,7 @@ journey.add( '/home', {
         // Render some text in the body
         document.body.innerHTML = "Hello World!" // Print Hello in the body
 
-        // Practically speaking we will offload the DOM rendering to a View Library such as Ractive.js, Vue.js etc.
+        // Practically speaking we will offload the DOM rendering to a View Library such as Ractive, Vue etc.
     }
 });
 ```
@@ -61,7 +61,8 @@ journey.add( '/home', {
         // Remove the view
         route.view.teardown();
     }
-    ```
+ ```
+ 
 # Example
 
 With a basic understanding of Journey under our belts, let's look at a more practical example where we display a list of clients.
@@ -70,21 +71,93 @@ We need a base HTML page to hold a menu at the top and a container where we rend
 
 ```html
 <html>
+<head>
+    <script src="start.js"></script>
+</head>
     <body>
     
-    <nav> Menus goes here </nav>    
+        <nav> Menus goes here </nav>
     
-    <main> Views are rendered here </main>
+        <main> Views are rendered here </main>
 
     </body>
 </html>
 ```
 
-First we create a template that iterates over the a list of clients and render each client as a row in a table.
+Our base page referes to a script **start.js** which is the startup script for our web application. **start.js** is defined further below.
+
+**Note:** This example below is based very loosely on the [MVC](TODO) UI pattern where *View* is represented by an HTML template, *Controller* is a Javascript file and *Model* is the Client data.
+
+For our client page, we create a template that iterates over the a list of clients and render each client as a row in a table. Below is our **View**, *Clients.html* template. Here we use Ractive' mustache based templates:
 
 ```html
-
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Date of birth</th>
+        <th>Telephone</th>
+    </tr>
+    {{#clients}}
+    <tr>
+        <td>{{name}}</td>
+        <td>{{date}}</td>
+        <td>{{telephone}}</td>
+    </tr>
+{{/}}
+</table>
 ```
+
+Next is the** Controller**, *Clients.js*, that provides an *enter* method:
+
+```js
+import Ractive from "Ractive.js";
+import tpl from "./Clients.html";
+
+let Clients = {
+    
+    enter: function(route, prevRoute) {
+        route.view = new Ractive({
+
+            el: 'main',
+            template: tpl,
+            data: clientData
+        });
+    }
+}
+
+// Dummy client data
+
+let clientData = [
+    {
+        name: "Steve", 
+        date: "11990-01-01,
+        telephone: 08601102321
+     },{
+        name: "Steve", 
+        date: "11990-01-01,
+        telephone: 08601102321
+    },{
+        name: "Steve", 
+        date: "11990-01-01,
+        telephone: 08601102321}
+    ]
+
+return default Clients;
+```
+
+We don't need to implement a *leave* method to remove the Client view, because Ractive, by default, tears down existing nodes when it renders a new view.
+
+With our Client view implemented, we need to setup the route using Journey. Here is *start.js*: 
+
+```js
+import journey from "journey.js";
+import Clients from "views/Clients.js";
+import routes from "routes.js";
+
+TODO
+```
+
+Navigating to the url: *http:localhost/clients will load our route
 
 # Beforeenter
 
