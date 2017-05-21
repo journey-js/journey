@@ -9,12 +9,12 @@ A live demo can be viewed at [https://journey-js.github.io/journey-examples/](ht
 
 If you are new to developing Single Page Applications you can read through the [Overview](overview.md) section.
 
-# Setup
+### Setup
 Download a [Journey release](https://github.com/journey-js/journey/releases) and include the file *journey.js* in your application.
 
 To kickstart a project use [Journey Template](TODO) which provides a build environment for Journey.
 
-# Basic Usage
+### Basic Usage
 Journey has the same API as  [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some extras.
 
 Let's define a minimal route for our application:
@@ -63,7 +63,7 @@ journey.add( '/home', {
     }
  ```
  
-# Example
+### Example
 
 With a basic understanding of Journey under our belts, let's look at a more practical example where we display a list of clients.
 
@@ -111,7 +111,7 @@ Next is the** Controller**, *Clients.js*, that provides an *enter* method:
 
 ```js
 import Ractive from "Ractive.js";
-import tpl from "./Clients.html";
+import template from "./Clients.html";
 
 let Clients = {
     
@@ -119,7 +119,7 @@ let Clients = {
         route.view = new Ractive({
 
             el: 'main',
-            template: tpl,
+            template: template,
             data: clientData
         });
     }
@@ -154,6 +154,7 @@ import journey from "lib/journey.js";
 import Clients from "views/Client.js";
 
 journey.add("/clients", Clients); // Map clients path tothe  Clients view
+// As more routesare developed, they will be added in this script
 ```
 
 With our Client view and routes implemented, we need to wire everything togetther into a *startup* script which we will call *start.js*.
@@ -165,19 +166,55 @@ import Clients from "views/Clients.js";
 import "./routes.js"; // We don't need to reference routes anywhere, so we simply import the module
 
 journey.start( {
-    TODO
 } );
 
 ```
 
 Navigating to the url: *http:localhost/clients will load our route
 
-# Beforeenter
+### asynrcronous route transitions through promises
+    
 
-# Goto
+### Beforeenter
+Great work so far!
 
-# Events
+However, in our **Clients.js** script we have hardcoded a list of clients to display. In practice we will most likely load the clients from a server with a database storing the clients.
 
-# Error
+We will use an Ajax request to load the clients from the server. We could place the Ajax call in the *enter* method. Here is an  updated **Clients.js**:
 
-# Options
+```js
+import xhr from "xhr.js";
+import Ractive from "Ractive.js";
+import template from "./Clients.html";
+
+let Clients = {
+
+    enter: function(route, prevRoute) {
+        // Fetch the clients from the service asynchronously. When the promise resolves with the clients, we 
+        // create the view for thse clients.
+        xhr.get("/data/clients").then( function( clients ) {
+
+            // We moved the view creation code to it's own method, createView.
+            route.view = createView(clients);
+        });
+    }
+}
+
+function createView( clients ) {
+    let view = new Ractive({
+        el: 'main',
+        template: template,
+        data: clients
+    });
+    
+    return view;
+}
+```
+
+### Goto
+
+### Events
+
+### Error
+
+### Options
