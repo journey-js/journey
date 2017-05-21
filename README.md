@@ -130,15 +130,15 @@ let Clients = {
 let clientData = [
     {
         name: "Steve", 
-        date: "11990-01-01,
+        date: "11990-01-01",
         telephone: 08601102321
      },{
         name: "Steve", 
-        date: "11990-01-01,
+        date: "11990-01-01",
         telephone: 08601102321
     },{
         name: "Steve", 
-        date: "11990-01-01,
+        date: "11990-01-01",
         telephone: 08601102321}
     ]
 
@@ -147,14 +147,27 @@ return default Clients;
 
 We don't need to implement a *leave* method to remove the Client view, because Ractive, by default, tears down existing nodes when it renders a new view.
 
-With our Client view implemented, we need to setup the route using Journey. Here is *start.js*: 
+With our Client view implemented we can register a new route for a our application. We will place all our route mapping in a central file called *routes.js*:
+
+```js
+import journey from "lib/journey.js";
+import Clients from "views/Client.js";
+
+journey.add("/clients", Clients); // Map clients path tothe  Clients view
+```
+
+With our Client view and routes implemented, we need to wire everything togetther into a *startup* script which we will call *start.js*.
+Recall in *base.mtml* we specified the script <script src="start.js"></script>? Here is *start.js*:
 
 ```js
 import journey from "journey.js";
 import Clients from "views/Clients.js";
-import routes from "routes.js";
+import "./routes.js"; // We don't need to reference routes anywhere, so we simply import the module
 
-TODO
+journey.start( {
+    TODO
+} );
+
 ```
 
 Navigating to the url: *http:localhost/clients will load our route
