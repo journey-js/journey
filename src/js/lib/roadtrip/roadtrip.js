@@ -59,7 +59,7 @@ const roadtrip = {
 		return roadtrip.goto( href, otherOptions, internalOptions);
 	},
 
-	goto ( href, otherOptions = {}, internalOptions = {} ) {
+	goto ( href, internalOptions = {}) {
 		if (href == null) return roadtrip.Promise.resolve();
 
 		href = pathHelper.getGotoPath(href);
@@ -76,7 +76,6 @@ const roadtrip = {
 				scrollX: internalOptions.scrollX || 0,
 				scrollY: internalOptions.scrollY || 0,
 				internalOptions,
-				otherOptions,
 				fulfil,
 				reject
 			};
@@ -136,7 +135,6 @@ function historyListener(options) {
 
 		let url = util.stripBase(options.url, config.base);
 
-	const otherOptions = {};
 	const internalOptions = {};
 
 		_target = {
@@ -145,7 +143,6 @@ function historyListener(options) {
 			popState: options.popState, // so we know not to manipulate the history
 			fulfil: noop,
 			reject: noop,
-			otherOptions,
 			internalOptions
 		};
 
@@ -209,12 +206,12 @@ function _goto ( target ) {
 		// For updates, copy merge newData into currentData, in order to peserve custom data that was set during enter or beforeenter events
 		newData = newData.extend({}, currentData, newData);
 
-		promise = newRoute.update( newData, target.otherOptions );
+		promise = newRoute.update( newData );
 	} else {
 		promise = roadtrip.Promise.all([
-			currentRoute.leave( currentData, newData, target.otherOptions ),
-			newRoute.beforeenter( newData, currentData, target.otherOptions )
-		]).then( () => newRoute.enter( newData, currentData, target.otherOptions ) );
+			currentRoute.leave( currentData, newData ),
+			newRoute.beforeenter( newData, currentData )
+		]).then( () => newRoute.enter( newData, currentData ) );
 	}
 
 	promise

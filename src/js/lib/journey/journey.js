@@ -43,11 +43,11 @@ journey.start = function( options ) {
 	return roadtrip.start( options );
 };
 
-journey.goto = function ( href, otherOptions = {}, internalOptions = {}) {
+journey.goto = function ( href, internalOptions = {}) {
 	if (roadtrip._origGoto == null) {
 		throw new Error("call start() before using journey");
 	}
-		var promise = roadtrip._origGoto( href, otherOptions, internalOptions );
+		var promise = roadtrip._origGoto( href, internalOptions );
 
 	if (promise._sameRoute) {
 		return promise;
@@ -63,7 +63,7 @@ journey.goto = function ( href, otherOptions = {}, internalOptions = {}) {
 
 journey.getBase = function( ) {
 	return roadtrip.base;
-}
+};
 
 journey.getCurrentRoute = function( ) {
 	return roadtrip.getCurrentRoute();
@@ -78,22 +78,22 @@ function raiseEvent( event, args ) {
 	var options = { };
 	if ( event === events.UPDATE || event === events.UPDATED ) {
 		options.route = args[0];
-		options.other = args[1];
+		options.options = args[1];
 
 	} else if ( event === events.BEFORE_ENTER || event === events.BEFORE_ENTER_COMPLETE ) {
 		options.to = args[0];
 		options.from = args[1];
-		options.other = args[2];
+		options.options = args[2];
 
 	} else if ( event === events.ENTER || event === events.ENTERED ) {
 		options.to = args[0];
 		options.from = args[1];
-		options.other = args[2];
+		options.options = args[2];
 
 	} else if ( event === events.LEAVE || event === events.LEFT ) {
 		options.from = args[0];
 		options.to = args[1];
-		options.other = args[2];
+		options.options = args[2];
 	}
 
 	journey.emit( journey, event, options );
@@ -122,25 +122,26 @@ function enhanceEvent( name, options ) {
 			// convert arguments into a proper array
 			var args = Array.prototype.slice.call(arguments);
 			
-			var options;
+			var options = {};
 			
 			if (name === events.UPDATE) { // update only accepts one argument
-				options = args[1];
+				args[1] = options;
+				/*
 				if (options == null) {
 					options = args[1] = {};
-				}
+				}*/
 
 			} else {
-				options = args[2];
+				args[2] = options;
+				/*
 				if (options == null) {
 					options = args[2] = {};
-				}
+				}*/
 			}
 
 			// Ensure default target is passed to events, but don't override if already present
-			options.target = options.target || config.target;
-			options.startOptions = options.startOptions || config;
-			//args.push(options);
+			options.target = config.target;
+			options.startOptions = config;
 
 			raiseEvent( name, args );
 
@@ -180,7 +181,6 @@ function enhanceEvent( name, options ) {
 }
 
 function gatherErrorOptions( event, args, err ) {
-	//utils.log( "JA journey got this one: " + event );
 	var route, from, to;
 
 	if ( event === events.UPDATE ) {

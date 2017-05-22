@@ -318,7 +318,7 @@ describe( 'journey', () => {
 				roadtrip
 						.add( '/foo', {
 							enter() {
-								roadtrip.goto( '/bar', null, { invisible: true } );
+								roadtrip.goto( '/bar', { invisible: true } );
 							}
 						} )
 						.add( '/bar', {
