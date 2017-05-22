@@ -83,6 +83,9 @@ const roadtrip = {
 		});
 		
 		promise._locked = false;
+		
+		_target.promise = promise;
+		
 		if ( isTransitioning ) {
 			promise._locked = true;
 			return promise;
@@ -166,7 +169,7 @@ function historyListener(options) {
 function _goto ( target ) {
 	let newRoute;
 	let newData;
-	let forceReloadRoute = target.otherOptions.forceReload || false;
+	let forceReloadRoute = target.internalOptions.forceReload || false;
 
 	//let targetHref = util.stripBase(target.href, config.base);
 	targetHref = pathHelper.prefixWithSlash(target.href);
@@ -225,6 +228,7 @@ function _goto ( target ) {
 			// place, we need to do it all again
 			if ( _target !== target ) {
 				_goto( _target );
+				_target.promise.then( target.fulfil, target.reject );
 
 			} else {
 				target.fulfil();
@@ -237,14 +241,17 @@ function _goto ( target ) {
 
 	if ( target.popState || target.hashChange ) return;
 
-	const uid = target.internalOptions.replaceState ? currentID : ++uniqueID;
+	const { replaceState, invisible } = target.internalOptions;
+	if ( invisible ) return;
+	
+	const uid = replaceState ? currentID : ++uniqueID;
 
 	let targetHref = target.href;
 
 	if (watchHistory.useOnHashChange) {
 		targetHref = pathHelper.prefixWithHash(targetHref);
 		target.href = targetHref;
-		watchHistory.setHash( targetHref, target.internalOptions.replaceState );
+		watchHistory.setHash( targetHref, target.internalOptions );
 
 	} else {
 
@@ -259,7 +266,7 @@ function _goto ( target ) {
 			target.href = targetHref;
 		}
 
-		window.history[ target.internalOptions.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
+		history[ target.internalOptions.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
 	}
 
 	currentID = uid;

@@ -308,6 +308,32 @@ describe( 'journey', () => {
 				} );
 			} );
 		} );
+
+		it( 'updates the route without updating the URL with invisible: true', () => {
+			return createTestEnvironment( '/foo' ).then( window => {
+				const roadtrip = window.journey;
+
+				let enteredBar;
+
+				roadtrip
+						.add( '/foo', {
+							enter() {
+								roadtrip.goto( '/bar', null, { invisible: true } );
+							}
+						} )
+						.add( '/bar', {
+							enter() {
+								enteredBar = true;
+							}
+						} );
+
+				return roadtrip.start().then( () => {
+					assert.ok( enteredBar );
+					assert.equal( window.location.href, 'http://journey.com/foo' );
+					window.close();
+				} );
+			} );
+		} );
 	} );
 
 	describe( 'route.isInitial', () => {

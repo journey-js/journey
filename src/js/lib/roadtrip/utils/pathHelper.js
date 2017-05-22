@@ -1,5 +1,6 @@
 import util from "./util.js";
 import config from "./config.js";
+import window from './window.js';
 
 let pathHelper = {
 
@@ -13,7 +14,7 @@ let pathHelper = {
 	},
 
 	getInitialPath: () => {
-		let relUrl = config.useHash ? location.hash : util.getLocationAsRelativeUrl();
+		let relUrl = config.useHash ? window.location.hash : util.getLocationAsRelativeUrl();
 		let path = util.stripBase( relUrl, config.base );
 
 		if ( config.defaultRoute && util.useDefaultRoute( path ) ) {

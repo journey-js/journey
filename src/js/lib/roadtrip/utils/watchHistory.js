@@ -1,4 +1,5 @@
 import config from "./config.js";
+import window from './window.js';
 
 let listener;
 
@@ -46,7 +47,7 @@ let watchHistory = {
 		if ( e.state == null ) return; // hashchange, or otherwise outside roadtrip's control
 
 		//let url = location.pathname;
-		let url = config.useHash ? location.hash : location.pathname;
+		let url = config.useHash ? window.location.hash : window.location.pathname;
 		let options = {
 			url: url,
 			popEvent: e,
@@ -76,15 +77,17 @@ let watchHistory = {
 		listener = callback;
 	},
 	
-	setHash(hash, replace = false) {
+	setHash(hash, options) {
 
-		if (replace) {
+		hash = options.invisible ? window.location.hash : hash;
+
+		if (options.replace) {
 			location.replace(hash);
 
 		} else {
 			// updating the hash will fire a hashchange event but we only want to respond to hashchange events when the history pops, not pushed
 			watchHistory._ignoreHashChange = true;
-			location.hash = hash;
+			window.location.hash = hash;
 		}
 	}
 }

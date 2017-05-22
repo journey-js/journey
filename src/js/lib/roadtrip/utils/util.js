@@ -1,3 +1,5 @@
+import window from './window.js';
+
 var util = {
 
 	stripSearch: str => {
@@ -49,7 +51,7 @@ var util = {
 	},
 
 	getLocationAsRelativeUrl: () => {
-		let relUrl = location.pathname + location.search + location.hash || '';
+		let relUrl = window.location.pathname + window.location.search + window.location.hash || '';
 		return relUrl;
 	},
 
