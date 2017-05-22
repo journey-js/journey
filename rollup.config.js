@@ -1,14 +1,15 @@
 //import buble from 'rollup-plugin-buble';
 //import string from 'rollup-plugin-string';
 var buble = require( 'rollup-plugin-buble' );
-var string = require( 'rollup-plugin-string' );
+var uglify = require('rollup-plugin-uglify');
 
 const pkg = require( './package.json' );
 
 module.exports = {
 	entry: 'src/js/lib/journey/journey.js',
 	plugins: [
-		buble(	)
+		buble(	),
+		process.env.mode == "prod" ? uglify() : {}
 	],
 	moduleName: 'journey',
 	targets: [

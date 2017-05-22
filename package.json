@@ -11,6 +11,7 @@
     "console-group": "^0.3.3",
     "cookie-parser": "^1.4.0",
     "cpx": "^1.5.0",
+    "cross-env": "^4.0.0",
     "express": "^4.13.3",
     "express-session": "^1.12.1",
     "fs-extra": "^2.0.0",
@@ -20,15 +21,16 @@
     "open": "0.0.5",
     "rollup": "^0.41.6",
     "rollup-plugin-buble": "^0.15.0",
-    "rollup-plugin-string": "^2.0.2",
+    "rollup-plugin-uglify": "^1.0.2",
     "rollup-watch": "^3.2.2",
     "simulant": "^0.2.2"
   },
   "scripts": {
-        "test": "mocha",
-        "testnb": "mocha",
+    "test": "mocha",
+    "testnb": "mocha",
     "pretest": "npm run build",
-    "build": "rollup -c",
+    "build": "cross-env mode=dev rollup -c",
+    "dist": "cross-env mode=prod rollup -c",
     "dev": "node server",
     "prepublish.old": "npm run rm -rf dist",
     "lint": "eslint src"
