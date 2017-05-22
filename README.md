@@ -62,6 +62,31 @@ journey.add( '/home', {
         route.view.teardown();
     }
  ```
+  
+### Asynrcronous route transitions through promises
+If we need to perform asynchrounous tasks when entering or leaving a route we can return a promise from the method. If a promise is returned from either *enter* or *leave*, Journey will wait until the promise resolves, before calling the next route.
+
+When navigating to a new route, the URL in the address bar changes to that of the new route immediately, but the new route's *enter* handler is not called until the previous route *leave* promise resolves.
+
+For example, we want to perform a transition when leaving the **Client** route. We can return a promise from Client.js *leave* method, perform the transition and resolve the promise. So if the current route is */client* and we navigate to */products,* Journey will wait for the Client.js *leave* promise to resolve before invoking the *enter* method of the Product route. 
+
+We can also return a promise from *enter* and Journey will wait for the promise to resolve. If during this period we navigate to a different route, Journey will wait for the promise to resolve, befofe continuing to new route.
+
+If we want to have a transition when moving away from a route eg. a fading out effect, we will return a promise from the *leave* method. 
+
+For example:
+
+```js
+let async {
+
+    leave: function(route, prevRoute) {
+        let promise = view.teardown(); // Assuming teardown returns a promise which resolves once the fade out effect is completed.
+        return promise;
+    }
+}
+```
+
+Note: it isn't very common to return a promise from the *enter* method.
  
 ### Example
 
@@ -172,15 +197,12 @@ journey.start( {
 
 Navigating to the url: *http:localhost/clients will load our route
 
-### asynrcronous route transitions through promises
-    
-
 ### Beforeenter
 Great work so far!
 
 However, in our **Clients.js** script we have hardcoded a list of clients to display. In practice we will most likely load the clients from a server with a database storing the clients.
 
-We will use an Ajax request to load the clients from the server. We could place the Ajax call in the *enter* method. Here is an  updated **Clients.js**:
+We will use an Ajax request to load the clients from the server. We could place the Ajax call in the *enter* method. Remember from the previous section we can return a Promise from *enter* and *leave*. Here is an  updated **Clients.js**:
 
 ```js
 import xhr from "xhr.js";
@@ -192,11 +214,13 @@ let Clients = {
     enter: function(route, prevRoute) {
         // Fetch the clients from the service asynchronously. When the promise resolves with the clients, we 
         // create the view for thse clients.
-        xhr.get("/data/clients").then( function( clients ) {
+        let promise = xhr.get("/data/clients").then( function( clients ) {
 
             // We moved the view creation code to it's own method, createView.
             route.view = createView(clients);
         });
+
+        return promise;
     }
 }
 
@@ -208,6 +232,39 @@ function createView( clients ) {
     });
     
     return view;
+}
+```
+
+When navigating to */clients* we fetch the clients and then display the view. In a real world scenario we will likely display a loading indicator while loading the clients. If an error occurs while loading the clients we won't navigate to the Clients view. Instead we can display an merror message on the current view to inform the user about the problem. At this stage we should also hide the loading indicator.
+
+One issue with loading data in the *enter* metehod is that Journey will not invoke enter of the next route until the *leave* method of the previous route completes. So if the previous route returns a promise in *leave* that performs some asynchronous work, the Ajax call in the next route will not start until the previous route completes it's work. Ideally the Ajax call should start the moment we navigate to a new route, regardless if *leave* has work to perform.
+
+Enter the method **beforeenter**. This method caters for exactly the above scenario. *Beforeenter* is called immediately after the previous route *leave* method is called, regardless if a promise is returned or not.
+
+Like the other methods, *beforeenter* can return a promise (generally it  will) and Journey will wait until this promise resolves before invoking *enter*.
+
+The data we load in the *beforeenter* method must be passed to *enter* in order to use in our view. We can pass the data as a property on the *route* argument. For example:
+
+```js
+let clients = {
+    
+    beforeenter: function(route) {
+        let promise = xhr.get("/data/clients").then( function( clients ) {
+        
+            promise.then(function(clients) {
+                // Assign the clients to a property on the route argument
+                // In example we use a property named 'data'.
+                route.data = clients;
+            });
+        });
+
+        return promise;
+    }
+    
+    enter: function(route, prevRoute) {
+    
+        route.view = createView(route.data);
+    }
 }
 ```
 
