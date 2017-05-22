@@ -141,8 +141,8 @@ import template from "./Clients.html";
 let Clients = {
     
     enter: function(route, prevRoute) {
-        route.view = new Ractive({
 
+        route.view = new Ractive({
             el: 'main',
             template: template,
             data: clientData
@@ -268,10 +268,51 @@ let clients = {
 }
 ```
 
-### Goto
+### Navigate Programmatically
+
+We can navigate to another route programmatically with the method *journey.goto(path);
+
+For example:
+```js
+import journey from "journey.js";
+...
+
+let clients {
+
+    enter: function(route) {
+        route.view = new Ractive({
+            el: 'main',
+            template: template,
+            data: clientData,
+            
+            showProducts: function() {
+                
+                // Journey will load the "product" route.
+                journey.goto("/product");
+            }
+        });
+  }
+}
+```
 
 ### Events
 
 ### Error
 
-### Options
+### API
+
+journey.start({
+    
+});
+
+journey.add(path, options);
+
+journey.add("/clients", {enter() {}};
+
+journey.goto(path, options);
+
+- path "string": the route to navigate to eg "/clients"
+- options {
+    invisible: true/false,
+    forceReload: true/false // We Journey won't reload the current view, but forceReload can override this behavior
+}
