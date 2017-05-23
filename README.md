@@ -340,11 +340,14 @@ var options = { error: err, event: event, from: from, to: to, route: route };
 
 ```js
 journey.on("error", function(event) {
-	// event.event 	              : the name of the event when the rror occurred eg. "enter", "entered", "leave" etc
+
+	// event.event 	              : the name of the event when the rror occurred eg. "enter", "entered", 
+	// 				"leave" etc.
 	// event.from 	              : the route we are leaving
-    // event.to   	              : the route we are entering
-    // event.route   	          : the current route, which is either event.to or event.from depending on the 
-	// event.error				  : the Javascript error object
+	// event.to   	              : the route we are entering
+	// event.route   	      : the current route, which is either event.to or event.from depending
+	//				on the type of event during which the error occurred
+	// event.error		      : the Javascript error object
 
 });
 ```
