@@ -353,6 +353,70 @@ journey.on("error", function(event) {
 });
 ```
 
+## Base path
+
+Often  multiple applications are hosted on a server where each application is mounted on a different *root* or *context path*.
+
+For example:
+
+	http://host/appOne
+    http://host/appTwo
+
+HTML5 PushState allows us to route by changing the url paths.
+
+	given the url
+	http://host/appOne
+    
+    routing to relative route "clients"
+    will result in 
+    http://host/appOne/clients
+    
+    routing to an absolute url "/clients" (absolute paths are prefixed with a '/')
+   	results in
+   	http://host/clients
+
+If our application is hosted on the context path */appOne*, we should not route beyond that path in the url. Otherwise the url will not refer to our application.
+
+In other words the url
+
+	http://host/appOne/clients
+
+links to clients inside the application *appOne*, while
+
+	http://host/clients
+    
+links to a different application called *clients*.
+
+In order to function properly in environments hosting multiple applications on the same host, Journey provides a **base** property that can be set in *journey.start( { base: '/appOne'} )*
+
+With our **base** propety set, Journey will automatically prefix all routes with the **base** value. For example:
+
+```js
+// given our application is hosted at: http://host/myapp/
+
+// we set the base path to '/myapp'
+journey.start({ base: '/myapp' });
+
+journey.goto( '/clients' ); // note: an absolute path
+
+// becomes: http://host/myapp/clients // client automatically prefixed with /myapp
+```
+
+Alternatively we can skip the  **base** property and provide the **base** path in our routes instead.
+
+For eample:
+```js
+// given our application is hosted at: http://host/myapp/
+
+journey.goto( '/myapp/clients' ); // we specify the base path in the route
+
+// becomes: http://host/myapp/clients
+```
+
+This approach requires more boilerplate code, however if for some reason we need to specify routes that execute on different applications (eg one route on '/appone', another route on '/apptwo'), this might be the only option avaialable to us.
+
+**Note:** when using hash based urls, you generally don't have to be concerned with this since the hash routing does not change the url paths.
+
 ## API
 #### journey.add(route, options)
 	route: string
@@ -368,22 +432,34 @@ journey.on("error", function(event) {
 #### journey.start(options)
 
 	journey.start({
-
-		fallback: - use this route if no route is found for a given path. default: null
     
-    	base: a path that is added to the url to which all routes are appended. Needed when using HTML pushState on a server where multiple applications are hosted on separate "context paths". Given the url: http://host/, our application could be hosted on the base path"/myapp". Our application will be available at http://host/myapp/.  When routing to for example "/clients", an absolute path, the browser will change the url to http://host/clients. Our application base path (or contextPath) has been removed. So if we refresh the browser at this stage we would end up loading the application mounted at http:host/clients, which is not our app. When using "hash" routing, instead of of pushState, this problem doesn't exist, since the hash does not interfere with the url paths.
-        
-        By setting the base path option to 'myapp', Journey will ensure all routes will be prefixed with the base path value, so absolute paths in routes won't remove the context path in the url. So routing to '/clients' will become http://host:/myapp/clients. default: ''
-
-		useHash: default: false
-	
-		useOnHashChange: false,
-
-		hash: '#',
-	
-		defaultRoute: null
+    	debug - whether to log debug statements to the console. default: true
     
-});
+    	target - set a default target (element ID or CSS selector) where views should be rendered to. This 
+        		 property is passed to 'enter', 'leave' and 'update' methods to be used during view 
+                 construction. 
+                 default: null
+    
+		fallback - use this route if no route is found for a given path. default: null
+    
+    	base - a path that is prefixed to routes. Useful when using HTML5 pushState and where multiple 
+        	   applications are hosted on separate "context paths". default: ''
+
+		useHash - specify whether the application should use hash based routing (true) or HTML5 
+        		  pushState (false). Note: HTML5 pushState and onpopstate will still be used as the 
+                  history mechanism (if supported by the browser) and not 'onhashchange'. default: false
+	
+		useOnHashChange - if true, forces Journey to use the browser **onhashchange** event, even if 
+        				  HTML5 pushState is supported. Mostly used for testing purposes. default false
+
+		hash - specifies the value of the hash string eg. '#' or '#!'. default:  '#'
+	
+		defaultRoute: when the application is started and the url contains no route path or hash value
+        			  (eg. http//:host/ or http://host#) set the url to the defaultRoute, in effect loading
+                      this route if none is provided. This differs from the 'fallback' option which is used
+                      if a specific route cannot be found. 
+                      default: null
+    });
 
 journey.add(path, options);
 
