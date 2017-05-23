@@ -9,12 +9,12 @@ A live demo can be viewed at [https://journey-js.github.io/journey-examples/](ht
 
 If you are new to developing Single Page Applications you can read through the [Overview](overview.md) section.
 
-### Setup
+## Setup
 Download a [Journey release](https://github.com/journey-js/journey/releases) and include the file *journey.js* in your application.
 
 To kickstart a project use [Journey Template](TODO) which provides a build environment for Journey.
 
-### Basic Usage
+## Basic Usage
 Journey has the same API as  [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some extras.
 
 Let's define a minimal route for our application:
@@ -63,7 +63,7 @@ journey.add( '/home', {
     }
  ```
   
-### Asynrcronous route transitions through promises
+## Asynrcronous route transitions through promises
 If we need to perform asynchrounous tasks when entering or leaving a route we can return a promise from the method. If a promise is returned from either *enter* or *leave*, Journey will wait until the promise resolves, before calling the next route.
 
 When navigating to a new route, the URL in the address bar changes to that of the new route immediately, but the new route's *enter* handler is not called until the previous route *leave* promise resolves.
@@ -89,7 +89,7 @@ let async {
 
 Note: it isn't very common to return a promise from the *enter* method.
  
-### Example
+## Example
 
 With a basic understanding of Journey under our belts, let's look at a more practical example where we display a list of clients.
 
@@ -198,7 +198,7 @@ journey.start( {
 
 Navigating to the url: *http:localhost/clients will load our route
 
-### Beforeenter
+## Beforeenter
 Great work so far!
 
 However, in our **Clients.js** script we have hardcoded a list of clients to display. In practice we will most likely load the clients from a server with a database storing the clients.
@@ -269,7 +269,7 @@ let clients = {
 }
 ```
 
-### Navigate Programmatically
+## Navigate Programmatically
 
 We can navigate to another route programmatically with the method *journey.goto( path, options );*
 
@@ -296,7 +296,7 @@ let clients {
 }
 ```
 
-### Events
+## Events
 Journey fires the following events when changing routes:
 * **beforeenter** - event fired _before_ the *beforeenter* method is called
 * **beforeenterComplete** - event fired *after* the *beforeenter* method is called
@@ -332,7 +332,7 @@ journey.on("entered", function(event) {
 
 ```
 
-### Error
+## Error
 Journey raises an *error* event if something goes wrong navigating to a route, wether the error occurs in Journey itself or the route.
 
 Here is an example:
@@ -353,10 +353,35 @@ journey.on("error", function(event) {
 });
 ```
 
+## API
+#### journey.add(route, options)
+	route: string
+	options: {
+		enter: function() {
+        	
+        },
+        
+       leave: function() {
+       }
+    }
 
-### API
+#### journey.start(options)
 
-journey.start({
+	journey.start({
+
+		fallback: - use this route if no route is found for a given path. default: null
+    
+    	base: a path that is added to the url to which all routes are appended. Needed when using HTML pushState on a server where multiple applications are hosted on separate "context paths". Given the url: http://host/, our application could be hosted on the base path"/myapp". Our application will be available at http://host/myapp/.  When routing to for example "/clients", an absolute path, the browser will change the url to http://host/clients. Our application base path (or contextPath) has been removed. So if we refresh the browser at this stage we would end up loading the application mounted at http:host/clients, which is not our app. When using "hash" routing, instead of of pushState, this problem doesn't exist, since the hash does not interfere with the url paths.
+        
+        By setting the base path option to 'myapp', Journey will ensure all routes will be prefixed with the base path value, so absolute paths in routes won't remove the context path in the url. So routing to '/clients' will become http://host:/myapp/clients. default: ''
+
+		useHash: default: false
+	
+		useOnHashChange: false,
+
+		hash: '#',
+	
+		defaultRoute: null
     
 });
 
