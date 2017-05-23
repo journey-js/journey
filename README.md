@@ -270,7 +270,7 @@ let clients = {
 
 ### Navigate Programmatically
 
-We can navigate to another route programmatically with the method *journey.goto(path, options);
+We can navigate to another route programmatically with the method *journey.goto( path, options );*
 
 For example:
 ```js
@@ -296,8 +296,8 @@ let clients {
 ```
 
 ### Events
-Journey fires the following events when changes routes:
-* **beforeenter** - event fired *before* the *beforeenter* method is called
+Journey fires the following events when changing routes:
+* **beforeenter** - event fired _before_ the *beforeenter* method is called
 * **beforeenterComplete** - event fired *after* the *beforeenter* method is called
 * **enter** - event fired *before* the *enter* method is called
 * **entered** - event fired *after* the *enter* method is called
@@ -305,8 +305,50 @@ Journey fires the following events when changes routes:
 * **updated** - event fired *after* the *update* method is called
 * **leave** - event fired *before* the *leave* method is called
 * **left** - event fired *after* the *leave* method is called
+* * **error** - whenever journey throws an error the "error" event is raised
+
+We can listen to the events through the *journey.on( eventName, callback )* method.
+
+For example:
+import journey from "lib/journey.js";
+import loadIndicator from "lib/loadIndicator.js";
+
+```js
+journey.on("enter", function(event) {
+	// event.from 	              : the route we are leaving
+    // event.to   	              : the route we are entering
+    // event.options              : the same options that was passed to the enter function
+    // event.options.startOptions : the options that was passed to journey.start(options);
+    
+	//When entering a route, let's show  a loading indicator 
+	loadIndicator.show();
+});
+
+journey.on("entered", function(event) {
+	// After we entered we hide the loading indicator
+	loadIndicator.hide();
+});
+
+```
 
 ### Error
+Journey raises an *error* event if something goes wrong navigating to a route, wether the error occurs in Journey itself or the route.
+
+Here is an example:
+
+var options = { error: err, event: event, from: from, to: to, route: route };
+
+```js
+journey.on("error", function(event) {
+	// event.event 	              : the name of the event when the rror occurred eg. "enter", "entered", "leave" etc
+	// event.from 	              : the route we are leaving
+    // event.to   	              : the route we are entering
+    // event.route   	          : the current route, which is either event.to or event.from depending on the 
+	// event.error				  : the Javascript error object
+
+});
+```
+
 
 ### API
 
