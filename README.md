@@ -80,7 +80,8 @@ For example:
 let async {
 
     leave: function(route, prevRoute) {
-        let promise = view.teardown(); // Assuming teardown returns a promise which resolves once the fade out effect is completed.
+        let promise = view.teardown(); // Assuming teardown returns a promise which resolves once the fade out 
+				       // effect is completed.
         return promise;
     }
 }
