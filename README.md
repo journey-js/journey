@@ -239,7 +239,7 @@ When navigating to */clients* we fetch the clients and then display the view. In
 
 One issue with loading data in the *enter* metehod is that Journey will not invoke enter of the next route until the *leave* method of the previous route completes. So if the previous route returns a promise in *leave* that performs some asynchronous work, the Ajax call in the next route will not start until the previous route completes it's work. Ideally the Ajax call should start the moment we navigate to a new route, regardless if *leave* has work to perform.
 
-Enter the method **beforeenter**. This method caters for exactly the above scenario. *Beforeenter* is called immediately after the previous route *leave* method is called, regardless if a promise is returned or not.
+Enter the method **beforeenter**. This method caters for exactly the above scenario. *beforeenter* is called immediately after the previous route *leave* method is called, regardless if a promise is returned or not.
 
 Like the other methods, *beforeenter* can return a promise (generally it  will) and Journey will wait until this promise resolves before invoking *enter*.
 
@@ -270,7 +270,7 @@ let clients = {
 
 ### Navigate Programmatically
 
-We can navigate to another route programmatically with the method *journey.goto(path);
+We can navigate to another route programmatically with the method *journey.goto(path, options);
 
 For example:
 ```js
@@ -296,6 +296,15 @@ let clients {
 ```
 
 ### Events
+Journey fires the following events when changes routes:
+* **beforeenter** - event fired *before* the *beforeenter* method is called
+* **beforeenterComplete** - event fired *after* the *beforeenter* method is called
+* **enter** - event fired *before* the *enter* method is called
+* **entered** - event fired *after* the *enter* method is called
+* **update** - event fired *before* the *update* method is called
+* **updated** - event fired *after* the *update* method is called
+* **leave** - event fired *before* the *leave* method is called
+* **left** - event fired *after* the *leave* method is called
 
 ### Error
 
