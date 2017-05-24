@@ -1,5 +1,12 @@
 # journey
-Javascript router.
+
+Journey is a client-side Javascript router.
+
+When developing a Single-Page application, we need to display different views depending on certain criteria. The most common way is to use the URL to determine which view to show. 
+
+If the url is 'http://host/clients' we show the *Clients.js* view. If the url is 'http://host/producs' we show the *Products.js* view etc.
+
+Journey is aclient-side router that performs the mapping between URL paths and views. Technically Journey maps a URL path to a function which is called when the URL matches the mapped path. Wether the invoked function displays a view or perform another operation is up to the developer, but in general we will display a view.
 
 This router is based on [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some added features such as routing events and hash support.
 
@@ -12,12 +19,32 @@ If you are new to developing Single Page Applications you can read through the [
 ## Setup
 Download a [Journey release](https://github.com/journey-js/journey/releases) and include the file *journey.js* in your application.
 
-To kickstart a project use [Journey Template](TODO) which provides a build environment for Journey.
+To kickstart a project use [Journey Template](TODO) which provides a build environment based on ES6 modules.
 
 ## Basic Usage
 Journey has the same API as  [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some extras.
 
+To define a route, we add a mapping between URL path eg. *'/clients'* and a function that is called when the URL matches the mapping.
+
 Let's define a minimal route for our application:
+
+```js
+import journey from "journey.js";
+
+journey.add( '/home', {
+
+    enter: function ( route, previousRoute ) {
+        // enter() is invoked when the URL becomes http://hostname/home
+
+        // We can perform any custom logic in this method
+
+    }
+});
+```
+
+In the above example, we defined a route by mapping the path */home* to an object with a *enter* method that is called when the URL changes to *http://hostname/home*.
+
+Let's print some text in the *enter* method.
 
 ```js
 import journey from "journey.js";
@@ -35,11 +62,7 @@ journey.add( '/home', {
 });
 ```
 
-In the snippet above we map the url '/home' to a function, 'enter', that is invoked when the URL becomes http://hostname/home.
-
-Inside the 'enter' method we then render a view (just a string "Hello World!") in the browser.
-
-Below we use Ractive to render "Hello World!". Journey also provides the "leave" method which is called when navigating to a different route.
+Below we have the same route, but this time we use a UI library, [Ractive]("TODOO"), to render "Hello World!". Journey also provides a "leave" method that is called when navigating to a different route.
 
 ```js
 import journey from "journey.js";
@@ -62,7 +85,7 @@ journey.add( '/home', {
         route.view.teardown();
     }
  ```
-  
+
 ## Asynrcronous route transitions through promises
 If we need to perform asynchrounous tasks when entering or leaving a route we can return a promise from the method. If a promise is returned from either *enter* or *leave*, Journey will wait until the promise resolves, before calling the next route.
 
@@ -418,21 +441,59 @@ This approach requires more boilerplate code, however if for some reason we need
 **Note:** when using hash based urls, you generally don't have to be concerned with this since the hash routing does not change the url paths.
 
 ## API
-#### journey.add(route, options)
-	route: string
+#### journey.add(path, options)
+
+	path: string
+
 	options: {
-		enter: function() {
-        	
+
+		enter: function(route, prevRoute, options) {
+
         },
-        
-       leave: function() {
-       }
+
+        leave: function(route, nextRoute, options) {
+
+        }
+
+        beforeenter: function(route, options) {
+
+        }
+
+        update: function(route, options) {
+
+        }
+    }
+
+#### enter: function(route, prevRoute, options)
+
+    route / prevRoute: {
+
+    	params - any mapped URL parameters as a object of key/value pairs
+
+        query - the URL query string parsed into an object of key/value pairs
+
+        hash - the URL hash string
+
+        isInitial - will be true if this is the first route we visit, false otherwise
+
+    	scrollX - the scrollX position of the view. We can use this value when navigating back to the view
+        to restore the scrollbar.
+                  default: 0
+
+        scrollY - the scrollY position of the view. We can use this value when navigating back to the view
+        to restore the scrollbar.
+                  default: 0
+    }
+
+    options: {
+    	target: the target provided through journey.start( { target: "#main" } )
+        sartOptions: copy of the options given to journey.start( options )
     }
 
 #### journey.start(options)
 
 	journey.start({
-    
+
     	debug - whether to log debug statements to the console. default: true
     
     	target - set a default target (element ID or CSS selector) where views should be rendered to. This 
