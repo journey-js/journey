@@ -465,6 +465,7 @@ This approach requires more boilerplate code, however if for some reason we need
     }
 
 #### enter: function(route, prevRoute, options)
+arguments applies to *leave*, *beforeenter* and *update*
 
     route / prevRoute / nextRoute: {
 
