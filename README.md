@@ -466,7 +466,7 @@ This approach requires more boilerplate code, however if for some reason we need
 
 #### enter: function(route, prevRoute, options)
 
-    route / prevRoute: {
+    route / prevRoute / nextRoute: {
 
     	params - any mapped URL parameters as a object of key/value pairs
 
