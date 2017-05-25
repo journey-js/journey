@@ -440,6 +440,51 @@ This approach requires more boilerplate code, however if for some reason we need
 
 **Note:** when using hash based urls, you generally don't have to be concerned with this since the hash routing does not change the url paths.
 
+## Hash based routing
+Journey by default uses [HTML5 PushState](TODO) so performing a route change will alter the URL path:
+
+For example, given our application is hosted at:
+```
+http://host/ 
+```
+
+executing
+```js
+journey.goto("/clients");
+```
+
+changes the URL to:
+
+```
+http://host/clients
+```
+
+PushState assumes that the server can handle this url. In other words when a user refreshes the browser the url: http://host/clients should still serve up our application. This is generally done on the server by setting up a mapping so that all requests (/*) returns our application *index.html* page content.
+
+Note: REST requests will have a more specific subpath mapped so that Ajax calls can return our data and not the *index.html* content.
+
+An alternative (and simpler approach) to pushState is to use it's older cousin - *hash based routing*.
+
+With hash based routing, only the hash part of the URL is changed. Browsers do not send the hash part of a URL to the server, so the server only has to be configured to handle a single application URL.
+
+For example, given our application is hosted at:
+```
+http://host/ 
+```
+
+When navigating to #clients, the URL is updated to:
+
+```
+http://host/#clients
+```
+
+If the user refreshes the browser, the server will receive the URL:
+```
+http://host/
+```
+
+which is still the original URL our server is configured to serve. With *hash based routing* there is no need to configure the server to handle different URLs.
+
 ## API
 #### journey.add(path, options)
 
@@ -479,7 +524,7 @@ journey.add( '/clients', { enter: function(route, prevRoute, options) {
 #### enter: function(route, prevRoute, options)
 Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter* and *update*.Also note: *route, prevRoute and nextRoute* are all route objects.
 
-```js
+```
 route: {
 
 	params(object): any mapped URL parameters as a object of key/value pairs.
@@ -514,6 +559,7 @@ options: {
         target: null
     }
 }
+```
     
 ```js
 // example
@@ -533,35 +579,36 @@ journey.add( '/clients', { enter: function(route, prevRoute, options) {
 
 #### journey.start(options)
 
-```js
+```
 options {
 
 	debug (boolean): whether to log debug statements to the console. default: true
     
 	target (string): set a default target (element ID or CSS selector) where views should be rendered to. This 
-        		 property is passed to 'enter', 'leave' and 'update' methods to be used during view 
-                 construction. 
-                 default: null
+    property is passed to 'enter', 'leave' and 'update' methods to be used during view 
+    construction. 
+    default: null
     
 	fallback (string): use this route if no route is found for a given path. default: null
     
 	base (string): a path that is prefixed to routes. Useful when using HTML5 pushState and where multiple 
-        	   applications are hosted on separate "context paths". default: ''
+    applications are hosted on separate "context paths". default: ''
 
 	useHash (boolean): specify whether the application should use hash based routing (true) or HTML5 
-        		  pushState (false). Note: HTML5 pushState and onpopstate will still be used as the 
-                  history mechanism (if supported by the browser) and not 'onhashchange'. default: false
+    pushState (false). Note: HTML5 pushState and onpopstate will still be used as the 
+    history mechanism (if supported by the browser) and not 'onhashchange'. 
+    default: false
 	
 	useOnHashChange (boolean): if true, forces Journey to use the browser **onhashchange** event, even if 
-        				  HTML5 pushState is supported. Mostly used for testing purposes. default false
-
-	hash (string): specifies the value of the hash string eg. '#' or '#!'. default:  '#'
+    HTML5 pushState is supported. Mostly used for testing purposes. default false
+    hash (string): specifies the value of the hash string eg. '#' or '#!'. 
+    default:  '#'
 	
 	defaultRoute (string): when the application is started and the url contains no route path or hash value
-        			  (eg. http//:host/ or http://host#) set the url to the defaultRoute, in effect loading
-                      this route if none is provided. This differs from the 'fallback' option which is used
-                      if a specific route cannot be found. 
-                      default: null
+    (eg. http//:host/ or http://host#) set the url to the defaultRoute, in effect loading
+    this route if none is provided. This differs from the 'fallback' option which is used
+    if a specific route cannot be found.
+    default: null
 };
 ```
 
@@ -572,17 +619,15 @@ journey.start({ target: '#main' });
 
 #### journey.goto( path, options ):
 
-```js
-path (string): the	route to navigate to eg. "/clients"
+<pre>
+<b>path</b> (string): the route to navigate to eg. '/clients'<br>
+<b>options</b> : {
+	<b>invisible</b> (boolean): if true, the URL will not be updated when navigating to the specified route.<br>
+   	<b>forceReload</b> (boolean): by default Journey will only perform a route if the URL change eg navigating
+to the current route, won't reload the view. forceReload can override this behavior and 
+force a route to be loaded again, even if the URL does not change.
+}</pre>
 
-options : {
-   
-	invisible (boolean): if true, the URL will not be updated when navigating to the specified route.
-
-	forceReload (boolean): by default Journey will only perform a route if the URL change eg navigating
-				to the current route, won't reload the view. forceReload can override this behavior and 
-				force a route to be loaded again, even if the URL does not change.
-}
 
 ```js
 // example
