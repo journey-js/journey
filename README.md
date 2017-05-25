@@ -464,10 +464,18 @@ This approach requires more boilerplate code, however if for some reason we need
         }
     }
 
-#### enter: function(route, prevRoute, options)
-arguments applies to *leave*, *beforeenter* and *update*
+```js
+// example
+journey.add( '/clients', { enter: function(route, prevRoute, options) {
+	let target = options.target;
+	route.view = ...    
+}});
+```
 
-    route / prevRoute / nextRoute: {
+#### enter: function(route, prevRoute, options)
+Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter* and *update*.Also note: *route, prevRoute and nextRoute* are all route objects.
+
+    route: {
 
     	params - any mapped URL parameters as a object of key/value pairs
 
@@ -484,16 +492,32 @@ arguments applies to *leave*, *beforeenter* and *update*
         scrollY - the scrollY position of the view. We can use this value when navigating back to the view
         to restore the scrollbar.
                   default: 0
-    }
+    };
 
     options: {
-    	target: the target provided through journey.start( { target: "#main" } )
+    	target: the target provided through journey.start( { target: '#main' } )
         sartOptions: copy of the options given to journey.start( options )
     }
+    
+```js
+// example
+journey.add( '/clients', { enter: function(route, prevRoute, options) {
+
+	let target = options.target;
+    
+    let id = route.query.id; // journey.add('/clients/:id, ...) -> http://host/clients/3
+    
+    let priority = route.params.priority; // journey.add('/clents', ...) -> http://host/clients?priority=3
+    
+    // Set a view on the route for reference later on
+	route.view = ...    
+    
+}});
+```
 
 #### journey.start(options)
 
-	journey.start({
+	options {
 
     	debug - whether to log debug statements to the console. default: true
     
@@ -521,16 +545,27 @@ arguments applies to *leave*, *beforeenter* and *update*
                       this route if none is provided. This differs from the 'fallback' option which is used
                       if a specific route cannot be found. 
                       default: null
-    });
+    };
 
-journey.add(path, options);
+```js
+// example
+journey.start({ target: '#main' });
+```
 
-journey.add("/clients", {enter() {}};
+#### journey.goto(path, options);
+	
+	path: the route to navigate to eg. "/clients"
+    
+    options : {
+    
+    	invisible: true/false - if true, the URL will not be updated when navigating to the specified route.
 
-journey.goto(path, options);
-
-- path "string": the route to navigate to eg "/clients"
-- options {
-    invisible: true/false,
-    forceReload: true/false // We Journey won't reload the current view, but forceReload can override this behavior
+    	forceReload: true/false - by default Journey will only perform a route if the URL change eg navigating
+    			 to the current route, won't reload the view. forceReload can override this behavior and 
+                 force a route to be loaded again, even if the URL does not change.
 }
+
+```js
+// example
+journey.goto( '/clients', { invisible: true });
+```
