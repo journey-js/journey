@@ -553,9 +553,16 @@ journey.start({ target: '#main' });
 ```
 
 #### journey.goto(path, options);
-	
-	path: the route to navigate to eg. "/clients"
-    
+
+```js
+path (string) : the	 route to navigate to eg. "/clients"
+
+options (object): {
+
+}
+```
+	path (string) : the	 route to navigate to eg. "/clients"
+
     options : {
     
     	invisible: true/false - if true, the URL will not be updated when navigating to the specified route.
