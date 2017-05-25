@@ -443,61 +443,74 @@ This approach requires more boilerplate code, however if for some reason we need
 ## API
 #### journey.add(path, options)
 
-	path: string
 
-	options: {
+```js
+path (string): the path used to match this route to a given URL.
 
-		enter: function(route, prevRoute, options) {
+options: {
 
-        },
+	enter: function(route, prevRoute, options) {
 
-        leave: function(route, nextRoute, options) {
+	},
 
-        }
+	leave: function(route, nextRoute, options) {
 
-        beforeenter: function(route, options) {
+	},
 
-        }
+	beforeenter: function(route, options) {
 
-        update: function(route, options) {
+	},
 
-        }
-    }
+	update: function(route, options) {
+
+	}
+}
+```
 
 ```js
 // example
 journey.add( '/clients', { enter: function(route, prevRoute, options) {
 	let target = options.target;
-	route.view = ...    
+	route.view = document.createElement("div");
+    route.view.innerHTML = "Hello world";
 }});
 ```
 
 #### enter: function(route, prevRoute, options)
 Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter* and *update*.Also note: *route, prevRoute and nextRoute* are all route objects.
 
-    route: {
+```js
+route: {
 
-    	params - any mapped URL parameters as a object of key/value pairs
+	params(object): any mapped URL parameters as a object of key/value pairs.
+	default: {}
 
-        query - the URL query string parsed into an object of key/value pairs
+	query(object): the URL query string parsed into an object of key/value pairs.
+	default: {}
 
-        hash - the URL hash string
+	hash(string): the URL hash value.
+	default: ''
 
-        isInitial - will be true if this is the first route we visit, false otherwise
+	isInitial(boolean): will be true if this is the first route we visit, false otherwise
 
-    	scrollX - the scrollX position of the view. We can use this value when navigating back to the view
-        to restore the scrollbar.
-                  default: 0
+	scrollX(number): the scrollX position of the view. We can use this value when navigating back to the view 
+    to restore the scrollbar.
+    default: 0
 
-        scrollY - the scrollY position of the view. We can use this value when navigating back to the view
-        to restore the scrollbar.
-                  default: 0
-    };
+	scrollY(number): the scrollY position of the view. We can use this value when navigating back to the view
+    to restore the scrollbar.
+    default: 0
+                  
+	pathname(string): the path used when mapping this route eg. journey.add("/clients", ....);
+};
 
-    options: {
-    	target: the target provided through journey.start( { target: '#main' } )
-        sartOptions: copy of the options given to journey.start( options )
-    }
+options: {
+	target (string): the target provided through journey.start( { target: '#main' } ).
+	default: null
+        
+	sartOptions(object): copy of the options given to journey.start( options ).
+	default: {}
+}
     
 ```js
 // example
@@ -510,66 +523,62 @@ journey.add( '/clients', { enter: function(route, prevRoute, options) {
     let priority = route.params.priority; // journey.add('/clents', ...) -> http://host/clients?priority=3
     
     // Set a view on the route for reference later on
-	route.view = ...    
+	route.view = document.createElement("div");
     
 }});
 ```
 
 #### journey.start(options)
 
-	options {
+```js
+options {
 
-    	debug - whether to log debug statements to the console. default: true
+	debug (boolean): whether to log debug statements to the console. default: true
     
-    	target - set a default target (element ID or CSS selector) where views should be rendered to. This 
+	target (string): set a default target (element ID or CSS selector) where views should be rendered to. This 
         		 property is passed to 'enter', 'leave' and 'update' methods to be used during view 
                  construction. 
                  default: null
     
-		fallback - use this route if no route is found for a given path. default: null
+	fallback (string): use this route if no route is found for a given path. default: null
     
-    	base - a path that is prefixed to routes. Useful when using HTML5 pushState and where multiple 
+	base (string): a path that is prefixed to routes. Useful when using HTML5 pushState and where multiple 
         	   applications are hosted on separate "context paths". default: ''
 
-		useHash - specify whether the application should use hash based routing (true) or HTML5 
+	useHash (boolean): specify whether the application should use hash based routing (true) or HTML5 
         		  pushState (false). Note: HTML5 pushState and onpopstate will still be used as the 
                   history mechanism (if supported by the browser) and not 'onhashchange'. default: false
 	
-		useOnHashChange - if true, forces Journey to use the browser **onhashchange** event, even if 
+	useOnHashChange (boolean): if true, forces Journey to use the browser **onhashchange** event, even if 
         				  HTML5 pushState is supported. Mostly used for testing purposes. default false
 
-		hash - specifies the value of the hash string eg. '#' or '#!'. default:  '#'
+	hash (string): specifies the value of the hash string eg. '#' or '#!'. default:  '#'
 	
-		defaultRoute: when the application is started and the url contains no route path or hash value
+	defaultRoute (string): when the application is started and the url contains no route path or hash value
         			  (eg. http//:host/ or http://host#) set the url to the defaultRoute, in effect loading
                       this route if none is provided. This differs from the 'fallback' option which is used
                       if a specific route cannot be found. 
                       default: null
-    };
+};
+```
 
 ```js
 // example
 journey.start({ target: '#main' });
 ```
 
-#### journey.goto(path, options);
+#### journey.goto( path, options ):
 
 ```js
-path (string) : the	 route to navigate to eg. "/clients"
+path (string): the	route to navigate to eg. "/clients"
 
-options (object): {
+options : {
+   
+	invisible (boolean): if true, the URL will not be updated when navigating to the specified route.
 
-}
-```
-	path (string) : the	 route to navigate to eg. "/clients"
-
-    options : {
-    
-    	invisible: true/false - if true, the URL will not be updated when navigating to the specified route.
-
-    	forceReload: true/false - by default Journey will only perform a route if the URL change eg navigating
-    			 to the current route, won't reload the view. forceReload can override this behavior and 
-                 force a route to be loaded again, even if the URL does not change.
+	forceReload (boolean): by default Journey will only perform a route if the URL change eg navigating
+				to the current route, won't reload the view. forceReload can override this behavior and 
+				force a route to be loaded again, even if the URL does not change.
 }
 
 ```js
