@@ -509,7 +509,10 @@ options: {
 	default: null
         
 	sartOptions(object): copy of the options given to journey.start( options ).
-	default: {}
+	default: {
+    	debug: true,
+        target: null
+    }
 }
     
 ```js
