@@ -62,7 +62,7 @@ let fsPath = require( 'path' );
 
 // Define variables for src and build folders
 const buildFolder = 'build';
-const srcFolder = path.join('web', src');
+const srcFolder = path.join('web', 'src');
 
 // Watch files for changes and copy changed files to the build folder
 watchAssets();
