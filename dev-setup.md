@@ -31,15 +31,20 @@ We will also setup a distribution build so we can ship production code when we a
 
 Here is the layout we will use for our web app:
 
+```
 -- build
 -- dist
 -- src
     |-- css
     |-- js
          |-- app // our web application
+              |-- myapp.js // our application entry point that is referenced 
+              			   // from index.html: <script src="js/app/myapp.js">
          |-- lib // Racive, jQuery etc.
     |-- fonts
     |-- images
+    index.html
+```
 
 ## build.js
 
