@@ -2,7 +2,7 @@
 
 Journey is a client-side Javascript router, used when building Single Page Applications.
 
-If you are new to developing Single Page Applications (SPA) you can read through the [Overview](overview.md) section.
+If you are new to developing Single Page Applications (SPA) you can read through the [Overview](overview.md) section. To setup your development environment, see the [Development Setup](dev-setup.md) section.
 
 When developing a Single Page application, we need to display different views depending on certain criteria. The most common way is to use the URL to determine which view to show. 
 
@@ -19,7 +19,7 @@ A live demo can be viewed at [https://journey-js.github.io/journey-examples/](ht
 ## Setup
 Download a [Journey release](https://github.com/journey-js/journey/releases) and include the file *journey.js* in your application.
 
-To kickstart a project use [Journey Template](TODO) which provides a build environment based on ES6 modules.
+To kickstart a project use [Journey Template](TODO) which provides a build environment based on ES6 modules. Also see the section [Development Setup](dev-setup.md).
 
 ## Basic Usage
 Journey has the same API as  [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some extras.
