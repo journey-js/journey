@@ -1,5 +1,12 @@
 # journey
-Javascript router.
+
+Journey is a client-side Javascript router.
+
+When developing a Single-Page application, we need to display different views depending on certain criteria. The most common way is to use the URL to determine which view to show. 
+
+If the url is 'http://host/clients' we show the *Clients.js* view. If the url is 'http://host/producs' we show the *Products.js* view etc.
+
+Journey is aclient-side router that performs the mapping between URL paths and views. Technically Journey maps a URL path to a function which is called when the URL matches the mapped path. Wether the invoked function displays a view or perform another operation is up to the developer, but in general we will display a view.
 
 This router is based on [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some added features such as routing events and hash support.
 
@@ -9,15 +16,35 @@ A live demo can be viewed at [https://journey-js.github.io/journey-examples/](ht
 
 If you are new to developing Single Page Applications you can read through the [Overview](overview.md) section.
 
-### Setup
+## Setup
 Download a [Journey release](https://github.com/journey-js/journey/releases) and include the file *journey.js* in your application.
 
-To kickstart a project use [Journey Template](TODO) which provides a build environment for Journey.
+To kickstart a project use [Journey Template](TODO) which provides a build environment based on ES6 modules.
 
-### Basic Usage
+## Basic Usage
 Journey has the same API as  [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some extras.
 
+To define a route, we add a mapping between URL path eg. *'/clients'* and a function that is called when the URL matches the mapping.
+
 Let's define a minimal route for our application:
+
+```js
+import journey from "journey.js";
+
+journey.add( '/home', {
+
+    enter: function ( route, previousRoute ) {
+        // enter() is invoked when the URL becomes http://hostname/home
+
+        // We can perform any custom logic in this method
+
+    }
+});
+```
+
+In the above example, we defined a route by mapping the path */home* to an object with a *enter* method that is called when the URL changes to *http://hostname/home*.
+
+Let's print some text in the *enter* method.
 
 ```js
 import journey from "journey.js";
@@ -35,11 +62,7 @@ journey.add( '/home', {
 });
 ```
 
-In the snippet above we map the url '/home' to a function, 'enter', that is invoked when the URL becomes http://hostname/home.
-
-Inside the 'enter' method we then render a view (just a string "Hello World!") in the browser.
-
-Below we use Ractive to render "Hello World!". Journey also provides the "leave" method which is called when navigating to a different route.
+Below we have the same route, but this time we use a UI library, [Ractive]("TODOO"), to render "Hello World!". Journey also provides a "leave" method that is called when navigating to a different route.
 
 ```js
 import journey from "journey.js";
@@ -62,8 +85,8 @@ journey.add( '/home', {
         route.view.teardown();
     }
  ```
-  
-### Asynrcronous route transitions through promises
+
+## Asynrcronous route transitions through promises
 If we need to perform asynchrounous tasks when entering or leaving a route we can return a promise from the method. If a promise is returned from either *enter* or *leave*, Journey will wait until the promise resolves, before calling the next route.
 
 When navigating to a new route, the URL in the address bar changes to that of the new route immediately, but the new route's *enter* handler is not called until the previous route *leave* promise resolves.
@@ -80,7 +103,8 @@ For example:
 let async {
 
     leave: function(route, prevRoute) {
-        let promise = view.teardown(); // Assuming teardown returns a promise which resolves once the fade out effect is completed.
+        let promise = view.teardown(); // Assuming teardown returns a promise which resolves once the fade out 
+				       // effect is completed.
         return promise;
     }
 }
@@ -88,7 +112,7 @@ let async {
 
 Note: it isn't very common to return a promise from the *enter* method.
  
-### Example
+## Example
 
 With a basic understanding of Journey under our belts, let's look at a more practical example where we display a list of clients.
 
@@ -197,7 +221,7 @@ journey.start( {
 
 Navigating to the url: *http:localhost/clients will load our route
 
-### Beforeenter
+## Beforeenter
 Great work so far!
 
 However, in our **Clients.js** script we have hardcoded a list of clients to display. In practice we will most likely load the clients from a server with a database storing the clients.
@@ -239,7 +263,7 @@ When navigating to */clients* we fetch the clients and then display the view. In
 
 One issue with loading data in the *enter* metehod is that Journey will not invoke enter of the next route until the *leave* method of the previous route completes. So if the previous route returns a promise in *leave* that performs some asynchronous work, the Ajax call in the next route will not start until the previous route completes it's work. Ideally the Ajax call should start the moment we navigate to a new route, regardless if *leave* has work to perform.
 
-Enter the method **beforeenter**. This method caters for exactly the above scenario. *Beforeenter* is called immediately after the previous route *leave* method is called, regardless if a promise is returned or not.
+Enter the method **beforeenter**. This method caters for exactly the above scenario. *beforeenter* is called immediately after the previous route *leave* method is called, regardless if a promise is returned or not.
 
 Like the other methods, *beforeenter* can return a promise (generally it  will) and Journey will wait until this promise resolves before invoking *enter*.
 
@@ -268,9 +292,9 @@ let clients = {
 }
 ```
 
-### Navigate Programmatically
+## Navigate Programmatically
 
-We can navigate to another route programmatically with the method *journey.goto(path);
+We can navigate to another route programmatically with the method *journey.goto( path, options );*
 
 For example:
 ```js
@@ -295,24 +319,317 @@ let clients {
 }
 ```
 
-### Events
+## Events
+Journey fires the following events when changing routes:
+* **beforeenter** - event fired _before_ the *beforeenter* method is called
+* **beforeenterComplete** - event fired *after* the *beforeenter* method is called
+* **enter** - event fired *before* the *enter* method is called
+* **entered** - event fired *after* the *enter* method is called
+* **update** - event fired *before* the *update* method is called
+* **updated** - event fired *after* the *update* method is called
+* **leave** - event fired *before* the *leave* method is called
+* **left** - event fired *after* the *leave* method is called
+* * **error** - whenever journey throws an error the "error" event is raised
 
-### Error
+We can listen to the events through the *journey.on( eventName, callback )* method.
 
-### API
+For example:
+import journey from "lib/journey.js";
+import loadIndicator from "lib/loadIndicator.js";
 
-journey.start({
+```js
+journey.on("enter", function(event) {
+	// event.from 	              : the route we are leaving
+    // event.to   	              : the route we are entering
+    // event.options              : the same options that was passed to the enter function
+    // event.options.startOptions : the options that was passed to journey.start(options);
     
+	//When entering a route, let's show  a loading indicator 
+	loadIndicator.show();
 });
 
-journey.add(path, options);
+journey.on("entered", function(event) {
+	// After we entered we hide the loading indicator
+	loadIndicator.hide();
+});
 
-journey.add("/clients", {enter() {}};
+```
 
-journey.goto(path, options);
+## Error
+Journey raises an *error* event if something goes wrong navigating to a route, wether the error occurs in Journey itself or the route.
 
-- path "string": the route to navigate to eg "/clients"
-- options {
-    invisible: true/false,
-    forceReload: true/false // We Journey won't reload the current view, but forceReload can override this behavior
+Here is an example:
+
+var options = { error: err, event: event, from: from, to: to, route: route };
+
+```js
+journey.on("error", function(event) {
+
+	// event.event 	              : the name of the event when the rror occurred eg. "enter", "entered", 
+	// 				"leave" etc.
+	// event.from 	              : the route we are leaving
+	// event.to   	              : the route we are entering
+	// event.route   	      : the current route, which is either event.to or event.from depending
+	//				on the type of event during which the error occurred
+	// event.error		      : the Javascript error object
+
+});
+```
+
+## Base path
+
+Often  multiple applications are hosted on a server where each application is mounted on a different *root* or *context path*.
+
+For example:
+
+	http://host/appOne
+    http://host/appTwo
+
+HTML5 PushState allows us to route by changing the url paths.
+
+	given the url
+	http://host/appOne
+    
+    routing to relative route "clients"
+    will result in 
+    http://host/appOne/clients
+    
+    routing to an absolute url "/clients" (absolute paths are prefixed with a '/')
+   	results in
+   	http://host/clients
+
+If our application is hosted on the context path */appOne*, we should not route beyond that path in the url. Otherwise the url will not refer to our application.
+
+In other words the url
+
+	http://host/appOne/clients
+
+links to clients inside the application *appOne*, while
+
+	http://host/clients
+    
+links to a different application called *clients*.
+
+In order to function properly in environments hosting multiple applications on the same host, Journey provides a **base** property that can be set in *journey.start( { base: '/appOne'} )*
+
+With our **base** propety set, Journey will automatically prefix all routes with the **base** value. For example:
+
+```js
+// given our application is hosted at: http://host/myapp/
+
+// we set the base path to '/myapp'
+journey.start({ base: '/myapp' });
+
+journey.goto( '/clients' ); // note: an absolute path
+
+// becomes: http://host/myapp/clients // client automatically prefixed with /myapp
+```
+
+Alternatively we can skip the  **base** property and provide the **base** path in our routes instead.
+
+For eample:
+```js
+// given our application is hosted at: http://host/myapp/
+
+journey.goto( '/myapp/clients' ); // we specify the base path in the route
+
+// becomes: http://host/myapp/clients
+```
+
+This approach requires more boilerplate code, however if for some reason we need to specify routes that execute on different applications (eg one route on '/appone', another route on '/apptwo'), this might be the only option avaialable to us.
+
+**Note:** when using hash based urls, you generally don't have to be concerned with this since the hash routing does not change the url paths.
+
+## Hash based routing
+Journey by default uses [HTML5 PushState](TODO) so performing a route change will alter the URL path:
+
+For example, given our application is hosted at:
+```
+http://host/ 
+```
+
+executing
+```js
+journey.goto("/clients");
+```
+
+changes the URL to:
+
+```
+http://host/clients
+```
+
+PushState assumes that the server can handle this url. In other words when a user refreshes the browser the url: http://host/clients should still serve up our application. This is generally done on the server by setting up a mapping so that all requests (/*) returns our application *index.html* page content.
+
+Note: REST requests will have a more specific subpath mapped so that Ajax calls can return our data and not the *index.html* content.
+
+An alternative (and simpler approach) to pushState is to use it's older cousin - *hash based routing*.
+
+With hash based routing, only the hash part of the URL is changed. Browsers do not send the hash part of a URL to the server, so the server only has to be configured to handle a single application URL.
+
+For example, given our application is hosted at:
+```
+http://host/ 
+```
+
+When navigating to #clients, the URL is updated to:
+
+```
+http://host/#clients
+```
+
+If the user refreshes the browser, the server will receive the URL:
+```
+http://host/
+```
+
+which is still the original URL our server is configured to serve. With *hash based routing* there is no need to configure the server to handle different URLs.
+
+## API
+#### journey.add(path, options)
+
+
+```js
+path (string): the path used to match this route to a given URL.
+
+options: {
+
+	enter: function(route, prevRoute, options) {
+
+	},
+
+	leave: function(route, nextRoute, options) {
+
+	},
+
+	beforeenter: function(route, options) {
+
+	},
+
+	update: function(route, options) {
+
+	}
 }
+```
+
+```js
+// example
+journey.add( '/clients', { enter: function(route, prevRoute, options) {
+	let target = options.target;
+	route.view = document.createElement("div");
+    route.view.innerHTML = "Hello world";
+}});
+```
+
+#### enter: function(route, prevRoute, options)
+Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter* and *update*.Also note: *route, prevRoute and nextRoute* are all route objects.
+
+```
+route: {
+
+	params(object): any mapped URL parameters as a object of key/value pairs.
+	default: {}
+
+	query(object): the URL query string parsed into an object of key/value pairs.
+	default: {}
+
+	hash(string): the URL hash value.
+	default: ''
+
+	isInitial(boolean): will be true if this is the first route we visit, false otherwise
+
+	scrollX(number): the scrollX position of the view. We can use this value when navigating back to the view 
+    to restore the scrollbar.
+    default: 0
+
+	scrollY(number): the scrollY position of the view. We can use this value when navigating back to the view
+    to restore the scrollbar.
+    default: 0
+                  
+	pathname(string): the path used when mapping this route eg. journey.add("/clients", ....);
+};
+
+options: {
+	target (string): the target provided through journey.start( { target: '#main' } ).
+	default: null
+        
+	sartOptions(object): copy of the options given to journey.start( options ).
+	default: {
+    	debug: true,
+        target: null
+    }
+}
+```
+    
+```js
+// example
+journey.add( '/clients', { enter: function(route, prevRoute, options) {
+
+	let target = options.target;
+    
+    let id = route.query.id; // journey.add('/clients/:id, ...) -> http://host/clients/3
+    
+    let priority = route.params.priority; // journey.add('/clents', ...) -> http://host/clients?priority=3
+    
+    // Set a view on the route for reference later on
+	route.view = document.createElement("div");
+    
+}});
+```
+
+#### journey.start(options)
+
+```
+options {
+
+	debug (boolean): whether to log debug statements to the console. default: true
+    
+	target (string): set a default target (element ID or CSS selector) where views should be rendered to. This 
+    property is passed to 'enter', 'leave' and 'update' methods to be used during view 
+    construction. 
+    default: null
+    
+	fallback (string): use this route if no route is found for a given path. default: null
+    
+	base (string): a path that is prefixed to routes. Useful when using HTML5 pushState and where multiple 
+    applications are hosted on separate "context paths". default: ''
+
+	useHash (boolean): specify whether the application should use hash based routing (true) or HTML5 
+    pushState (false). Note: HTML5 pushState and onpopstate will still be used as the 
+    history mechanism (if supported by the browser) and not 'onhashchange'. 
+    default: false
+	
+	useOnHashChange (boolean): if true, forces Journey to use the browser **onhashchange** event, even if 
+    HTML5 pushState is supported. Mostly used for testing purposes. default false
+    hash (string): specifies the value of the hash string eg. '#' or '#!'. 
+    default:  '#'
+	
+	defaultRoute (string): when the application is started and the url contains no route path or hash value
+    (eg. http//:host/ or http://host#) set the url to the defaultRoute, in effect loading
+    this route if none is provided. This differs from the 'fallback' option which is used
+    if a specific route cannot be found.
+    default: null
+};
+```
+
+```js
+// example
+journey.start({ target: '#main' });
+```
+
+#### journey.goto( path, options ):
+
+<pre>
+<b>path</b> (string): the route to navigate to eg. '/clients'<br>
+<b>options</b> : {
+	<b>invisible</b> (boolean): if true, the URL will not be updated when navigating to the specified route.<br>
+   	<b>forceReload</b> (boolean): by default Journey will only perform a route if the URL change eg navigating
+to the current route, won't reload the view. forceReload can override this behavior and 
+force a route to be loaded again, even if the URL does not change.
+}</pre>
+
+
+```js
+// example
+journey.goto( '/clients', { invisible: true });
+```
