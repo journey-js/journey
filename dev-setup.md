@@ -102,6 +102,9 @@ function writeToDest( path ) {
 npm i
 
 ## rollup.config.js
+
+We use Rollup to bundle our application ES6 Modules into an output format that the browser can understand. We will use [iife]() as the output format.
+
 ```js
 var buble = require( 'rollup-plugin-buble' );
 const pkg = require( './package.json' );
