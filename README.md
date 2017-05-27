@@ -1,8 +1,10 @@
 # journey
 
-Journey is a client-side Javascript router.
+Journey is a client-side Javascript router, used when building Single Page Applications.
 
-When developing a Single-Page application, we need to display different views depending on certain criteria. The most common way is to use the URL to determine which view to show. 
+If you are new to developing Single Page Applications (SPA) you can read through the [Overview](overview.md) section.
+
+When developing a Single Page application, we need to display different views depending on certain criteria. The most common way is to use the URL to determine which view to show. 
 
 If the url is 'http://host/clients' we show the *Clients.js* view. If the url is 'http://host/producs' we show the *Products.js* view etc.
 
@@ -13,8 +15,6 @@ This router is based on [Roadtrip](https://github.com/Rich-Harris/roadtrip) with
 Note: Journey does not support [Nested Routes](). If you need a more sopysticated router checkout [https://github.com/tildeio/router.js/](https://github.com/tildeio/router.js/).
 
 A live demo can be viewed at [https://journey-js.github.io/journey-examples/](https://journey-js.github.io/journey-examples/).
-
-If you are new to developing Single Page Applications you can read through the [Overview](overview.md) section.
 
 ## Setup
 Download a [Journey release](https://github.com/journey-js/journey/releases) and include the file *journey.js* in your application.
