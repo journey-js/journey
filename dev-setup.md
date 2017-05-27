@@ -62,7 +62,7 @@ let fsPath = require( 'path' );
 
 // Define variables for src and build folders
 const buildFolder = 'build';
-const srcFolder = path.join('web', 'src');
+const srcFolder = 'src';
 
 // Watch files for changes and copy changed files to the build folder
 watchAssets();
@@ -102,8 +102,34 @@ function writeToDest( path ) {
 npm i
 
 ## rollup.config.js
-
 ```js
+var buble = require( 'rollup-plugin-buble' );
+const pkg = require( './package.json' );
+
+module.exports = {
+	entry: 'src/js/app.js', // myApp.js is where we bootstrap our application. app.js will be referenced 
+				// from an index.html <script> tag
+	plugins: [
+
+		buble( {
+			exclude: [ '**/*.html' ],
+			transforms: {
+				dangerousForOf: true
+			}
+		} ),
+	],
+	
+	moduleName: 'myApp',
+
+	targets: [
+		{
+			dest: pkg.module,
+			format: 'iife',
+			sourceMap: true
+		}
+	]
+};
+
 
 ```
 
