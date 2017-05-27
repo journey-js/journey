@@ -16,7 +16,7 @@ let watchHistory = {
 	start( options = {} ) {
 
 		watchHistory.useOnHashChange = watchHistory.shouldUseOnHashChange(options.useOnHashChange || false);
-		watchHistory.listener = options.listener || watchHistory.noop;
+		watchHistory.listener = watchHistory.noop;
 
 		watchHistory.startListening();
 	},
