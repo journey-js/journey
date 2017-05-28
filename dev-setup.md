@@ -27,13 +27,13 @@ We will  also use RollUp' watcher to automaticaly bundle the source when we make
 
 We will also setup a distribution build so we can ship production code when we are need to release. The distribution build minimizes the IIFE and CSS as well as version the files, so when we make updates to our application in the future, the browser is forced to download our new version, instead of serving the old version from it's cache.
 
-## Project structure
+### Project structure
 
 Here is the layout we will use for our web app:
 
 ```
--- build
--- dist
+-- build    // This is where our development environment will be located
+-- dist     // TYhis is where our production build will be located
 -- src
     |-- css
     |-- js
@@ -46,10 +46,10 @@ Here is the layout we will use for our web app:
     index.html
 ```
 
-## build.js
+### build.js
+We will use two separate Node scripts for our project, one to run an development environment, *build.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you feel like it.
 
-build.js is our build script that we use to start our development environment and build distributions with. We will setup the minimum
-we need to get the job done, not neccessarily best practices.
+build.js is our build script that we use to start our development environment and build distributions with. We will setup the minimum we need to get the job done and not neccessarily best practices.
 
 We have a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
 
@@ -102,13 +102,22 @@ function writeToDest( path ) {
 
 ```
 
-## package.json
+### dist.js
+
+
+### package.json
 
 npm i
 
-## rollup.config.js
+### index.html
+Here is a minimal *index.html* to serve up our application.
+```js
 
-We use Rollup to bundle our application ES6 Modules into an output format that the browser can understand. We will use [iife]() as the output format.
+```
+
+### rollup.config.js
+
+Below is our Rollup configuration to bundle our ES6 Modules into an output format that the browser can understand. We will use [iife]() as the output format. We also setup the [Buble]() plugin to convert ES6 syntax (classes, arrow functions) into ES5 syntax.
 
 ```js
 var buble = require( 'rollup-plugin-buble' );
@@ -131,7 +140,7 @@ module.exports = {
 
 	targets: [
 		{
-			dest: pkg.module,
+			dest: 'build/js/app/myapp.js',
 			format: 'iife',
 			sourceMap: true
 		}
