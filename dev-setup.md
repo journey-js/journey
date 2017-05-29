@@ -47,7 +47,7 @@ Here is the layout we will use for our web app:
 ```
 
 ### build.js
-We will use two separate Node scripts for our project, one to run an development environment, *build.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you feel like it.
+We will use two separate Node scripts for our project, one to run an development environment, *build.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
 
 build.js is our build script that we use to start our development environment and build distributions with. We will setup the minimum we need to get the job done and not neccessarily best practices.
 
@@ -75,8 +75,9 @@ watchAssets();
 // Setup a watcher to copy changed files to the biuld folder
 function watchAssets() {
 
-	chokidar.watch( srcFolder + '/**/*', { ignored: [ '' ] } ).on( 'all', ( event, path ) => {
+	chokidar.watch( srcFolder + '/**/*' ).on( 'all', ( event, path ) => {
 
+		// No need to copy directories
 		if ( ! fs.lstatSync( path ).isDirectory() ) {
 
 			writeToDest( path );
@@ -87,17 +88,15 @@ function watchAssets() {
 // Function to write given path to the build folder
 function writeToDest( path ) {
 
-	let srcStr = fsPath.normalize( srcFolder );
-	let buildStr = fsPath.normalize( buildFolder );
-	let buildPath = path.replace( srcStr, buildStr );
+	// Set buildPath by replacing 'src' str with 'build' str
+	let buildPath = buildFolder + path.slice(srcFolder.length);
 
 	let buildDir = fsPath.dirname( buildPath );
 	
 	// Ensure the build folder exists
-	fs.makeTreeSync( buildDir );
+	fs.ensureDirSync( buildDir );
 
-	var content = fs.readFileSync( path, 'binary' );
-	fs.writeFileSync( buildPath, content, 'binary' );
+	fs.copySync( path, buildPath );
 }
 
 ```
@@ -110,8 +109,30 @@ function writeToDest( path ) {
 npm i
 
 ### index.html
-Here is a minimal *index.html* to serve up our application.
-```js
+Here is a minimal *index.html* to serve up our application. The entry point is *js/app/myapp.js*.
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        <title>My App</title>
+        <link rel="stylesheet" type="text/css" href="css/site.css" />
+    
+    </head>
+    <body>
+        
+        <div id="menu">
+            <nav class="navbar navbar-default"></nav> <!-- A menu bar -->
+        </div>
+       
+        <div id="container"></div> <! -- Our views will be rendered here -->
+    </body>
+        
+    <script src="js/app/app.js" defer nomodule></script>
+</html>
+
+
 
 ```
 
