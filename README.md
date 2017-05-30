@@ -2,7 +2,11 @@
 
 Journey is a client-side Javascript router, used when building Single Page Applications.
 
-If you are new to developing Single Page Applications (SPA) you can read through the [Overview](overview.md) section. To setup your development environment, see the [Development Setup](dev-setup.md) section.
+If you are new to developing Single Page Applications (SPA) you can read through the [Overview](overview.md) section. 
+
+To setup a development environment, see the [Development Setup](dev-setup.md) section.
+
+To create a production ready distribution, see the [Distribution Setup](dist-setup.md) section.
 
 When developing a Single Page application, we need to display different views depending on certain criteria. The most common way is to use the URL to determine which view to show. 
 
