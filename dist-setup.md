@@ -2,9 +2,9 @@
 
 In this section e will look at setting up a development environment for writing Single Page Applications with ES6 Modules. 
 
-If you are looking to create a distribution for your application see [Development Setup](#dev-setup.md).
+If you are looking to create a distribution for your application see [Development Setup](dev-setup.md).
 
-If you would like an overview of Single Page Applications and ES6 Modules see [Overview[(#overview.md).
+If you would like an overview of Single Page Applications and ES6 Modules see [Overview](overview.md).
 
 There are a variety of solutions available such as [Rolleup](), [Webpack](), [Browserify[() etc. Here we will look at Rollup as I've found it the easiest to get started with.
 
