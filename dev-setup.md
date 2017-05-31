@@ -224,8 +224,50 @@ From our script we want the following:
 	 - popular libraries such as jQuery/Bootstrap etc. could already be cached by the browser from previous visits to other sites that served those same libraries. We don't have to bundle those libraries with out application, leading to a smaller bundle that can be downloaded (and thus launch) faster on the client browser.
 	 - every time we release a new version of our application, those CDN hosted libraries will now be available in the browser cache (except where we updated a library to a new version as well).
 
-
 ### package.json
+The ```package.json``` below lists all the node modules required to setup a *dev* and *production* environment.
 
-npm i
+```json
+{
+  "name": "My App",
+  "description": "My Application",
+  "version": "0.0.1",
+  "main": "dist/js/app/app.js",
+    
+  "devDependencies": {
+        "chokidar": "^1.6.1",
+    "clean-css": "^4.1.2",
+    "express": "^4.13.3",
+        "fs-extra": "3.0.1",
+    "glob": "^7.1.1",
+    "node-cmd": "^2.0.0",
+    "node-version-assets": "^1.2.0",
+    "open": "0.0.5",
+    "ractive": "^0.9.0",
+    "replace-in-file": "^2.5.0",
+    "rollup": "^0.41.6",
+    "rollup-plugin-buble": "^0.15.0",
+    "rollup-plugin-includepaths": "^0.2.2",
+    "rollup-plugin-ractive": "^2.0.0",
+    "rollup-plugin-string": "^2.0.2",
+    "rollup-plugin-uglify": "^1.0.2",
+    "rollup-watch": "^3.2.2"
+  },
+  "scripts": {
+    "dist": "node dist",
+    "dev": "node dev"
+  }
+ }
+```
+Then run:
+> npm i
 
+This will download all node modules.
+
+The following commands are available:
+
+Create a distribution of the application:
+> npm run dist
+
+Start a development environment for the application:
+> npm run dev
