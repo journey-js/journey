@@ -1,6 +1,6 @@
 # Development Setup
 
-In this section e will look at setting up a development environment for writing Single Page Applications with ES6 Modules. 
+In this section we will look at setting up a development environment for writing Single Page Applications with ES6 Modules. 
 
 If you would like an overview of Single Page Applications and ES6 Modules see [Overview](overview.md).
 
