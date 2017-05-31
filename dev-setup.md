@@ -6,7 +6,7 @@ If you would like an overview of Single Page Applications and ES6 Modules see [O
 
 If you are looking to create a production ready distribution for your application see [Distribution Setup](dist-setup.md).
 
-There are a variety of solutions available such as [Rolleup](), [Webpack](), [Browserify[() etc. Here we will look at Rollup as I've found it the easiest to get started with.
+There are a variety of solutions available such as [Rollup](), [Webpack](), [Browserify[() etc. Here we will look at Rollup as I've found it the easiest to get started with.
 
 ## The Problem
 The problem we face is that not all browsers support all ES features, especially ES6 Modules. So when developing with ES6 features such as the new moduling system, browsers won't be able to interpret the new syntax and the code won't be executed.
