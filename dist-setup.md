@@ -58,7 +58,9 @@ Here is the layout we will use for our web app:
 
 ### index.html
 Below we list the full *index.html* content:
-```
+
+```html
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -98,7 +100,8 @@ We also use an external library, jQuery in this case, so we have a second ```<sc
 The surrounding comments of our jQuery librari is important. When we develop our application, we want to load the jQuery lib from our local server. But in production we to serve it from CDN, so that we can independently upgrade our application or external library without having to re-download the other.
 
 We wrap our DEV libraries with the comment:
-```
+
+```html
  <!-- start DEV imports -->
 	<script src="lib/jquery3.2.1.js"></script>
  <!-- end DEV imports -->
@@ -106,14 +109,15 @@ We wrap our DEV libraries with the comment:
 
 Then we comment our PROD libraries with:
 
-```
+```html
 <!-- start PROD imports
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 end PROD imports -->
 ```
 
 In *dist.js* is a function **uncommentCDN**, which simply replaces the comments as follows:
-```
+
+```html
  <!-- start DEV imports 
 	<script src="lib/jquery3.2.1.js"></script>
 end DEV imports -->
@@ -122,6 +126,7 @@ end DEV imports -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <!-- end PROD imports -->
 ```
+
 Our jQuery script that was served from our local server in development, will be served from a CDN in production. Neat right? 
 
 ## dist.js
