@@ -26,6 +26,7 @@ We are trying to reach the following goals from our distribution script *dist.js
  6. We might also want to load certain assets (js/css) from CDN servers for two reasons:
 	 - popular libraries such as jQuery/Bootstrap etc. could already be cached by the browser from previous visits to other sites that served those same libraries. We don't have to bundle those libraries with out application, leading to a smaller bundle that can be downloaded (and thus launch) faster on the client browser.
 	 - every time we release a new version of our application, those CDN hosted libraries will now be available in the browser cache (except where we updated a library to a new version as well).
+ 7. Optionally we can zip up our distribution eg. *app-0.0.1.zip*.
 
 
 ## The Solution
@@ -115,7 +116,7 @@ Then we comment our PROD libraries with:
 end PROD imports -->
 ```
 
-In *dist.js* is a function **uncommentCDN**, which simply replaces the comments as follows:
+We will add a function to *dist.js* called **uncommentCDN**, which replaces the HTML comments as follows:
 
 ```html
  <!-- start DEV imports 
@@ -130,93 +131,118 @@ end DEV imports -->
 Our jQuery script that was served from our local server in development, will be served from a CDN in production. Neat right? 
 
 ## dist.js
-We will use two separate Node scripts for our project, one to run an development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
+We will use two separate Node scripts for our project, one to run a development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
 
 **Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and dist environment.
 
-*build.js* is our build script that we use to create a production ready distribution of our application.
+*dist.js* is the script we use to create a production ready distribution of our application.
 
-Our project structure has a *src* folder where we will develop our application and a *dist* folder where our distribution will be located.
+Our project structure has a *src* folder where we will develop our application and a *dist* folder where our distribution will be written to.
 
-+++++++++++++++++++++++++++++++++++
+We structure *dist.js* into logical parts (functions) that match our [Goals Section](). All these parts will return a promise so we don't have to worry about which part performs asynchronous work.  
 
-In order to view the application in a browser we need to setup a server to serve content from our *build* folder. We will show how to setup an Express server later on.
-
-We need a way to keep the *src* and *build* folder in sync, so whenever files are changed in the *src* folder they must be copied to the *build* folder.
-
-First we create a function, **watchAssets** to watch the *src* folder for files that are updated, and copy those files to the *build* folder. When this function is called upon startup, all files will be copied to the *build* folder.
+First we create a **start** function that assembles (calls) all these parts into our final distribution. Once we have **start** defined we will add all the individual parts to our script.
 
 ```js
 let fsPath = require( 'path' );
-var chokidar = require( 'chokidar' );
 var fs = require( 'fs-extra' );
 var rollup = require( 'rollup' );
 var watch = require( 'rollup-watch' );
 var rollupConfig = require( './rollup.config.js' ); // Rollup config is covered in the next section
 
 // Define variables for src and build folders
-const buildFolder = 'build';
+const distFolder = 'dist';
 const srcFolder = 'src';
 
-// Watch files for changes and copy changed files to the build folder
-watchAssets();
+// Starts the distribution
+start();
 
-// Start transpiling and bundling our ES6 JS into ES5 JS.
-compileJS();
+// The distribution is handled in the start function(). The process is broken 
+// into logical parts (functions) all of which returns a promise.
+function start() {
 
-// Setup a watcher to copy changed files to the build folder
-function watchAssets() {
-
-	chokidar.watch( srcFolder + '/**/*' ).on( 'all', ( event, path ) => {
-
-		// No need to copy directories
-		if ( ! fs.lstatSync( path ).isDirectory() ) {
-
-			writeToDest( path );
-		}
-	} );
-}
-
-// Function to write given path to the build folder
-function writeToDest( path ) {
-
-	// Set buildPath by replacing 'src' str with 'build' str
-	let buildPath = buildFolder + path.slice(srcFolder.length);
-
-	let buildDir = fsPath.dirname( buildPath );
-	
-	// Ensure the build folder exists
-	fs.ensureDirSync( buildDir );
-
-	fs.copySync( path, buildPath );
-}
-
-// Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
-function compileJS() {
-
-	// setup rollup' watcher in order to run rollup 
-	// whenever a JS file is changed
-	let watcher = watch( rollup, rollupConfig );
-
-	// We setup a listener for certain Rollup events
-	watcher.on( 'event', e => {
-
-		// If Rollup encounters an error, we log to console so we can debug
-		if ( e.code === 'ERROR' ) {
+	clean().    	           // Remove the previous build
+		then( copyAssets ).    // Copy assets from 'src' to 'dist' folder
+		then( compileJS ).     // Copy assets from 'src' to 'dist' folder
+		then( compileCss ).    // 
+		then( uncommentCDN ).  // serve libraries from CDN in production
+		then( versionAssets ). // version assets to ensure browser won't cache old 
+							   // assets when making new releases.
+		catch( ( e ) => {      // catch any error and log to console
 			console.log( e );
-		}
+		} );
+}
+```
 
-		// Note: every time a file changes Rollup will tire a 'BUILD_END' event
-		if ( e.code == 'BUILD_END' ) {
+We can already see how all the distribution parts fit together. Next we start adding the individual parts.
+
+Below we have **clean()**, to remove the previous distribution, and **copyAssets()** to copy all the assets (JS/CSS/images etc) from the *src* to the *dist* folder. 
+
+```js
+function clean() {
+	fs.removeSync( docsFolder );
+
+	// Ensure the build folder exists
+	fs.ensureDirSync( docsFolder );
+return Promise.resolve(); // This function is synchronous so we return a resolved promise
+}
+
+function copyAssets( ) {
+	fs.copySync( srcFolder, docsFolder );
+	return Promise.resolve(); // This function is synchronous so we return a resolved promise
+}
+```
+
+Next up is **compileJS()** which transforms ES6 into ES5 and bundles ES6 modules into IIFE format. 
+
+**Note**: *dist.js* use the same **rollup.config.js** file that is used in *dev.js*. 
+
+```js
+// Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
+function compileJS( ) {
+	let p = new Promise( function ( resolve, reject ) {
+
+		// Note that findRollupPlugin looks up a Rollup plugin with the same name in order 
+		// for us to further configure it before running the production build.
+		let ractiveCompiler = findRollupPlugin( "ractiveCompiler" );
 		
-			// At this point our JS has been transpiled and bundled into ES5 code.
-			// We can start a Node based server such as Express to view our application.
-			// Or we can setup an external server to serve content from the 
-			// 'build' folder.
-			
-			// startServer(); // Later on we will add a startServer script for Express.
-		}
+		ractiveCompiler.compile = true; // We want to precompile Ractive templates
+		
+		rollupConfig.plugins.push( uglify( ) ); // Add uglify plugin to minimize the JS
+
+		rollup.rollup( rollupConfig )
+				.then( function ( bundle ) {
+					// Generate bundle + sourcemap
+
+					bundle.write( {
+						dest: pkg.moduleDocs,
+						format: rollupConfig.targets[0].format,
+						sourceMap: true
+					} ).then( function ( ) {
+						resolve();
+
+					} ).catch( function ( e ) {
+						reject( e );
+					} );
+
+				} ).catch( function ( e ) {
+			reject( e );
+		} );
 	} );
+
+	return p;
+}
+
+// When building for production we want to change some of the plugin options, eg. precompile templates, uglify etc.
+// This function allow us to return plugins based on their names, so we can futher configure them before running rollup
+function findRollupPlugin( name ) {
+	for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
+		let plugin = rollupConfig.plugins[i];
+		if ( plugin.name === name ) {
+			return plugin;
+		}
+		return null;
+	}
 }
 ```
 
