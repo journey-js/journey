@@ -214,15 +214,7 @@ Now we have a Node script to transpile and bundle our ES6 source into an ES5 bun
 ### dist.js
 Once we have built our application we want to create a production ready distribution.
 
-From our script we want the following:
-
- 1. compile our ES6 into an ES5 bundle (similar to dev.js this is done with Rollup)
- 2. minify our JS code (through the Uglify Rollup plugin)
- 3. combine and minify our CSS (we'll use clean-css)
- 4. version our assets (js/css). (We use node-version-assets module) Browsers cache js/css files so if we release a new version of our application the browser could continue to serve the previous version causing confusion. By versioning our files each build/release, we will force the browser to download the latest version.
- 5. We might also want to load certain assets (js/css) from CDN servers for two reasons:
-	 - popular libraries such as jQuery/Bootstrap etc. could already be cached by the browser from previous visits to other sites that served those same libraries. We don't have to bundle those libraries with out application, leading to a smaller bundle that can be downloaded (and thus launch) faster on the client browser.
-	 - every time we release a new version of our application, those CDN hosted libraries will now be available in the browser cache (except where we updated a library to a new version as well).
+ See the [Distribution Setup Guide](dist-setup.md) for details.
 
 ### package.json
 The ```package.json``` below lists all the node modules required to setup a *dev* and *production* environment.
