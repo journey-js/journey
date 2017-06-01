@@ -90,7 +90,7 @@ We will use two separate Node scripts for our project, one to run an development
 
 **Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and build environment.
 
-*dev.js* is our build script that we use to start our development environment. We will setup the minimum we need to get the job done and not necessarily best practices.
+*dev.js* is the script we use to start our development environment. We will setup the minimum we need to get the job done and not necessarily best practices.
 
 Our project structure has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
 
