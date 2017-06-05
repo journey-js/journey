@@ -8,7 +8,6 @@
 - [index.html](#index.html)
 - [dev.js](#dev.js)
 - [rollup.config.js](#rollup.config.js)
-- [dist.js](#dist.js)
 - [package.json](#package.json)
 
 In this section we will look at setting up a development environment for writing Single Page Applications that relies on ES6 features such as ES6 Modules.
@@ -242,11 +241,6 @@ module.exports = {
 };
 ```
 Now we have a Node script to transpile and bundle our ES6 source into an ES5 bundle we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
-
-### <a id="dist.js"></a>dist.js
-Once we have built our application we want to create a production ready distribution.
-
- See the [Distribution Setup Guide](dist-setup.md) for details.
 
 ### <a id="package.json"></a>package.json
 The ```package.json``` below lists all the node modules required to setup a *dev* and *production* environment.
