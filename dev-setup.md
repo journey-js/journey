@@ -5,7 +5,7 @@
 - [What would we like from a development environment](#goal)
 - [How do we get there?](#solution)
 - [Project Layout](#layout)
-- [index.html](#index)
+- [index.html](#index.html)
 - [dev.js](#dev.js)
 - [rollup.config.js](#rollup.config.js)
 - [dist.js](#dist.js)
@@ -69,7 +69,7 @@ Here is the layout we will use for our web app:
 -- dist.js // Node script to setup a development environment
 ```
 
-### <a id="index"></a>index.html
+### <a id="index.html"></a>index.html
 We will start with our *index.html* which serves up our application. The entry point to our SPA is: ``` <script src="js/app/app.js">```.
 
 We also reference the application CSS: ```<link rel="stylesheet" type="text/css" href="css/site.css" />```.
