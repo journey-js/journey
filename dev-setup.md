@@ -1,17 +1,28 @@
 # Development Setup
 
+## Table of Contents
+- [Create a distribution](dist-setup.md)
+- [Why do we need a development environment?](#problem)
+- [What would we like from a development environment](#goal)
+- [How do we get there?](#solution)
+- [Project Layout](#layout)
+- [index.html](#index.html)
+- [dev.js](#dev.js)
+- [rollup.config.js](#rollup.config.js)
+- [package.json](#package.json)
+
 In this section we will look at setting up a development environment for writing Single Page Applications that relies on ES6 features such as ES6 Modules.
 
 If you would like an overview of Single Page Applications and ES6 Modules see [Overview](overview.md).
 
-If you are looking to create a production ready distribution for your application see [Distribution Setup Guide](dist-setup.md).
+**Note**: if you are looking to create a production ready distribution for your application see [Distribution Setup Guide](dist-setup.md).
 
 There are a variety of solutions available such as [Rollup](), [Webpack](), [Browserify[() etc. Here we will look at Rollup as I've found it the easiest to get started with.
 
-## The Problem
+## <a id="problem"></a>The Problem
 The problem we face is that not all browsers support all ES features, especially ES6 Modules. So when developing with ES6 features such as the new moduling system, browsers won't be able to interpret the new syntax and the code won't be executed.
 
-## The Goal
+## <a id="goal"></a>The Goal
 We are trying to achieve the following development environment.
 
 * write code using ES6 modules and possibly other ES6 language features such as classes and arrow functions.
@@ -26,7 +37,7 @@ Fear not, [SourceMaps]() to the rescue. SourceMaps are text files that informs b
 
 Yay! You can have your cake and eat it. Can you gimme a "Oh Yeah"?
 
-## The Solution
+## <a id="solution"></a>The Solution
 Let's get down to business.
 
 We need to convert (transpile) the ES6 features into ES5 features that browsers understand.
@@ -37,7 +48,7 @@ We will  also use RollUp' watcher to automaticaly bundle the source when we make
 
 We will also setup a distribution build so we can ship production code when we are need to release. The distribution build minimizes the IIFE and CSS as well as version the files, so when we make updates to our application in the future, the browser is forced to download our new version, instead of serving the old version from it's cache.
 
-### Project structure
+### <a id="layout"></a>Project Layout
 
 Here is the layout we will use for our web app:
 
@@ -58,7 +69,7 @@ Here is the layout we will use for our web app:
 -- dist.js // Node script to setup a development environment
 ```
 
-### index.html
+### <a id="index.html"></a>index.html
 We will start with our *index.html* which serves up our application. The entry point to our SPA is: ``` <script src="js/app/app.js">```.
 
 We also reference the application CSS: ```<link rel="stylesheet" type="text/css" href="css/site.css" />```.
@@ -85,14 +96,14 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
 </html>
 ```
 
-### dev.js
+### <a id="dev.js"></a>dev.js
 We will use two separate Node scripts for our project, one to run an development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
 
 **Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and build environment.
 
 *dev.js* is the script we use to start our development environment. We will setup the minimum we need to get the job done and not necessarily best practices.
 
-Our project structure has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
+Our project layout has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
 
 In order to view the application in a browser we need to setup a server to serve content from our *build* folder. We will show how to setup an Express server later on.
 
@@ -178,7 +189,7 @@ Hopefully not too daunting? That covers our *dev.js* script.
 
 The only outstanding part is the Rollup configuration. Let's cover it next.
 
-### rollup.config.js
+### <a id="rollup.config.js"></a>rollup.config.js
 
 Below is our Rollup configuration to bundle our ES6 Modules into an output format that the browser can understand. We will use [iife]() as the output format. We also setup the [Buble]() plugin to convert ES6 syntax (classes, arrow functions) into ES5 syntax.
 
@@ -232,12 +243,7 @@ module.exports = {
 ```
 Now we have a Node script to transpile and bundle our ES6 source into an ES5 bundle we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
 
-### dist.js
-Once we have built our application we want to create a production ready distribution.
-
- See the [Distribution Setup Guide](dist-setup.md) for details.
-
-### package.json
+### <a id="package.json"></a>package.json
 The ```package.json``` below lists all the node modules required to setup a *dev* and *production* environment.
 
 ```json

@@ -1,7 +1,9 @@
 # journey
 
-# Table of Contents
+## Table of Contents
 - [Setup](#setup)
+  - [Setting up a development environment](dev-setup.md)
+  - [Create a distribution](dist-setup.md)
 - [Usage](#usage)
 - [Asynchronous transitions](#async)
 - [Full example](#example)
@@ -26,9 +28,9 @@ Journey is a client-side Javascript router, used when building Single Page Appli
 
 If you are new to developing Single Page Applications (SPA) you can read through the [Overview](overview.md) section.
 
-To setup a development environment, see the [Development Setup](dev-setup.md) section.
+**Note**: To setup a development environment, see the [Development Setup](dev-setup.md) section.
 
-To create a production ready distribution, see the [Distribution Setup](dist-setup.md) section.
+**Note**: To create a production ready distribution, see the [Distribution Setup](dist-setup.md) section.
 
 When developing a Single Page application, we need to display different views depending on certain criteria. The most common way is to use the URL to determine which view to show.
 
@@ -45,7 +47,7 @@ A live demo can be viewed at [https://journey-js.github.io/journey-examples/](ht
 ## <a id="setup"></a>Setup
 Download a [Journey release](https://github.com/journey-js/journey/releases) and include the file *journey.js* in your application.
 
-To kickstart a project use [Journey Template](TODO) which provides a build environment based on ES6 modules. Also see the section [Development Setup](dev-setup.md).
+To kickstart a project use [Journey Template](TODO) which provides a build environment based on ES6 modules. Also see [Development Setup Guide](dev-setup.md) and [Distribution Setup Guide](dist-setup.md).
 
 ## <a id="usage"></a>Basic Usage
 Journey has the same API as  [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some extras.
