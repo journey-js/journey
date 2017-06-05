@@ -1,6 +1,6 @@
 # journey
 
-# Table of Contents
+## Table of Contents
 - [Setup](#setup)
 - [Usage](#usage)
 - [Asynchronous transitions](#async)
