@@ -217,61 +217,19 @@ function _goto ( target ) {
 							.then( () => Promise.all( [ newRoute.beforeenter( newData, currentData ) ]))
 							.then( () => Promise.all( [ currentRoute.leave( currentData, newData ) ]))
 							.then( () => {
-								console.log("BEFORE RESOLVE currentData", currentData);
 								resolve();
 								newRoute.enter( newData, currentData )
-						console.log("AFTER RESOLVE BEFORE ENTER currentData", currentData);
 							})
 							.catch( ( e ) => {
 										reject( e );
 							} );
 						} );
-					/*
-			let beforeLeavePromise = Promise.all( [ currentRoute.beforeleave( currentData, newData ) ] );
-			beforeLeavePromise.then( () => {
-
-				let beforeEnterPromise = Promise.all( [ newRoute.beforeenter( newData, currentData ) ] );
-				//let enterPromise = Promise.all( [ currentRoute.leave( currentData, newData ) ] );
-
-				//promise = roadtrip.Promise.all([ beforeEnterPromise,	leavePromise ]);
-
-				beforeEnterPromise.then( () => {
-
-					let leavePromise = Promise.all( [ currentRoute.leave( currentData, newData ) ] );
-
-					leavePromise.then( () => {
-						resolve();
-						newRoute.enter( newData, currentData );
-
-					} ).catch( ( e ) => {
-						reject( e );
-					} );
-
-				} ).catch( ( e ) => {
-					reject( e );
-				} );
-			} ).catch( ( e ) => {
-				reject( e );
-			} );*/
-		
-		/*
-		promise = roadtrip.Promise.all([
-			currentRoute.leave( currentData, newData ),
-			newRoute.beforeenter( newData, currentData )
-		]).then( () => { 
-					console.log("BEFORE RESOLVE currentData", currentData);
-			newRoute.enter( newData, currentData ) 
-						console.log("AFTER RESOLVE BEFORE ENTER currentData", currentData);
-		});*/
-
 	}
 
 	promise
 		.then( () => {
-			console.log("RESOLVED updating currentData", currentData);
 			currentRoute = newRoute;
 			currentData = newData;
-			console.log("RESOLVED updating currentData", currentData);
 
 			isTransitioning = false;
 
