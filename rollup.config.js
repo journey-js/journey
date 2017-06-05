@@ -1,5 +1,3 @@
-//import buble from 'rollup-plugin-buble';
-//import string from 'rollup-plugin-string';
 var buble = require( 'rollup-plugin-buble' );
 var uglify = require('rollup-plugin-uglify');
 
@@ -16,6 +14,12 @@ module.exports = {
 		{
 			dest: pkg.main,
 			format: 'iife',
+			sourceMap: true
+		},
+		
+		{
+			dest: pkg.module,
+			format: 'es',
 			sourceMap: true
 		}
 		//{ dest: pkg.module, format: 'es' }

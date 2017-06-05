@@ -89,6 +89,11 @@ function raiseEvent( event, args ) {
 		options.to = args[0];
 		options.from = args[1];
 		options.options = args[2];
+		
+	} else if ( event === events.BEFORE_LEAVE || event === events.BEFORE_LEAVE_COMPLETE) {
+		options.from = args[0];
+		options.to = args[1];
+		options.options = args[2];
 
 	} else if ( event === events.LEAVE || event === events.LEFT ) {
 		options.from = args[0];
@@ -104,6 +109,7 @@ function wrap( options ) {
 	enhanceEvent( events.UPDATE, options );
 	enhanceEvent( events.BEFORE_ENTER, options );
 	enhanceEvent( events.LEAVE, options );
+	enhanceEvent( events.BEFORE_LEAVE, options );
 }
 
 function enhanceEvent( name, options ) {
@@ -157,6 +163,9 @@ function enhanceEvent( name, options ) {
 				} else if ( name === events.ENTER ) {
 					raiseEvent( events.ENTERED, args );
 
+				} if ( name === events.BEFORE_LEAVE ) {
+					raiseEvent( events.BEFORE_LEAVE_COMPLETE, args );
+
 				} else if ( name === events.LEAVE ) {
 					raiseEvent( events.LEFT, args );
 
@@ -190,7 +199,7 @@ function gatherErrorOptions( event, args, err ) {
 		route = args[0];
 		to = args[0];
 		from = args[1];
-	} else {
+	} else { // LEAVE and BEFORE_LEAVE
 		route = args[1];
 		to = args[1];
 		from = args[0];

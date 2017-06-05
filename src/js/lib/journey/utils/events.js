@@ -1,4 +1,6 @@
 const events = {
+	BEFORE_LEAVE: "beforeleave",
+	BEFORE_LEAVE_COMPLETE: "beforeleaveComplete",
 	BEFORE_ENTER: "beforeenter",
 	BEFORE_ENTER_COMPLETE: "beforeenterComplete",
 	ENTER: "enter",	

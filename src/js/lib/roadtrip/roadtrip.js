@@ -17,7 +17,8 @@ function noop () {}
 let currentData = {};
 let currentRoute = {
 	enter: () => roadtrip.Promise.resolve(),
-	leave: () => roadtrip.Promise.resolve()
+	leave: () => roadtrip.Promise.resolve(),
+	beforeleave: () => roadtrip.Promise.resolve(),
 };
 
 let _target;
@@ -169,7 +170,7 @@ function _goto ( target ) {
 	let forceReloadRoute = target.internalOptions.forceReload || false;
 
 	//let targetHref = util.stripBase(target.href, config.base);
-	targetHref = pathHelper.prefixWithSlash(target.href);
+	let targetHref = pathHelper.prefixWithSlash(target.href);
 	target.href = targetHref;
 
 	var result = getNewData(target);
@@ -203,21 +204,74 @@ function _goto ( target ) {
 	let promise;
 	if ( !forceReloadRoute && ( newRoute === currentRoute ) && newRoute.updateable ) {
 
-		// For updates, copy merge newData into currentData, in order to peserve custom data that was set during enter or beforeenter events
+		// For updates, merge newData into currentData, in order to preserve custom data that was set during enter or beforeenter events
 		newData = newData.extend({}, currentData, newData);
 
 		promise = newRoute.update( newData );
+		
 	} else {
+		
+		promise = new roadtrip.Promise((resolve, reject) => {
+			
+					roadtrip.Promise.all([ currentRoute.beforeleave( currentData, newData )	])
+							.then( () => Promise.all( [ newRoute.beforeenter( newData, currentData ) ]))
+							.then( () => Promise.all( [ currentRoute.leave( currentData, newData ) ]))
+							.then( () => {
+								console.log("BEFORE RESOLVE currentData", currentData);
+								resolve();
+								newRoute.enter( newData, currentData )
+						console.log("AFTER RESOLVE BEFORE ENTER currentData", currentData);
+							})
+							.catch( ( e ) => {
+										reject( e );
+							} );
+						} );
+					/*
+			let beforeLeavePromise = Promise.all( [ currentRoute.beforeleave( currentData, newData ) ] );
+			beforeLeavePromise.then( () => {
+
+				let beforeEnterPromise = Promise.all( [ newRoute.beforeenter( newData, currentData ) ] );
+				//let enterPromise = Promise.all( [ currentRoute.leave( currentData, newData ) ] );
+
+				//promise = roadtrip.Promise.all([ beforeEnterPromise,	leavePromise ]);
+
+				beforeEnterPromise.then( () => {
+
+					let leavePromise = Promise.all( [ currentRoute.leave( currentData, newData ) ] );
+
+					leavePromise.then( () => {
+						resolve();
+						newRoute.enter( newData, currentData );
+
+					} ).catch( ( e ) => {
+						reject( e );
+					} );
+
+				} ).catch( ( e ) => {
+					reject( e );
+				} );
+			} ).catch( ( e ) => {
+				reject( e );
+			} );*/
+		
+		/*
 		promise = roadtrip.Promise.all([
 			currentRoute.leave( currentData, newData ),
 			newRoute.beforeenter( newData, currentData )
-		]).then( () => newRoute.enter( newData, currentData ) );
+		]).then( () => { 
+					console.log("BEFORE RESOLVE currentData", currentData);
+			newRoute.enter( newData, currentData ) 
+						console.log("AFTER RESOLVE BEFORE ENTER currentData", currentData);
+		});*/
+
 	}
 
 	promise
 		.then( () => {
+			console.log("RESOLVED updating currentData", currentData);
 			currentRoute = newRoute;
 			currentData = newData;
+			console.log("RESOLVED updating currentData", currentData);
 
 			isTransitioning = false;
 
@@ -229,6 +283,7 @@ function _goto ( target ) {
 
 			} else {
 				target.fulfil();
+				//updateHistory(target);
 			}
 		})
 		.catch( e => {
@@ -236,6 +291,11 @@ function _goto ( target ) {
 			target.reject(e);
 		});
 
+		updateHistory(target);
+}
+
+function updateHistory(target) {
+	
 	if ( target.popState || target.hashChange ) return;
 
 	const { replaceState, invisible } = target.internalOptions;
@@ -271,6 +331,7 @@ function _goto ( target ) {
 		x: target.scrollX,
 		y: target.scrollY
 	};
+	
 }
 
 export default roadtrip;

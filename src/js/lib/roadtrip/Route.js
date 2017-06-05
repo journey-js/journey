@@ -5,7 +5,7 @@ import watchHistory from "./utils/watchHistory.js";
 
 const a = typeof document !== 'undefined' && document.createElement( 'a' );
 const QUERYPAIR_REGEX = /^([\w\-]+)(?:=([^&]*))?$/;
-const HANDLERS = [ 'beforeenter', 'enter', 'leave', 'update' ];
+const HANDLERS = [ 'beforeleave', 'beforeenter', 'enter', 'leave', 'update' ];
 
 let isInitial = true;
 

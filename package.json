@@ -3,8 +3,7 @@
   "description": "test",
   "version": "0.0.1",
   "main": "dist/journey.js",
-  "module": "dist/journey.es.js",
-  "jsnext:main": "dist/journey.es.js",
+  "module": "dist/journey.esm.js",
   "devDependencies": {
     "body-parser": "^1.14.1",
     "chokidar": "^1.6.1",
