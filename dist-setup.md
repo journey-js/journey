@@ -1,7 +1,7 @@
 # Distribution Setup
 
 ## Table of Contents
-- [Setting up a development environment](#dev-setup.md)
+- [Setting up a development environment](dev-setup.md)
 - [Why do we need a distribution?](#problem)
 - [What would we like from a distribution](#goal)
 - [How do we get there?](#solution)
