@@ -1,6 +1,7 @@
 # Distribution Setup
 
 ## Table of Contents
+- [Setting up a development environment](#dev-setup.md)
 - [Why do we need a distribution?](#problem)
 - [What would we like from a distribution](#goal)
 - [How do we get there?](#solution)
@@ -15,7 +16,7 @@ In this section we will look at setting up a  script to create a distribution fo
 
 If you would like an overview of Single Page Applications and ES6 Modules see [Overview](overview.md).
 
-Before creating a distribution you should read through the [Development Setup Guide](dev-setup.md).
+**Note**:  before creating a distribution you should read through the [Development Setup Guide](dev-setup.md).
 
 There are a variety of solutions available such as [Rollup](), [Webpack](), [Browserify](), [Grunt](), [Gulp]() etc. Here we will look at Rollup as I've found it the easiest to get started with.
 
