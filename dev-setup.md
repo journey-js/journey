@@ -250,16 +250,16 @@ The ```package.json``` below lists all the node modules required to setup a *dev
   }
  }
 ```
-Then run:
+Download and install all required modules with the command:
 > npm i
-
-This will download all node modules.
 
 The following commands are made available by *package.json*:
 
-- start a development environment for the application:
 > npm run dev
 
-- create a distribution of the application:
+This command starts a development environment for the application
+
 > npm run dist
+
+This command creates a distribution for the application
 
