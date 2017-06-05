@@ -1,6 +1,7 @@
 # Development Setup
 
 ## Table of Contents
+- [Create a distribution](dist-setup.md)
 - [Why do we need a development environment?](#problem)
 - [What would we like from a development environment](#goal)
 - [How do we get there?](#solution)
@@ -14,7 +15,7 @@ In this section we will look at setting up a development environment for writing
 
 If you would like an overview of Single Page Applications and ES6 Modules see [Overview](overview.md).
 
-If you are looking to create a production ready distribution for your application see [Distribution Setup Guide](dist-setup.md).
+**Note**: if you are looking to create a production ready distribution for your application see [Distribution Setup Guide](dist-setup.md).
 
 There are a variety of solutions available such as [Rollup](), [Webpack](), [Browserify[() etc. Here we will look at Rollup as I've found it the easiest to get started with.
 
