@@ -20,7 +20,7 @@ We are trying to achieve the following development environment.
 
 In other words, we want to use ES6 features and they must be just as easy to develop with as if we were using ES5.
 
-But what about debugging? If we were to debug the transpiled ES5 code in the browser, there would be a major difference between our original source code and generated code. Stepping over code in the debugger won't correspond to our source code. 
+But what about debugging? If we were to debug the transpiled ES5 code in the browser, there would be a major difference between our original source code and generated code. Stepping over code in the debugger won't correspond to our source code.
 
 Fear not, [SourceMaps]() to the rescue. SourceMaps are text files that informs browsers how to convert the compiled ES5 code *back* to it's original ES6 source. So when you open a debugger in the browser, the code you step through will be exactly the same as the code in your */src* folder, each ES6 modules as a separate script.
 
@@ -31,7 +31,7 @@ Let's get down to business.
 
 We need to convert (transpile) the ES6 features into ES5 features that browsers understand.
 
-We will use [Rollup]() to convert the ES6 Modules into ES5 code. Rollup has a couple output format options available, including [IIFE]() and [AMD](). IIFE is what we will setup here, because it is self contained (it does not need an library like [RequireJS]() to run) but you can use AMD if you want. 
+We will use [Rollup]() to convert the ES6 Modules into ES5 code. Rollup has a couple output format options available, including [IIFE]() and [AMD](). IIFE is what we will setup here, because it is self contained (it does not need an library like [RequireJS]() to run) but you can use AMD if you want.
 
 We will  also use RollUp' watcher to automaticaly bundle the source when we make changes to files.
 
@@ -48,7 +48,7 @@ Here is the layout we will use for our web app:
     |-- css
     |-- js
          |-- app // our web application
-              |-- app.js // our application entry point that is referenced 
+              |-- app.js // our application entry point that is referenced
               			   // from index.html: <script src="js/app/app.js">
          |-- lib // Racive, jQuery etc.
     |-- fonts
@@ -59,7 +59,7 @@ Here is the layout we will use for our web app:
 ```
 
 ### index.html
-We will start with our *index.html* which serves up our application. The entry point to our SPA is: ``` <script src="js/app/app.js">```. 
+We will start with our *index.html* which serves up our application. The entry point to our SPA is: ``` <script src="js/app/app.js">```.
 
 We also reference the application CSS: ```<link rel="stylesheet" type="text/css" href="css/site.css" />```.
 
@@ -70,17 +70,17 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
         <title>My App</title>
         <link rel="stylesheet" type="text/css" href="css/site.css" />
-    
+
     </head>
     <body>
-        
+
         <div id="menu">
             <nav class="navbar navbar-default"></nav> <!-- A menu bar -->
         </div>
-       
+
         <div id="container"></div> <!-- Our views will be rendered here -->
     </body>
-        
+
     <script src="js/app/app.js" defer nomodule></script>
 </html>
 ```
@@ -138,7 +138,7 @@ function writeToDest( path ) {
 	let buildPath = buildFolder + path.slice(srcFolder.length);
 
 	let buildDir = fsPath.dirname( buildPath );
-	
+
 	// Ensure the build folder exists
 	fs.ensureDirSync( buildDir );
 
@@ -148,7 +148,7 @@ function writeToDest( path ) {
 // Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
 function compileJS() {
 
-	// setup rollup' watcher in order to run rollup 
+	// setup rollup' watcher in order to run rollup
 	// whenever a JS file is changed
 	let watcher = watch( rollup, rollupConfig );
 
@@ -162,19 +162,19 @@ function compileJS() {
 
 		// Note: every time a file changes Rollup will tire a 'BUILD_END' event
 		if ( e.code == 'BUILD_END' ) {
-		
+
 			// At this point our JS has been transpiled and bundled into ES5 code.
 			// We can start a Node based server such as Express to view our application.
-			// Or we can setup an external server to serve content from the 
+			// Or we can setup an external server to serve content from the
 			// 'build' folder.
-			
+
 			// startServer(); // Later on we will add a startServer script for Express.
 		}
 	} );
 }
 ```
 
-Hopefully not too daunting? That covers our *dev.js* script. 
+Hopefully not too daunting? That covers our *dev.js* script.
 
 The only outstanding part is the Rollup configuration. Let's cover it next.
 
@@ -182,29 +182,50 @@ The only outstanding part is the Rollup configuration. Let's cover it next.
 
 Below is our Rollup configuration to bundle our ES6 Modules into an output format that the browser can understand. We will use [iife]() as the output format. We also setup the [Buble]() plugin to convert ES6 syntax (classes, arrow functions) into ES5 syntax.
 
+*Note:* the rollup.config.js script is shared between the [production](#dist-setup.md) and development environments.
+
 ```js
 var buble = require( 'rollup-plugin-buble' );
-const pkg = require( './package.json' );
+var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
+var stringToModule = require( 'rollup-plugin-string' );
 
 module.exports = {
 
-	entry: 'src/js/app.js', // app.js bootstraps our application.
-							// app.js is referenced from index.html <script> tag
-	// Setup Buble plugin to transpiler ES6 to ES5
+	 entry: 'src/js/app.js', // app.js bootstraps our application.
+                            // app.js is referenced from index.html <script> tag
+
 	plugins: [
+
+		// this plugin allows us to import Ractive templates and optionally compile them
+		// for production use. We disable compile by default and switch it back on for
+		// production in dist.js
+		ractiveCompiler( {
+			include: [ '**/*.html' ],
+
+			compile: false,
+		} ),
+
+		// this plugin allows us to import plain text/json files as ES6 Modules.
+		// We configure this plugin to handle files with the pattern 'xxx.text.html'.
+		stringToModule({
+			include: '**/*.text.html'
+		}),
+
+		// Setup Buble plugin to transpiler ES6 to ES5
 		buble( {
 			exclude: [ '**/*.html' ] // Skip HTML files
-		} )
+		} ),
+
+		includePaths( includePathOptions )
 	],
-	
 	moduleName: 'myApp',
 
 	targets: [
 		{
 			dest: 'build/js/app/myapp.js', // Rollup output file
 			format: 'iife',
-			sourceMap: true // NB: generating a SourceMap allows us to debug
-							// our code in the browser in it's original ES6 format.
+			 sourceMap: true // NB: generating a SourceMap allows us to debug
+                            // our code in the browser in it's original ES6 format.
 		}
 	]
 };
@@ -221,34 +242,34 @@ The ```package.json``` below lists all the node modules required to setup a *dev
 
 ```json
 {
-  "name": "My App",
-  "description": "My Application",
+  "name": "journeyExmples",
+  "description": "Journey examples",
   "version": "0.0.1",
-  "main": "dist/js/app/app.js",
-    
+  "main": "build/js/app/app.js",
+  "moduleDocs": "docs/js/app/app.js",
   "devDependencies": {
-        "chokidar": "^1.6.1",
-    "clean-css": "^4.1.2",
-    "express": "^4.13.3",
-        "fs-extra": "3.0.1",
-    "glob": "^7.1.1",
-    "node-cmd": "^2.0.0",
-    "node-version-assets": "^1.2.0",
+    "chokidar": "1.6.1",
+    "clean-css": "4.1.2",
+    "express": "4.13.3",
+    "fs-extra": "3.0.1",
+    "glob": "7.1.1",
+    "node-version-assets": "1.2.0",
     "open": "0.0.5",
     "ractive": "^0.9.0",
-    "replace-in-file": "^2.5.0",
-    "rollup": "^0.41.6",
-    "rollup-plugin-buble": "^0.15.0",
-    "rollup-plugin-includepaths": "^0.2.2",
-    "rollup-plugin-ractive": "^2.0.0",
-    "rollup-plugin-uglify": "^1.0.2",
+    "replace-in-file": "2.5.0",
+    "rollup": "0.41.6",
+    "rollup-plugin-buble": "0.15.0",
+    "rollup-plugin-includepaths": "0.2.2",
+    "rollup-plugin-ractive-compiler": "0.0.5",
+    "rollup-plugin-string": "2.0.2",
+    "rollup-plugin-uglify": "1.0.2",
     "rollup-watch": "^3.2.2"
   },
   "scripts": {
     "dist": "node dist",
     "dev": "node dev"
   }
- }
+}
 ```
 Download and install all required modules with the command:
 > npm i
@@ -262,4 +283,3 @@ This command starts a development environment for the application
 > npm run dist
 
 This command creates a distribution for the application
-
