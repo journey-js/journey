@@ -1,5 +1,16 @@
 # Distribution Setup
 
+## Table of Contents
+- [Why do we need a distribution?](#problem)
+- [What would we like from a distribution](#goal)
+- [How do we get there?](#solution)
+- [Project Layout](#layout)
+- [index.html](#index.html)
+- [dist.js](#dist.js)
+- [rollup.config.js](#rollup.config.js)
+- [package.json](#package.json)
+
+
 In this section we will look at setting up a  script to create a distribution for our Single Page Application that relies on ES6 features such as ES6 Modules.
 
 If you would like an overview of Single Page Applications and ES6 Modules see [Overview](overview.md).
@@ -9,13 +20,13 @@ Before creating a distribution you should read through the [Development Setup Gu
 There are a variety of solutions available such as [Rollup](), [Webpack](), [Browserify](), [Grunt](), [Gulp]() etc. Here we will look at Rollup as I've found it the easiest to get started with.
 
 
-## The Problem
+## <a id="problem"></a>The Problem
 The problem we face is that not all browsers support all ES features, especially ES6 Modules. So when creating a distribution from sources that contains ES6 features such as ES6 Modules, browsers won't be able to interpret the new syntax and the code won't be executed.
 
 Once we have built our application as set out in the  [Development Setup Guide](dev-setup.md), we need to create a production ready distribution.
 
 
-## The Goal
+## <a id="goal"></a>The Goal
 We are trying to reach the following goals from our distribution script *dist.js*:
 
  1. compile our ES6 source code into an ES5 bundle (his is accomplished with Rollup)
@@ -29,14 +40,14 @@ We are trying to reach the following goals from our distribution script *dist.js
  7. Optionally we can zip up our distribution eg. *app-0.0.1.zip*.
 
 
-## The Solution
+## <a id="solution"></a>The Solution
 Let's get down to business.
 
 We need to convert (transpile) the ES6 features into ES5 features that browsers understand.
 
 We will use [Rollup]() to convert the ES6 Modules into ES5 code. Rollup has a couple of output format options available, including [IIFE]() and [AMD](). IIFE is what we will setup here, because it is self contained (it does not need an library like [RequireJS]() to run) but you can use AMD if you want.
 
-### Project structure
+### <a id="layout"></a>Project Layout
 
 Here is the layout we will use for our web app:
 
@@ -57,7 +68,7 @@ Here is the layout we will use for our web app:
 -- dist.js // Node script to setup a development environment
 ```
 
-### index.html
+### <a id="index.html"></a>index.html
 Below we list the full *index.html* content:
 
 ```html
@@ -130,7 +141,7 @@ end DEV imports -->
 
 Our jQuery script that was served from our local server in development, will be served from a CDN in production. Neat right?
 
-## dist.js
+## <a id="dist.js"></a>dist.js
 We will use two separate Node scripts for our project, one to run a development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
 
 **Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and dist environment.
@@ -311,7 +322,7 @@ Now we have a Node environment setup that transpiles and bundles our ES6 source 
 
 This cannot get any better!
 
-### package.json
+### <a id="package.json"></a>package.json
 The ```package.json``` below lists all the node modules required to setup a *dev* and *production* environment.
 
 ```json
