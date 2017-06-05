@@ -257,9 +257,9 @@ This will download all node modules.
 
 The following commands are made available by *package.json*:
 
-Start a development environment for the application:
+- start a development environment for the application:
 > npm run dev
 
-Create a distribution of the application:
+- create a distribution of the application:
 > npm run dist
 
