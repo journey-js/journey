@@ -255,10 +255,11 @@ Then run:
 
 This will download all node modules.
 
-The following commands are available:
+The following commands are made available by *package.json*:
+
+Start a development environment for the application:
+> npm run dev
 
 Create a distribution of the application:
 > npm run dist
 
-Start a development environment for the application:
-> npm run dev
