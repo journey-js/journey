@@ -316,35 +316,35 @@ The ```package.json``` below lists all the node modules required to setup a *dev
 
 ```json
 {
-  "name": "My App",
-  "description": "My Application",
+  "name": "journeyExmples",
+  "description": "Journey examples",
   "version": "0.0.1",
-  "main": "dist/js/app/app.js",
-
+  "main": "build/js/app/app.js",
+  "moduleDocs": "docs/js/app/app.js",
   "devDependencies": {
-        "chokidar": "^1.6.1",
-    "clean-css": "^4.1.2",
-    "express": "^4.13.3",
-        "fs-extra": "3.0.1",
-    "glob": "^7.1.1",
-    "node-cmd": "^2.0.0",
-    "node-version-assets": "^1.2.0",
+    "chokidar": "1.6.1",
+    "clean-css": "4.1.2",
+    "express": "4.13.3",
+    "fs-extra": "3.0.1",
+    "glob": "7.1.1",
+    "node-version-assets": "1.2.0",
     "open": "0.0.5",
     "ractive": "^0.9.0",
-    "replace-in-file": "^2.5.0",
-    "rollup": "^0.41.6",
-    "rollup-plugin-buble": "^0.15.0",
-    "rollup-plugin-includepaths": "^0.2.2",
+    "replace-in-file": "2.5.0",
+    "rollup": "0.41.6",
+    "rollup-plugin-buble": "0.15.0",
+    "rollup-plugin-includepaths": "0.2.2",
     "rollup-plugin-ractive-compiler": "0.0.5",
-    "rollup-plugin-string": "^2.0.2",    
-    "rollup-plugin-uglify": "^1.0.2",    
+    "rollup-plugin-string": "2.0.2",
+    "rollup-plugin-uglify": "1.0.2",
     "rollup-watch": "^3.2.2"
   },
   "scripts": {
     "dist": "node dist",
     "dev": "node dev"
   }
- }
+}
+
 ```
 Download and install all required modules with the command:
 > npm i
