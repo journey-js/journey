@@ -268,7 +268,7 @@ See [rollup-plugin-ractive-compiler](https://www.npmjs.com/package/rollup-plugin
 
 Hopefully things aren't too daunting at this stage? That covers our *dev.js* script.
 
-*Note:* you can also use Grunt/Gulp/somethingElse to setup a dev and dist environment.
+**Note:** you can also use Grunt/Gulp/somethingElse to develop and create a distribution with.
 
 The last piece of the puzzle is the Rollup configuration. Let's cover that next.
 
