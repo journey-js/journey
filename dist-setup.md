@@ -105,7 +105,7 @@ We will use two separate Node scripts for our project, one to run an development
 
 Our project layout has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
 
-In order to view the application in a browser we need to setup a server to serve content from our *build* folder. Our *dev.js* script will also setup an Express server.
+In order to view the application in a browser we need to setup a server to serve content from our *build* folder. In our *dev.js* script we will also setup an Express server.
 
 We need a way to keep the *src* and *build* folder in sync, so whenever files are changed in the *src* folder they must be copied to the *build* folder.
 
