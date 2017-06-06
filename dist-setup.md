@@ -267,8 +267,8 @@ The ```package.json``` below lists all the node modules required to setup a *dev
 
 ```json
 {
-  "name": "journeyExmples",
-  "description": "Journey examples",
+  "name": "myApp",
+  "description": "My application",
   "version": "0.0.1",
   "main": "build/js/app/app.js",
   "module": "docs/js/app/app.mjs.js",
