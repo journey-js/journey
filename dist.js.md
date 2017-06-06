@@ -1,6 +1,6 @@
-# dev.js
+# dist.js
 
-Below is the complete **dev.js**.
+Below is the complete **dist.js**.
 
 ```js
 var rollup = require( 'rollup' );
@@ -12,10 +12,10 @@ var CleanCSS = require( 'clean-css' );
 var fs = require( 'fs-extra' );
 var glob = require( 'glob' );
 var replaceInFile = require( 'replace-in-file' );
-var versioning = require( "node-version-assets" );
+var versioning = require( 'node-version-assets' );
 
-const distFolder = "dist";
-const srcFolder = "src";
+const distFolder = 'dist';
+const srcFolder = 'src';
 
 // start() drives all the logic
 function start( ) {
@@ -46,47 +46,47 @@ function copyAssets( ) {
     fs.copySync( srcFolder, distFolder );
 }
 
-// When building for production we want to change some of the plugin options, eg. precompile 
+// When building for production we want to change some of the plugin options, eg. precompile
 // templates, uglify etc. This function allow us to return plugins based on their names, so
 // we can futher configure them before running rollup
 function findPlugin( name ) {
-    
+
     for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
-        
+
         let plugin = rollupConfig.plugins[i];
         if ( plugin.name === name ) {
             return plugin;
         }
-        
+
         return null;
 	}
 }
 
 // Compile, bundle and uglify the JS to the distribution folder
 function compileJS( ) {
-    
+
 	let p = new Promise( function ( resolve, reject ) {
 
-        let ractiveCompiler = findPlugin( "ractive-compiler" );
+        let ractiveCompiler = findPlugin( 'ractive-compiler' );
         ractiveCompiler.compile = true;
         rollupConfig.plugins.push( uglify( ) );
 
         rollup.rollup( rollupConfig ).then( function ( bundle ) {
-			
+
             // Generate bundle + sourcemap
             bundle.write( {
-                
+
                 dest: distFolder + '/js/app/app.js',
                 format: rollupConfig.targets[0].format,
                 sourceMap: true
-				
+
             } ).then( function ( ) {
                 resolve();
 
             } ).catch( function ( e ) {
                 reject( e );
             } );
-			
+
         } ).catch( function ( e ) {
             reject( e );
         } );
@@ -97,28 +97,28 @@ function compileJS( ) {
 
 // Bundle and uglify the CSS to the dsitrbution folder
 function compileCss( ) {    
-	let source = path.join( srcFolder, "css", "site.css" );
-	let result = new CleanCSS( { rebaseTo: path.join( srcFolder, "css" ) } ).minify( [ source ] );
+	let source = path.join( srcFolder, 'css', 'site.css' );
+	let result = new CleanCSS( { rebaseTo: path.join( srcFolder, 'css' ) } ).minify( [ source ] );
 
 	let compiledCss = result.styles;
 
-	let cssFolder = path.join( distFolder, "css" );
+	let cssFolder = path.join( distFolder, 'css' );
 	fs.ensureDirSync( cssFolder );
 
-	let target = path.join( cssFolder, "site.css" );
-	fs.writeFileSync( target, compiledCss, "utf-8" );
+	let target = path.join( cssFolder, 'site.css' );
+	fs.writeFileSync( target, compiledCss, 'utf-8' );
 	return Promise.resolve();
 }
 
 // Replace comments in index.html so that external libraries are served from CDN
 function uncommentCDN( ) {
-    
-	let pathToHtml = path.join( distFolder, "index.html" );
+
+	let pathToHtml = path.join( distFolder, 'index.html' );
 
 	let options = {
-		
+
         files: pathToHtml,
-		
+
         from: [
             /<!-- start PROD imports/g, // 1
             /end PROD imports -->/g, // 2
@@ -136,7 +136,7 @@ function uncommentCDN( ) {
     try {
         replaceInFile.sync( options );
         console.log( 'Updated CDN path for ', pathToHtml );
-				
+
     } catch ( error ) {
         console.error( 'Error occurred while updating CDN path for ', pathToHtml, error );
     }
