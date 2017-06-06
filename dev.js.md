@@ -20,16 +20,16 @@ const srcFolder = 'src';
 
 // start() drives the logic
 function start() {
-
+	
 	watchAssets();
-
+	
 	compileJS();
 }
 
 // Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
 function compileJS() {
 
-	// setup rollup' watcher in order to run rollup
+	// setup rollup' watcher in order to run rollup 
 	// whenever a JS file is changed
 	let watcher = watch( rollup, rollupConfig );
 
@@ -52,8 +52,8 @@ function compileJS() {
 function startServer() {
 	// This function will be called every time Rollup completes a build (ie everytime a file change)
 	// so we add a check to only start the server once
-	if ( serverRunning ) return;
-
+	if ( serverRunning ) return;	
+	
 	server.start( {
 		buildFolder: buildFolder,
 		srcFolder: srcFolder
@@ -75,24 +75,18 @@ function watchAssets() {
 	} );
 }
 
-// Copy the changed file to the build folder
+// Function to write given path to the build folder
 function writeToDest( path ) {
 
 	// Set buildPath by replacing 'src' str with 'build' str
-	let buildPath = buildFolder + path.slice( srcFolder.length );
+	let buildPath = buildFolder + path.slice(srcFolder.length);
+
+	let buildDir = fsPath.dirname( buildPath );
 
 	// Ensure the build folder exists
-	let buildDir = fsPath.dirname( buildPath );
 	fs.ensureDirSync( buildDir );
 
-	var content = fs.readFileSync( path, 'binary' );
-	content = removeInjectPathComment( content );
-	fs.writeFileSync( buildPath, content, 'binary' );
-}
-
-function removeInjectPathComment( content ) {
-	content = content.replace( '/*%injectPath%*/', '' ); // remove the indexPath comment
-	return content;
+	fs.copySync( path, buildPath );
 }
 
 // Start the development environment
