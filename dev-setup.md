@@ -97,11 +97,11 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
 ```
 
 ### <a id="dev.js"></a>dev.js
-We will use two separate Node scripts for our project, one to run an development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
-
-**Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and build environment.
+We will use two separate Node scripts for our project, one to run an development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one if you like.
 
 *dev.js* is the script we use to start our development environment. We will setup the minimum we need to get the job done and not necessarily best practices.
+
+You can find the complete *dev.js* source [here](dev.js.md).
 
 Our project layout has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
 
@@ -204,6 +204,8 @@ function compileJS() {
 ```
 
 Hopefully not too daunting? That covers our *dev.js* script.
+
+**Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and build environments.
 
 The only outstanding part is the Rollup configuration. Let's cover it next.
 
