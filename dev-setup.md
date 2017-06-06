@@ -233,7 +233,7 @@ module.exports = {
 
 	targets: [
 		{
-			dest: 'build/js/app/myapp.js', // Rollup output file
+			dest: 'build/js/app/myapp.js', // Rollup output during development, ignored for production build
 			format: 'iife',
 			 sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
