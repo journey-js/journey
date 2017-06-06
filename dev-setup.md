@@ -205,7 +205,7 @@ function compileJS() {
 
 Hopefully not too daunting? That covers our *dev.js* script.
 
-**Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and build environments.
+**Note:** you can also use Grunt/Gulp/somethingElse to develop and create a distribution with.
 
 The only outstanding part is the Rollup configuration. Let's cover it next.
 
