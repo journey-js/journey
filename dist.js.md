@@ -1,4 +1,6 @@
-Below is the full **dist.js**.
+# dist.js
+
+Below is the complete **dist.js**.
 
 ```js
 var rollup = require( 'rollup' );
