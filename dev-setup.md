@@ -64,7 +64,7 @@ Here is the layout we will use for our web app:
          |-- lib // Racive, jQuery etc.
     |-- fonts
     |-- images
-    index.html    
+    index.html
 -- dev.js  // Node script to setup a development environment
 -- dist.js // Node script to setup a development environment
 ```
@@ -78,7 +78,7 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>My App</title>
         <link rel="stylesheet" type="text/css" href="css/site.css" />
 
@@ -105,7 +105,7 @@ We will use two separate Node scripts for our project, one to run an development
 
 Our project layout has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
 
-In order to view the application in a browser we need to setup a server to serve content from our *build* folder. We will show how to setup an Express server later on.
+In order to view the application in a browser we need to setup a server to serve content from our *build* folder. In our *dev.js* script we will also setup an Express server.
 
 We need a way to keep the *src* and *build* folder in sync, so whenever files are changed in the *src* folder they must be copied to the *build* folder.
 
@@ -118,6 +118,10 @@ var fs = require( 'fs-extra' );
 var rollup = require( 'rollup' );
 var watch = require( 'rollup-watch' );
 var rollupConfig = require( './rollup.config.js' ); // Rollup config is covered in the next section
+
+// For our Express server
+var express = require( 'express' );
+var open = require( 'open' );
 
 // Define variables for src and build folders
 const buildFolder = 'build';
@@ -179,9 +183,23 @@ function compileJS() {
 			// Or we can setup an external server to serve content from the
 			// 'build' folder.
 
-			// startServer(); // Later on we will add a startServer script for Express.
+			startServer(); // Later on we will add a startServer script for Express.
 		}
 	} );
+
+	// Starting express server is optional. If you are developing on an external
+	// server, you can remove this function
+	function startServer() {
+
+		// Start an express serve for our dev environment
+		var app = express();
+		let serverFolder = path.join(__dirname, buildFolder );
+		app.use( express.static( serverFolder ) );
+		app.listen( 9988 );
+
+		// Launch browser
+		open( 'http://localhost:9988/' );
+	}
 }
 ```
 
@@ -233,7 +251,7 @@ module.exports = {
 
 	targets: [
 		{
-			dest: 'build/js/app/myapp.js', // Rollup output during development, 
+			dest: 'build/js/app/myapp.js', // Rollup output during development,
 						       // ignored for production build
 			format: 'iife',
 			 sourceMap: true // NB: generating a SourceMap allows us to debug
@@ -250,7 +268,7 @@ The ```package.json``` below lists all the node modules required to setup a *dev
 ```json
 {
   "name": "myApp",
-  "description": "My application",
+  "description": "My Application",
   "version": "0.0.1",
   "main": "build/js/app/app.js",
   "module": "docs/js/app/app.mjs.js",
