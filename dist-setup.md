@@ -146,11 +146,11 @@ end DEV imports -->
 Our jQuery script that was served from our local server in development, will be served from a CDN in production. Neat right?
 
 ## <a id="dist.js"></a>dist.js
-We will use two separate Node scripts for our project, one to run a development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
-
-**Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and dist environment.
+We will use two separate Node scripts for our project, one to run a development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one if you like.
 
 *dist.js* is the script we use to create a production ready distribution of our application.
+
+You can find the complete *dist.js* source [here](dist.js.md).
 
 Our project structure has a *src* folder where we will develop our application and a *dist* folder where our distribution will be written to.
 
@@ -267,6 +267,8 @@ function findRollupPlugin( name ) {
 See [rollup-plugin-ractive-compiler](https://www.npmjs.com/package/rollup-plugin-ractive-compiler) for details on the **ractive-compiler** plugin.
 
 Hopefully things aren't too daunting at this stage? That covers our *dev.js* script.
+
+*Note:* you can also use Grunt/Gulp/somethingElse to setup a dev and dist environment.
 
 The last piece of the puzzle is the Rollup configuration. Let's cover that next.
 
