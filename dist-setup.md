@@ -92,7 +92,9 @@ Below we list the full *index.html* content:
         <div id="container"></div> <!-- Our views will be rendered here -->
     </body>
 
-<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD. we can place them in comments as shown below. In our dist.js script we will create a function to comment the local jQuery script and uncomment the CDN jQuery script. We can place as many external libraries in the comments as we like. -->
+<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD. we 
+can place them in comments as shown below. In our dist.js script we will create a function to comment the local 
+jQuery script and uncomment the CDN jQuery script. We can place as many external libraries in the comments as we like. -->
 
 	<!-- start DEV imports -->
 	<script src="js/lib/jquery-3.2.1.js"></script>
@@ -310,7 +312,8 @@ module.exports = {
 
 	targets: [
 		{
-			dest: 'build/js/app/myapp.js', // Rollup output during development, ignored for production build
+			dest: 'build/js/app/myapp.js', // Rollup output during development, 
+						       // ignored for production build
 			format: 'iife',
 			 sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
