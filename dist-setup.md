@@ -92,9 +92,10 @@ Below we list the full *index.html* content:
         <div id="container"></div> <!-- Our views will be rendered here -->
     </body>
 
-<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD. we 
-can place them in comments as shown below. In our dist.js script we will create a function to comment the local 
-jQuery script and uncomment the CDN jQuery script. We can place as many external libraries in the comments as we like. -->
+<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD.
+We can place them in comments as shown below. In our dist.js script we will create a function to comment the 
+local jQuery script and uncomment the CDN jQuery script. We can place as many external libraries in the comments
+as we like. -->
 
 	<!-- start DEV imports -->
 	<script src="js/lib/jquery-3.2.1.js"></script>
@@ -247,8 +248,9 @@ function compileJS( ) {
 	return p;
 }
 
-// When building for production we want to change some of the plugin options, eg. precompile templates, uglify etc.
-// This function allow us to return plugins based on their names, so we can further configure them before running rollup
+// When building for production we want to change some of the plugin options, eg. precompile templates, 
+// uglify etc. This function allow us to return plugins based on their names, so we can further configure 
+// them before running  rollup
 function findRollupPlugin( name ) {
 	for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
 		let plugin = rollupConfig.plugins[i];
