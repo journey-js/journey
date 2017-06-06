@@ -1,6 +1,6 @@
-# dist.js
+# dev.js
 
-Below is the complete **dist.js**.
+Below is the complete **dev.js**.
 
 ```js
 var rollup = require( 'rollup' );
@@ -76,7 +76,7 @@ function compileJS( ) {
             // Generate bundle + sourcemap
             bundle.write( {
                 
-                dest: 'dist/js/app/app.js',
+                dest: distFolder + '/js/app/app.js',
                 format: rollupConfig.targets[0].format,
                 sourceMap: true
 				
@@ -150,7 +150,7 @@ function versionAssets( ) {
     let htmlPath = path.join( distFolder, 'index.html' );
 
     var version = new versioning( {
-        assets: [ 'docs/css/site.css', 'docs/js/app/app.js' ],
+        assets: [ distFolder + '/css/site.css', distFolder + '/js/app/app.js' ],
         grepFiles: [ htmlPath ]
     } );
 
