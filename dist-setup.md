@@ -1,4 +1,4 @@
-# Development Setup
+# Distribution Setup
 
 ## Table of Contents
 - [Create a distribution](dist-setup.md)
