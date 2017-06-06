@@ -24,7 +24,7 @@ function start( ) {
 
     copyAssets();
 
-    compileJS( ).
+    compileJS( ).    
         then( compileCss ).
         then( uncommentCDN ).
         then( versionAssets ).
@@ -50,17 +50,21 @@ function copyAssets( ) {
 // templates, uglify etc. This function allow us to return plugins based on their names, so
 // we can futher configure them before running rollup
 function findPlugin( name ) {
+    
     for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
+        
         let plugin = rollupConfig.plugins[i];
         if ( plugin.name === name ) {
             return plugin;
         }
+        
         return null;
 	}
 }
 
 // Compile, bundle and uglify the JS to the distribution folder
 function compileJS( ) {
+    
 	let p = new Promise( function ( resolve, reject ) {
 
         let ractiveCompiler = findPlugin( "ractive-compiler" );
@@ -71,6 +75,7 @@ function compileJS( ) {
 			
             // Generate bundle + sourcemap
             bundle.write( {
+                
                 dest: 'dist/js/app/app.js',
                 format: rollupConfig.targets[0].format,
                 sourceMap: true
@@ -91,7 +96,7 @@ function compileJS( ) {
 }
 
 // Bundle and uglify the CSS to the dsitrbution folder
-function compileCss( ) {
+function compileCss( ) {    
 	let source = path.join( srcFolder, "css", "site.css" );
 	let result = new CleanCSS( { rebaseTo: path.join( srcFolder, "css" ) } ).minify( [ source ] );
 
@@ -107,6 +112,7 @@ function compileCss( ) {
 
 // Replace comments in index.html so that external libraries are served from CDN
 function uncommentCDN( ) {
+    
 	let pathToHtml = path.join( distFolder, "index.html" );
 
 	let options = {
