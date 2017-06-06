@@ -1,52 +1,52 @@
 # Distribution Setup
 
 ## Table of Contents
-- [Create a distribution](dist-setup.md)
-- [Why do we need a development environment?](#problem)
-- [What would we like from a development environment](#goal)
+- [Setting up a development environment](dev-setup.md)
+- [Why do we need a distribution?](#problem)
+- [What would we like from a distribution](#goal)
 - [How do we get there?](#solution)
 - [Project Layout](#layout)
 - [index.html](#index.html)
-- [dev.js](#dev.js)
+- [dist.js](#dist.js)
 - [rollup.config.js](#rollup.config.js)
 - [package.json](#package.json)
 
-In this section we will look at setting up a development environment for writing Single Page Applications that relies on ES6 features such as ES6 Modules.
+
+In this section we will look at setting up a  script to create a distribution for our Single Page Application that relies on ES6 features such as ES6 Modules.
 
 If you would like an overview of Single Page Applications and ES6 Modules see [Overview](overview.md).
 
-**Note**: if you are looking to create a production ready distribution for your application see [Distribution Setup Guide](dist-setup.md).
+**Note**:  before creating a distribution you should read through the [Development Setup Guide](dev-setup.md).
 
-There are a variety of solutions available such as [Rollup](), [Webpack](), [Browserify[() etc. Here we will look at Rollup as I've found it the easiest to get started with.
+There are a variety of solutions available such as [Rollup](), [Webpack](), [Browserify](), [Grunt](), [Gulp]() etc. Here we will look at Rollup as I've found it the easiest to get started with.
+
 
 ## <a id="problem"></a>The Problem
-The problem we face is that not all browsers support all ES features, especially ES6 Modules. So when developing with ES6 features such as the new moduling system, browsers won't be able to interpret the new syntax and the code won't be executed.
+The problem we face is that not all browsers support all ES features, especially ES6 Modules. So when creating a distribution from sources that contains ES6 features such as ES6 Modules, browsers won't be able to interpret the new syntax and the code won't be executed.
+
+Once we have built our application as set out in the  [Development Setup Guide](dev-setup.md), we need to create a production ready distribution.
+
 
 ## <a id="goal"></a>The Goal
-We are trying to achieve the following development environment.
+We are trying to reach the following goals from our distribution script *dist.js*:
 
-* write code using ES6 modules and possibly other ES6 language features such as classes and arrow functions.
-* refreshing the browser should show the result of the code we just wrote in the step above
-* Code should run in all modern browsers, Chrome, Firefo, Safari, IE9 and up
+ 1. compile our ES6 source code into an ES5 bundle (his is accomplished with Rollup)
+ 2. minify our JS code (through the Uglify Rollup plugin)
+ 3. precompile our View templates (we will use Ractive as our view here)
+ 4. combine and minify our CSS (we'll use clean-css)
+ 5. version our assets (js/css). (We use node-version-assets module) Browsers cache js/css files so if we release a new version of our application the browser could continue to serve the previous version causing confusion. By versioning our files each build/release, we will force the browser to download the latest version.
+ 6. We might also want to load certain assets (js/css) from CDN servers for two reasons:
+	 - popular libraries such as jQuery/Bootstrap etc. could already be cached by the browser from previous visits to other sites that served those same libraries. We don't have to bundle those libraries with out application, leading to a smaller bundle that can be downloaded (and thus launch) faster on the client browser.
+	 - every time we release a new version of our application, those CDN hosted libraries will now be available in the browser cache (except where we updated a library to a new version as well).
+ 7. Optionally we can zip up our distribution eg. *app-0.0.1.zip*.
 
-In other words, we want to use ES6 features and they must be just as easy to develop with as if we were using ES5.
-
-But what about debugging? If we were to debug the transpiled ES5 code in the browser, there would be a major difference between our original source code and generated code. Stepping over code in the debugger won't correspond to our source code.
-
-Fear not, [SourceMaps]() to the rescue. SourceMaps are text files that informs browsers how to convert the compiled ES5 code *back* to it's original ES6 source. So when you open a debugger in the browser, the code you step through will be exactly the same as the code in your */src* folder, each ES6 modules as a separate script.
-
-Yay! You can have your cake and eat it. Can you gimme a "Oh Yeah"?
 
 ## <a id="solution"></a>The Solution
 Let's get down to business.
 
 We need to convert (transpile) the ES6 features into ES5 features that browsers understand.
 
-We will use [Rollup]() to convert the ES6 Modules into ES5 code. Rollup has a couple output format options available, including [IIFE]() and [AMD](). IIFE is what we will setup here, because it is self contained (it does not need an library like [RequireJS]() to run) but you can use AMD if you want.
-
-We will  also use RollUp' watcher to automaticaly bundle the source when we make changes to files.
-
-We will also setup a distribution build so we can ship production code when we are need to release. The distribution build minimizes the IIFE and CSS as well as version the files, so when we make updates to our application in the future, the browser is forced to download our new version, instead of serving the old version from it's cache.
+We will use [Rollup]() to convert the ES6 Modules into ES5 code. Rollup has a couple of output format options available, including [IIFE]() and [AMD](). IIFE is what we will setup here, because it is self contained (it does not need an library like [RequireJS]() to run) but you can use AMD if you want.
 
 ### <a id="layout"></a>Project Layout
 
@@ -64,22 +64,22 @@ Here is the layout we will use for our web app:
          |-- lib // Racive, jQuery etc.
     |-- fonts
     |-- images
-    index.html
+    index.html    
 -- dev.js  // Node script to setup a development environment
 -- dist.js // Node script to setup a development environment
 ```
 
 ### <a id="index.html"></a>index.html
-We will start with our *index.html* which serves up our application. The entry point to our SPA is: ``` <script src="js/app/app.js">```.
-
-We also reference the application CSS: ```<link rel="stylesheet" type="text/css" href="css/site.css" />```.
+Below we list the full *index.html* content:
 
 ```html
+
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
         <title>My App</title>
+        <!-- Our app CSS -->
         <link rel="stylesheet" type="text/css" href="css/site.css" />
 
     </head>
@@ -92,126 +92,189 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
         <div id="container"></div> <!-- Our views will be rendered here -->
     </body>
 
-    <script src="js/app/app.js" defer nomodule></script>
+<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD.
+We can place them in comments as shown below. In our dist.js script we will create a function to comment the 
+local jQuery script and uncomment the CDN jQuery script. We can place as many external libraries in the comments
+as we like. -->
+
+	<!-- start DEV imports -->
+	<script src="js/lib/jquery-3.2.1.js"></script>
+    <!-- end DEV imports -->
+
+    <!-- start PROD imports
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+end PROD imports -->
+
+    <script src="js/app/app.js" defer nomodule></script> <!-- Entry point to our app -->
+
 </html>
 ```
 
-### <a id="dev.js"></a>dev.js
-We will use two separate Node scripts for our project, one to run an development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
+We will start with our *index.html* which serves up our application. The entry point to our SPA is: ``` <script src="js/app/app.js">```.
 
-**Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and build environment.
+We also use an external library, jQuery in this case, so we have a second ```<script src="js/lib/jquery-3.2.1.js">```.
+The surrounding comments of our jQuery librari is important. When we develop our application, we want to load the jQuery lib from our local server. But in production we to serve it from CDN, so that we can independently upgrade our application or external library without having to re-download the other.
 
-*dev.js* is the script we use to start our development environment. We will setup the minimum we need to get the job done and not necessarily best practices.
+We wrap our DEV libraries with the comment:
 
-Our project layout has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
+```html
+ <!-- start DEV imports -->
+	<script src="lib/jquery3.2.1.js"></script>
+ <!-- end DEV imports -->
+```
 
-In order to view the application in a browser we need to setup a server to serve content from our *build* folder. In our *dev.js* script we will also setup an Express server.
+Then we comment our PROD libraries with:
 
-We need a way to keep the *src* and *build* folder in sync, so whenever files are changed in the *src* folder they must be copied to the *build* folder.
+```html
+<!-- start PROD imports
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+end PROD imports -->
+```
 
-First we create a function, **watchAssets** to watch the *src* folder for files that are updated, and copy those files to the *build* folder. When this function is called upon startup, all files will be copied to the *build* folder.
+We will add a function to *dist.js* called **uncommentCDN**, which replaces the HTML comments as follows:
+
+```html
+ <!-- start DEV imports
+	<script src="lib/jquery3.2.1.js"></script>
+end DEV imports -->
+
+<!-- start PROD imports -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- end PROD imports -->
+```
+
+Our jQuery script that was served from our local server in development, will be served from a CDN in production. Neat right?
+
+## <a id="dist.js"></a>dist.js
+We will use two separate Node scripts for our project, one to run a development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one script if you like.
+
+**Note:** you can also use Grunt/Gulp/somethingElse to setup a dev and dist environment.
+
+*dist.js* is the script we use to create a production ready distribution of our application.
+
+Our project structure has a *src* folder where we will develop our application and a *dist* folder where our distribution will be written to.
+
+We structure *dist.js* into logical parts (functions) that match our [Goals Section](). All these parts will return a promise so we don't have to worry about which part performs asynchronous work.  
+
+First we create a **start** function that assembles (calls) all these parts into our final distribution. Once we have **start** defined we will add all the individual parts to our script.
 
 ```js
 let fsPath = require( 'path' );
-var chokidar = require( 'chokidar' );
 var fs = require( 'fs-extra' );
 var rollup = require( 'rollup' );
 var watch = require( 'rollup-watch' );
 var rollupConfig = require( './rollup.config.js' ); // Rollup config is covered in the next section
 
-// For our Express server
-var express = require( 'express' );
-var open = require( 'open' );
-
 // Define variables for src and build folders
-const buildFolder = 'build';
+const distFolder = 'dist';
 const srcFolder = 'src';
 
-// Watch files for changes and copy changed files to the build folder
-watchAssets();
+// Starts the distribution
+start();
 
-// Start transpiling and bundling our ES6 JS into ES5 JS.
-compileJS();
+// The distribution is handled in the start function(). The process is broken
+// into logical parts (functions) all of which returns a promise.
+function start() {
 
-// Setup a watcher to copy changed files to the build folder
-function watchAssets() {
-
-	chokidar.watch( srcFolder + '/**/*' ).on( 'all', ( event, path ) => {
-
-		// No need to copy directories
-		if ( ! fs.lstatSync( path ).isDirectory() ) {
-
-			writeToDest( path );
-		}
-	} );
+	clean().    	           // Remove the previous build
+		then( copyAssets ).    // Copy assets from 'src' to 'dist' folder
+		then( compileJS ).     // Copy assets from 'src' to 'dist' folder
+		then( compileCss ).    //
+		then( uncommentCDN ).  // serve libraries from CDN in production
+		then( versionAssets ). // version assets to ensure browser won't cache old
+							   // assets when making new releases.
+		catch( ( e ) => {      // catch any error and log to console
+			console.log( e );
+		} );
 }
+```
 
-// Function to write given path to the build folder
-function writeToDest( path ) {
+We can already see how all the distribution parts fit together. Next we start adding the individual parts.
 
-	// Set buildPath by replacing 'src' str with 'build' str
-	let buildPath = buildFolder + path.slice(srcFolder.length);
+Below we have **clean()**, to remove the previous distribution, and **copyAssets()** to copy all the assets (JS/CSS/images etc) from the *src* to the *dist* folder.
 
-	let buildDir = fsPath.dirname( buildPath );
+```js
+function clean() {
+	fs.removeSync( docsFolder );
 
 	// Ensure the build folder exists
-	fs.ensureDirSync( buildDir );
-
-	fs.copySync( path, buildPath );
+	fs.ensureDirSync( docsFolder );
+return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 
+function copyAssets( ) {
+	fs.copySync( srcFolder, docsFolder );
+	return Promise.resolve(); // This function is synchronous so we return a resolved promise
+}
+```
+
+Next up is **compileJS()** which transforms ES6 into ES5 and bundles ES6 modules into IIFE format.
+
+**Note**: *dist.js* use the same **rollup.config.js** file that is used in *dev.js*.
+
+```js
 // Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
-function compileJS() {
+function compileJS( ) {
+	let p = new Promise( function ( resolve, reject ) {
 
-	// setup rollup' watcher in order to run rollup
-	// whenever a JS file is changed
-	let watcher = watch( rollup, rollupConfig );
+		// Note that findRollupPlugin looks up a Rollup plugin with the same name in order
+		// for us to further configure it before running the production build.
+		let ractiveCompiler = findRollupPlugin( "ractive-compiler" );
 
-	// We setup a listener for certain Rollup events
-	watcher.on( 'event', e => {
+		ractiveCompiler.compile = true; // We want to precompile Ractive templates
 
-		// If Rollup encounters an error, we log to console so we can debug
-		if ( e.code === 'ERROR' ) {
-			console.log( e );
-		}
+		rollupConfig.plugins.push( uglify( ) ); // Add uglify plugin to minimize the JS
 
-		// Note: every time a file changes Rollup will tire a 'BUILD_END' event
-		if ( e.code == 'BUILD_END' ) {
+		rollup.rollup( rollupConfig )
+				.then( function ( bundle ) {
+					// Generate bundle + sourcemap
 
-			// At this point our JS has been transpiled and bundled into ES5 code.
-			// We can start a Node based server such as Express to view our application.
-			// Or we can setup an external server to serve content from the
-			// 'build' folder.
+					bundle.write( {
+						dest: 'dist/js/app/app.js',
+						format: rollupConfig.targets[0].format,
+						sourceMap: true
+					} ).then( function ( ) {
+						resolve();
 
-			startServer(); // Later on we will add a startServer script for Express.
-		}
+					} ).catch( function ( e ) {
+						reject( e );
+					} );
+
+				} ).catch( function ( e ) {
+			reject( e );
+		} );
 	} );
 
-	// Starting express server is optional. If you are developing on an external
-	// server, you can remove this function
-	function startServer() {
+	return p;
+}
 
-		// Start an express serve for our dev environment
-		var app = express();
-		let serverFolder = path.join(__dirname, buildFolder );
-		app.use( express.static( serverFolder ) );
-		app.listen( 9988 );
-
-		// Launch browser
-		open( 'http://localhost:9988/' );
+// When building for production we want to change some of the plugin options, eg. precompile templates, 
+// uglify etc. This function allow us to return plugins based on their names, so we can further configure 
+// them before running  rollup
+function findRollupPlugin( name ) {
+	for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
+		let plugin = rollupConfig.plugins[i];
+		if ( plugin.name === name ) {
+			return plugin;
+		}
+		return null;
 	}
 }
 ```
 
-Hopefully not too daunting? That covers our *dev.js* script.
+**Note**: we lookup the plugin  **ractive-compiler**, which is a plugin to *import* and *compile* Ractive templates. We only want to compile Ractive templates in production so we set the plugin *compile* property to true. In development we don't want to compile the templates beforehand, so this option is set to false in [rollup.config.js](#rollup.config.js).
 
-The only outstanding part is the Rollup configuration. Let's cover it next.
+See [rollup-plugin-ractive-compiler](https://www.npmjs.com/package/rollup-plugin-ractive-compiler) for details on the **ractive-compiler** plugin.
+
+Hopefully things aren't too daunting at this stage? That covers our *dev.js* script.
+
+The last piece of the puzzle is the Rollup configuration. Let's cover that next.
 
 ### <a id="rollup.config.js"></a>rollup.config.js
 
 Below is our Rollup configuration to bundle our ES6 Modules into an output format that the browser can understand. We will use [iife]() as the output format. We also setup the [Buble]() plugin to convert ES6 syntax (classes, arrow functions) into ES5 syntax.
 
-*Note:* the rollup.config.js script is shared between the [production](#dist-setup.md) and development environments.
+*Note:* the rollup.config.js script is shared between the production and [development](#dev-setup.md) environments.
 
 ```js
 var buble = require( 'rollup-plugin-buble' );
@@ -251,7 +314,7 @@ module.exports = {
 
 	targets: [
 		{
-			dest: 'build/js/app/myapp.js', // Rollup output during development,
+			dest: 'build/js/app/myapp.js', // Rollup output during development, 
 						       // ignored for production build
 			format: 'iife',
 			 sourceMap: true // NB: generating a SourceMap allows us to debug
@@ -259,19 +322,22 @@ module.exports = {
 		}
 	]
 };
+
 ```
-Now we have a Node script to transpile and bundle our ES6 source into an ES5 bundle we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
+Now we have a Node environment setup that transpiles and bundles our ES6 source into an ES5 bundle that we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
+
+This cannot get any better!
 
 ### <a id="package.json"></a>package.json
 The ```package.json``` below lists all the node modules required to setup a *dev* and *production* environment.
 
 ```json
 {
-  "name": "myApp",
-  "description": "My application",
+  "name": "journeyExmples",
+  "description": "Journey examples",
   "version": "0.0.1",
   "main": "build/js/app/app.js",
-  "module": "docs/js/app/app.mjs.js",
+  "module": "dist/js/app/app.mjs.js",
   "devDependencies": {
     "chokidar": "1.6.1",
     "clean-css": "4.1.2",
@@ -295,6 +361,7 @@ The ```package.json``` below lists all the node modules required to setup a *dev
     "dev": "node dev"
   }
 }
+
 ```
 Download and install all required modules with the command:
 > npm i
