@@ -227,7 +227,7 @@ function compileJS( ) {
 					// Generate bundle + sourcemap
 
 					bundle.write( {
-						dest: pkg.moduleDocs,
+						dest: 'dist/js/app/app.js',
 						format: rollupConfig.targets[0].format,
 						sourceMap: true
 					} ).then( function ( ) {
@@ -332,7 +332,7 @@ The ```package.json``` below lists all the node modules required to setup a *dev
   "description": "Journey examples",
   "version": "0.0.1",
   "main": "build/js/app/app.js",
-  "moduleDocs": "docs/js/app/app.js",
+  "module": "dist/js/app/app.mjs.js",
   "devDependencies": {
     "chokidar": "1.6.1",
     "clean-css": "4.1.2",
