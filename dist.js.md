@@ -14,6 +14,7 @@ var glob = require( 'glob' );
 var replaceInFile = require( 'replace-in-file' );
 var versioning = require( 'node-version-assets' );
 
+// Set source/build folders
 const distFolder = 'dist';
 const srcFolder = 'src';
 
