@@ -140,6 +140,7 @@ function uncommentCDN( ) {
 
     } catch ( error ) {
         console.error( 'Error occurred while updating CDN path for ', pathToHtml, error );
+	return Promise.reject( error );
     }
 
     return Promise.resolve();
