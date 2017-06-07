@@ -151,12 +151,17 @@ function versionAssets( ) {
 
     let htmlPath = path.join( distFolder, 'index.html' );
 
-    var version = new versioning( {
-        assets: [ distFolder + '/css/site.css', distFolder + '/js/app/app.js' ],
+    let version = new versioning( {
+
+        assets: [
+            distFolder + '/css/site.css',
+            distFolder + '/js/app/app.js'
+        ],
+
         grepFiles: [ htmlPath ]
     } );
 
-    var promise = new Promise( function ( resolve, reject ) {
+    let promise = new Promise( function ( resolve, reject ) {
 
         version.run( function () {
             resolve();
