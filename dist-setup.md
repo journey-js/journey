@@ -482,37 +482,38 @@ module.exports = {
 		// for production use. We disable compile by default and switch it back on for
 		// production in dist.js
 		ractiveCompiler( {
-			include: [ '**/*.html' ],
+            include: [ '**/*.html' ],
 
-			compile: false,
-		} ),
+            compile: false,
+        } ),
 
-		// this plugin allows us to import plain text/json files as ES6 Modules.
-		// We configure this plugin to handle files with the pattern 'xxx.text.html'.
-		stringToModule({
-			include: '**/*.text.html'
-		}),
+        // this plugin allows us to import plain text/json files as ES6 Modules.
+        // We configure this plugin to handle files with the pattern 'xxx.text.html'.
+        stringToModule({
+            include: '**/*.text.html'
+        }),
 
-		// Setup Buble plugin to transpiler ES6 to ES5
-		buble( {
-			exclude: [ '**/*.html' ] // Skip HTML files
-		} ),
+        // Setup Buble plugin to transpiler ES6 to ES5
+        buble( {
+            exclude: [ '**/*.html' ] // Skip HTML files
+        } ),
 
-		includePaths( includePathOptions )
-	],
-	moduleName: 'myApp',
+        includePaths( includePathOptions )
+    ],
 
-	targets: [
-		{
-			dest: 'build/js/app/myapp.js', // Rollup output during development,
-						       // ignored for production build
-			format: 'iife',
-			 sourceMap: true // NB: generating a SourceMap allows us to debug
+    moduleName: 'myApp',
+
+    targets: [
+        {
+            dest: 'build/js/app/myapp.js', // Rollup output during development,
+                                           // for distribution this value is
+                                           // changed to 'dist/js/app/app.js'
+           format: 'iife',
+           sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
 		}
 	]
 };
-
 ```
 Now we have a Node environment setup that transpiles and bundles our ES6 source into an ES5 bundle that we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
 
