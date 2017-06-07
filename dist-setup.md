@@ -473,15 +473,15 @@ var stringToModule = require( 'rollup-plugin-string' );
 
 module.exports = {
 
-	 entry: 'src/js/app.js', // app.js bootstraps our application.
+    entry: 'src/js/app.js', // app.js bootstraps our application.
                             // app.js is referenced from index.html <script> tag
 
-	plugins: [
+    plugins: [
 
-		// this plugin allows us to import Ractive templates and optionally compile them
-		// for production use. We disable compile by default and switch it back on for
-		// production in dist.js
-		ractiveCompiler( {
+        // this plugin allows us to import Ractive templates and optionally compile them
+        // for production use. We disable compile by default and switch it back on for
+        // production in dist.js
+        ractiveCompiler( {
             include: [ '**/*.html' ],
 
             compile: false,
@@ -507,12 +507,12 @@ module.exports = {
         {
             dest: 'build/js/app/myapp.js', // Rollup output during development,
                                            // for distribution this value is
-                                           // changed to 'dist/js/app/app.js'
-           format: 'iife',
-           sourceMap: true // NB: generating a SourceMap allows us to debug
+                                        // changed to 'dist/js/app/app.js'
+            format: 'iife',
+            sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
-		}
-	]
+        }
+    ]
 };
 ```
 Now we have a Node environment setup that transpiles and bundles our ES6 source into an ES5 bundle that we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
