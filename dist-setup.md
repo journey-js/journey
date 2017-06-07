@@ -92,7 +92,7 @@ Below we list the full *index.html* content:
     </body>
 
 <!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD.
-We can place them in comments as shown below. In our dist.js script we will create a function to comment the 
+We can place them in comments as shown below. In our dist.js script we will create a function to comment the
 local jQuery script and uncomment the CDN jQuery script. We can place as many external libraries in the comments
 as we like. -->
 
@@ -145,7 +145,7 @@ end DEV imports -->
 Our jQuery script that was served from our local server in development, will be served from a CDN in production. Neat right?
 
 ## <a id="dist.js"></a>dist.js
-We will use two separate Node scripts for our project, one to run a development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one if you like.
+We will use two separate build scripts for our project, one to start a development environment, *dev.js*, and one to create a distribution with, *dist.js*. You can combine these two scripts into one if you like.
 
 *dist.js* is the script we use to create a production ready distribution of our application.
 
@@ -153,9 +153,9 @@ You can find the complete *dist.js* source [here](dist.js.md).
 
 Our project structure has a *src* folder where we will develop our application and a *dist* folder where our distribution will be written to.
 
-We structure *dist.js* into logical parts (functions) that match our [Goals Section](). All these parts will return a promise so we don't have to worry about which part performs asynchronous work.  
+We structure *dist.js* into sections (JS functions) that match our [Goals](#goal). The functions will return a promise so we don't have to worry about which section performs asynchronous work.  
 
-First we create a **start** function that assembles (calls) all these parts into our final distribution. Once we have **start** defined we will add all the individual parts to our script.
+First we create a **start** function that assembles all the various sections into a distribution. Once we have **start** defined we will add the different sections to our script.
 
 ```js
 let fsPath = require( 'path' );
@@ -172,13 +172,13 @@ const srcFolder = 'src';
 start();
 
 // The distribution is handled in the start function(). The process is broken
-// into logical parts (functions) all of which returns a promise.
+// into logical sections (functions) all of which returns a promise.
 function start() {
 
-	clean().    	           // Remove the previous build
-		then( copyAssets ).    // Copy assets from 'src' to 'dist' folder
-		then( compileJS ).     // Copy assets from 'src' to 'dist' folder
-		then( compileCss ).    //
+	clean().    	           // remove the previous distribution
+		then( copyAssets ).    // copy assets from 'src' to 'dist' folder
+		then( compileJS ).     // compile/bundle/uglify the JS from 'src' to 'dist' folder
+		then( compileCss ).    // bundle/minimize the CSS from 'src' to 'dist' folder
 		then( uncommentCDN ).  // serve libraries from CDN in production
 		then( versionAssets ). // version assets to ensure browser won't cache old
 							   // assets when making new releases.
@@ -188,9 +188,9 @@ function start() {
 }
 ```
 
-We can already see how all the distribution parts fit together. Next we start adding the individual parts.
+We can already see how all the sections fit together to form a distribution. Next we start adding the individual sections.
 
-Below we have **clean()**, to remove the previous distribution, and **copyAssets()** to copy all the assets (JS/CSS/images etc) from the *src* to the *dist* folder.
+Below we show the **clean()** function to remove the previous distribution:
 
 ```js
 function clean() {
@@ -200,16 +200,19 @@ function clean() {
 	fs.ensureDirSync( docsFolder );
 return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
+```
 
+Next up is **copyAssets()** which copies all the assets (JS/CSS/images etc) from the *src* to the *dist* folder:
+```js
 function copyAssets( ) {
 	fs.copySync( srcFolder, docsFolder );
 	return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 ```
 
-Next up is **compileJS()** which transforms ES6 into ES5 and bundles ES6 modules into IIFE format.
+Below is **compileJS()** which transforms ES6 into ES5 and bundles ES6 modules into IIFE format.
 
-**Note**: *dist.js* use the same **rollup.config.js** file that is used in *dev.js*.
+**Note**: *dist.js* share the same **rollup.config.js** file that is used in *dev.js*. Because of that we will modify 'rollup.config.js' when building a distribution, for example *minimize* Javascript and *compiling* templates.
 
 ```js
 // Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
@@ -217,22 +220,24 @@ function compileJS( ) {
 	let p = new Promise( function ( resolve, reject ) {
 
 		// Note that findRollupPlugin looks up a Rollup plugin with the same name in order
-		// for us to further configure it before running the production build.
+		// for us to further configure the plugin before running the production build.
 		let ractiveCompiler = findRollupPlugin( "ractive-compiler" );
 
 		ractiveCompiler.compile = true; // We want to precompile Ractive templates
 
-		rollupConfig.plugins.push( uglify( ) ); // Add uglify plugin to minimize the JS
+		rollupConfig.plugins.push( uglify( ) ); // Add uglify plugin to minimize JS
 
 		rollup.rollup( rollupConfig )
 				.then( function ( bundle ) {
 					// Generate bundle + sourcemap
 
 					bundle.write( {
-						dest: 'dist/js/app/app.js',
-						format: rollupConfig.targets[0].format,
-						sourceMap: true
+						dest: 'dist/js/app/app.js', // Output file
+						format: rollupConfig.targets[0].format, // output format IIFE, CJS etc.
+						sourceMap: true // Yes we want a sourcemap
+
 					} ).then( function ( ) {
+                        // JS compilation step completed, so we continue to the next section.
 						resolve();
 
 					} ).catch( function ( e ) {
@@ -246,10 +251,22 @@ function compileJS( ) {
 
 	return p;
 }
+```
 
-// When building for production we want to change some of the plugin options, eg. precompile templates, 
-// uglify etc. This function allow us to return plugins based on their names, so we can further configure 
-// them before running  rollup
+First we modify the rollConfig object for a production build by switching on the *compile* property for templates and adding the *uglify()* plugin to minimize our Javascript. *uglify* is a node module that will *minimize* the JS code.
+
+Then we pass the rollupConfig instance to rollup to bundle the our JS to 'dist/js/app/app.js'. We also set  the output format to the format specified in rollupConfig and that a sourcemap be generated.
+
+**Note**: we lookup the plugin  **ractive-compiler**, which is a plugin to *import* and *compile* Ractive templates. We only want to compile Ractive templates in production so we set the plugin *compile* property to true. In development we don't want to compile the templates beforehand, so this option is defaulted to false in [rollup.config.js](#rollup.config.js).
+
+See [rollup-plugin-ractive-compiler](https://www.npmjs.com/package/rollup-plugin-ractive-compiler) for details on the **ractive-compiler** plugin.
+
+Here is the function to find the Rollup plugin:
+
+```js
+// When building for production we want to change some of the plugin options, eg. precompile
+// templates,  uglify etc. This function allow us to return plugins based on their names,
+// so we can further configure them before running Rollup
 function findRollupPlugin( name ) {
 	for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
 		let plugin = rollupConfig.plugins[i];
@@ -261,11 +278,183 @@ function findRollupPlugin( name ) {
 }
 ```
 
-**Note**: we lookup the plugin  **ractive-compiler**, which is a plugin to *import* and *compile* Ractive templates. We only want to compile Ractive templates in production so we set the plugin *compile* property to true. In development we don't want to compile the templates beforehand, so this option is set to false in [rollup.config.js](#rollup.config.js).
+Time to look at **compileCss**:
 
-See [rollup-plugin-ractive-compiler](https://www.npmjs.com/package/rollup-plugin-ractive-compiler) for details on the **ractive-compiler** plugin.
+```js
+// Bundle and minimize the CSS to the distribution folder
+function compileCss( ) {
 
-Hopefully things aren't too daunting at this stage? That covers our *dev.js* script.
+    let source = path.join( srcFolder, 'css', 'site.css' );
+
+    // We use cleanCSS node module to bundle and minimize the CSS
+    let result = new CleanCSS( { rebaseTo: path.join( srcFolder, 'css' ) } ).minify( [ source ] );
+
+	let compiledCss = result.styles;
+
+	let cssFolder = path.join( distFolder, 'css' );
+	fs.ensureDirSync( cssFolder );
+
+	let target = path.join( cssFolder, 'site.css' );
+	fs.writeFileSync( target, compiledCss, 'utf-8' );
+	return Promise.resolve();
+}
+```
+
+We use the node module *cleanCSS* to bundle and minimize our CSS. We pass our main CSS file, *src/css/site.css*, to *cleanCSS* which bundles all the css files referenced through *@import* statements into a single file, minimizes the bundle and writes the output to  *dist/css/site.css*.
+
+Simple enough.
+
+Below we will cover **uncommentCDN** which allows us to load third-party libraries from our local server during development and [CDN](https://en.wikipedia.org/wiki/Content_delivery_network) networks in production.
+
+As the name suggests *uncommentCDN* is a simple *find/replace* utility to add/remove comments in our *index.html* file.
+
+Recall from [index.html](#index.html) we had these comments:
+```html
+<!-- start DEV imports -->
+<script src="js/lib/jquery-3.2.1.js"></script>
+<!-- end DEV imports -->
+
+<!-- start PROD imports
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+end PROD imports -->
+```
+
+We can see above that *jquery-3.2.1* is loaded from the local folder *js/lib* during development. In production we want to serve jquery from the CDN *https://ajax.googleapis.com/...*.
+
+To do that **uncommentCDN** replaces the comments
+
+''``` <!-- start DEV imports -->```
+with
+ ``` <!-- start DEV imports```
+
+ and
+
+  ``` <!-- end DEV imports-->```
+   with
+    ``` end DEV imports -->```
+
+which effectively comments out the jQuery script:
+
+```html
+<!-- start DEV imports
+<script src="js/lib/jquery-3.2.1.js"></script>
+end DEV imports -->
+```
+
+Similarly it replaces the comments
+
+```<!-- start PROD imports```
+with
+```<!-- start PROD imports --> ```
+
+and
+```end PROD imports -->```
+with
+```<!-- end PROD imports -->```
+
+which gives us the uncommented CDN script:
+```html
+<!-- start PROD imports-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- end PROD imports -->
+```
+
+We can add as many third-party libraries inside the DEV/PROD scripts as we like and they will be served from CDN in production.
+
+Below is **uncommentCDN**:
+
+```js
+// Replace comments in index.html so that external libraries are served from CDN
+function uncommentCDN( ) {
+
+    // Set path to dist/index.html where replaceInFile module must find and replace strings.
+    // replaceInFile will update the file in place, hence we refer to index.html in 'dist'
+    // instead of 'src'.
+    let pathToHtml = path.join( distFolder, 'index.html' );
+
+    let options = {
+
+        files: pathToHtml,
+
+        from: [
+            /<!-- start PROD imports/g, // 1
+            /end PROD imports -->/g, // 2
+            /<!-- start DEV imports -->/g, // 3
+            /<!-- end DEV imports -->/g ], // 4
+
+        to: [
+            '<!-- start PROD imports -->', // 1
+            '<!-- end PROD imports -->', // 2
+            '<!-- start DEV imports', // 3
+            'end DEV imports -->'          // 4
+        ]
+    };
+
+    try {
+        replaceInFile.sync( options );
+        console.log( 'Updated CDN path for ', pathToHtml );
+
+    } catch ( error ) {
+        console.error( 'Error occurred while updating CDN path for ', pathToHtml, error );
+        return Promise.reject( error );
+    }
+
+    return Promise.resolve();
+}
+```
+
+Finally we need a way to version our JS and CSS files. By versioning our files we ensure that when we perform updates to our software the browser won't cache and serve previous versions of the files.
+
+Versioninig is performed by renaming the CSS and JS files and updating their references in *index.html*.
+
+For example given a Javascript file, *js/myapp.js*, and *index.html*:
+
+```html
+<script src="js/myapp.js"></script>
+```
+we can version the JS by taking an MD5 hash of the content of *js/myapp.js*, append the hash value to the filename and finally update *index.html* to point to the new filename.
+
+So if the content of *js/myapp.js* hashes to the value: *5703e47c6c8e57392591be0dbbae506c*, we rename:
+ ```js/myapp.js```
+ to:
+ ```js/myapp.5703e47c6c8e57392591be0dbbae506c.js```
+
+and update *index.html* as follows:
+
+```html
+<script src="js/myapp.5703e47c6c8e57392591be0dbbae506c.js"></script>
+```
+
+We version our assets with the function **versionAssets**:
+
+```js
+// Version the JS and CSS so that future updates won't be cached by browser
+function versionAssets( ) {
+
+    let htmlPath = path.join( distFolder, 'index.html' );
+
+    var version = new versioning( {
+
+        assets: [
+            distFolder + '/css/site.css',
+            distFolder + '/js/app/app.js'
+        ],
+
+        grepFiles: [ htmlPath ]
+    } );
+
+    var promise = new Promise( function ( resolve, reject ) {
+
+        version.run( function () {
+            resolve();
+        } );
+    } );
+
+    return promise;
+}
+```
+
+That covers our *dist.js* script. Hopefully not too daunting?
 
 **Note:** you can also use Grunt/Gulp/somethingElse to develop and create a distribution with.
 
@@ -315,7 +504,7 @@ module.exports = {
 
 	targets: [
 		{
-			dest: 'build/js/app/myapp.js', // Rollup output during development, 
+			dest: 'build/js/app/myapp.js', // Rollup output during development,
 						       // ignored for production build
 			format: 'iife',
 			 sourceMap: true // NB: generating a SourceMap allows us to debug
