@@ -163,7 +163,7 @@ function start() {
 
 When developing we need a way to keep the *src* and *build* folder in sync, so whenever files are changed in the *src* folder they must be copied to the *build* folder.
 
-We create the function **watchAssets** to watch the *src* folder for files that are updated, and copy those files to the *build* folder. When this function is called upon startup, all files will be copied to the *build* folder.
+We create the function **watchAssets** to watch the *src* folder for files that are updated, and copy those files to the *build* folder. When this function is called upon startup, all files (except JS) will be copied to the *build* folder. We configure [Chokidar](https://github.com/paulmillr/chokidar) to ignore Javascript (*.js) files as they are managed by Rollup.
 
 ```js
 // Setup a watcher on our 'src' so that modified files are
