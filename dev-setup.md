@@ -170,18 +170,28 @@ We create the function **watchAssets** to watch the *src* folder for files that 
 // copied to the build folder
 function watchAssets() {
 
-	// Watch all files for changes and when a file is created, updated or deleted the 'all' events is fired.
-	chokidar.watch( srcFolder + '/**/*' ).on( 'all', ( event, path ) => {
+    let p = new Promise( function ( resolve, reject ) {
 
-		// No need to copy directories
-		if ( ! fs.lstatSync( path ).isDirectory() ) {
+        // Watch all files for changes and when a file is created, updated or deleted the 'all' events is fired.
+        let watcher = chokidar.watch( srcFolder + '/**/*' );
 
-			// We copy the changed file to the build folder
-			writeToDest( path );
-		}
-	} );
+        // 'ready' event fires when all files have been scanned and copied to the 'build' folder
+        watcher.on( 'ready', ( ) => {
+            resolve('initial scan complete');
+        } );
 
-	return Promise.resolve();
+        watcher.on( 'all', ( event, path ) => {
+
+            // No need to copy directories
+            if ( ! fs.lstatSync( path ).isDirectory() ) {
+
+                // We copy the changed file to the build folder
+                writeToDest( path );
+            }
+        } );
+    } );
+
+    return p;
 }
 ```
 
