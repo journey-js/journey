@@ -194,10 +194,10 @@ Below we show the **clean()** function to remove the previous distribution:
 
 ```js
 function clean() {
-    fs.removeSync( docsFolder );
+    fs.removeSync( distFolder );
 
     // Ensure the build folder exists
-    fs.ensureDirSync( docsFolder );
+    fs.ensureDirSync( distFolder );
     return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 ```
@@ -205,7 +205,7 @@ function clean() {
 Next up is **copyAssets()** which copies all the assets (JS/CSS/images etc) from the *src* to the *dist* folder:
 ```js
 function copyAssets( ) {
-    fs.copySync( srcFolder, docsFolder );
+    fs.copySync( srcFolder, distFolder );
     return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 ```
@@ -232,7 +232,7 @@ function compileJS( ) {
                 // Generate bundle + sourcemap
 
                 bundle.write( {
-                    dest: 'dist/js/app/app.js', // Output file
+                    dest: distFolder + '/js/app/app.js', // Output file
                     format: rollupConfig.targets[0].format, // output format IIFE, CJS etc.
                     sourceMap: true // Yes we want a sourcemap
 
