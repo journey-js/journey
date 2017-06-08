@@ -268,13 +268,13 @@ Here is the function to find the Rollup plugin:
 // templates,  uglify etc. This function allow us to return plugins based on their names,
 // so we can further configure them before running Rollup
 function findRollupPlugin( name ) {
-	for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
-		let plugin = rollupConfig.plugins[i];
-		if ( plugin.name === name ) {
-			return plugin;
-		}
-		return null;
-	}
+    for ( let i = 0; i < rollupConfig.plugins.length; i ++ ) {
+        let plugin = rollupConfig.plugins[i];
+        if ( plugin.name === name ) {
+            return plugin;
+        }
+        return null;
+    }
 }
 ```
 
