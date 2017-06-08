@@ -175,14 +175,14 @@ start();
 // into logical sections (functions) all of which returns a promise.
 function start() {
 
-	clean()    	               // remove the previous distribution
-		.then( copyAssets )    // copy assets from 'src' to 'dist' folder
-		.then( compileJS )     // compile/bundle/uglify the JS from 'src' to 'dist' folder
-		.then( compileCss )    // bundle/minimize the CSS from 'src' to 'dist' folder
-		.then( uncommentCDN )  // serve libraries from CDN in production
-		.then( versionAssets ) // version assets to ensure browser won't cache old
+    clean()    	               // remove the previous distribution
+        .then( copyAssets )    // copy assets from 'src' to 'dist' folder
+        .then( compileJS )     // compile/bundle/uglify the JS from 'src' to 'dist' folder
+        .then( compileCss )    // bundle/minimize the CSS from 'src' to 'dist' folder
+        .then( uncommentCDN )  // serve libraries from CDN in production
+        .then( versionAssets ) // version assets to ensure browser won't cache old
                                // assets when making new releases.
-        catch( ( e ) => {      // catch any error and log to console
+        .catch( ( e ) => {      // catch any error and log to console
             console.log( e );
         } );
 }
@@ -194,19 +194,19 @@ Below we show the **clean()** function to remove the previous distribution:
 
 ```js
 function clean() {
-	fs.removeSync( docsFolder );
+    fs.removeSync( docsFolder );
 
-	// Ensure the build folder exists
-	fs.ensureDirSync( docsFolder );
-return Promise.resolve(); // This function is synchronous so we return a resolved promise
+    // Ensure the build folder exists
+    fs.ensureDirSync( docsFolder );
+    return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 ```
 
 Next up is **copyAssets()** which copies all the assets (JS/CSS/images etc) from the *src* to the *dist* folder:
 ```js
 function copyAssets( ) {
-	fs.copySync( srcFolder, docsFolder );
-	return Promise.resolve(); // This function is synchronous so we return a resolved promise
+    fs.copySync( srcFolder, docsFolder );
+    return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 ```
 
@@ -247,10 +247,10 @@ function compileJS( ) {
             } ).catch( function ( e ) {
                 reject( e );
             } );
-        } );
+    } );
 
-        return p;
-    }
+    return p;
+}
 ```
 
 First we modify the rollConfig object for a production build by switching on the *compile* property for templates and adding the *uglify()* plugin to minimize our Javascript. *uglify* is a node module that will *minimize* the JS code.
