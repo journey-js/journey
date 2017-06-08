@@ -4,7 +4,6 @@ Below is the complete rollup.config.js.
 
 ```js
 var buble = require( 'rollup-plugin-buble' );
-var replacePathComment = require( './rollup-plugin-replacetPath' );
 var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
 var stringToModule = require( 'rollup-plugin-string' );
 var includePaths = require( 'rollup-plugin-includepaths' );
@@ -19,7 +18,7 @@ let includePathOptions = {
 };
 
 module.exports = {
-    entry: 'src/js/app/start.js',
+    entry: 'src/js/app/app.js',
     plugins: [
 
         ractiveCompiler( {
@@ -37,10 +36,6 @@ module.exports = {
             transforms: {
                 dangerousForOf: true
             }
-        } ),
-
-        replacePathComment( {
-            include: '**/*.js'
         } ),
 
         includePaths( includePathOptions )
