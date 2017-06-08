@@ -456,7 +456,7 @@ function versionAssets( ) {
 
 That covers our *dist.js* script. Hopefully not too daunting?
 
-**Note:** you can also use Grunt/Gulp/somethingElse to develop and create a distribution with.
+**Note:** you can also use Webpack/Grunt/Gulp/somethingElse to develop and create a distribution with.
 
 The last piece of the puzzle is the Rollup configuration. Let's cover that next.
 
