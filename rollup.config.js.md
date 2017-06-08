@@ -12,47 +12,47 @@ var includePaths = require( 'rollup-plugin-includepaths' );
 const pkg = require( './package.json' );
 
 let includePathOptions = {
-	include: { },
-	paths: [ '../journey/src/js', './src/js', '../../ractive/src' ],
-	external: [ ],
-	extensions: [ '.js', '.json', '.html' ]
+    include: { },
+    paths: [ '../journey/src/js', './src/js', '../../ractive/src' ],
+    external: [ ],
+    extensions: [ '.js', '.json', '.html' ]
 };
 
 module.exports = {
-	entry: 'src/js/app/start.js',
-	plugins: [
+    entry: 'src/js/app/start.js',
+    plugins: [
 
-		ractiveCompiler( {
-			include: [ '**/*.html' ],
+        ractiveCompiler( {
+            include: [ '**/*.html' ],
 
-			compile: false,
-		} ),
-		
-		stringToModule({
-			include: '**/*.text.html'
-		}),
+            compile: false,
+        } ),
 
-		buble( {
-			exclude: [ '**/*.html' ],
-			transforms: {
-				dangerousForOf: true
-			}
-		} ),
+        stringToModule({
+            include: '**/*.text.html'
+        }),
 
-		replacePathComment( {
-			include: '**/*.js'
-		} ),
+        buble( {
+            exclude: [ '**/*.html' ],
+            transforms: {
+                dangerousForOf: true
+            }
+        } ),
 
-		includePaths( includePathOptions )
-	],
-	moduleName: 'journey',
+        replacePathComment( {
+            include: '**/*.js'
+        } ),
 
-	targets: [
-		{
-			dest: pkg.main,
-			format: 'iife',
-			sourceMap: true
-		}
-	]
+        includePaths( includePathOptions )
+    ],
+    moduleName: 'journey',
+
+    targets: [
+        {
+            dest: pkg.main,
+            format: 'iife',
+            sourceMap: true
+        }
+    ]
 };
 ```
