@@ -18,6 +18,9 @@ var versioning = require( 'node-version-assets' );
 const distFolder = 'dist';
 const srcFolder = 'src';
 
+// Start the distribution
+start( );
+
 // start() drives all the logic
 function start( ) {
 
@@ -171,7 +174,4 @@ function versionAssets( ) {
 
     return promise;
 }
-
-// Start the distribution
-start( );
 ```
