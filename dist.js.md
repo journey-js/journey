@@ -15,7 +15,7 @@ var glob = require( 'glob' );
 var replaceInFile = require( 'replace-in-file' );
 var versioning = require( 'node-version-assets' );
 
-const distFolder = 'docs';
+const distFolder = 'dist';
 const srcFolder = 'src';
 
 // start() drives all the logic
