@@ -175,16 +175,16 @@ start();
 // into logical sections (functions) all of which returns a promise.
 function start() {
 
-	clean().    	           // remove the previous distribution
-		then( copyAssets ).    // copy assets from 'src' to 'dist' folder
-		then( compileJS ).     // compile/bundle/uglify the JS from 'src' to 'dist' folder
-		then( compileCss ).    // bundle/minimize the CSS from 'src' to 'dist' folder
-		then( uncommentCDN ).  // serve libraries from CDN in production
-		then( versionAssets ). // version assets to ensure browser won't cache old
-							   // assets when making new releases.
-		catch( ( e ) => {      // catch any error and log to console
-			console.log( e );
-		} );
+	clean()    	               // remove the previous distribution
+		.then( copyAssets )    // copy assets from 'src' to 'dist' folder
+		.then( compileJS )     // compile/bundle/uglify the JS from 'src' to 'dist' folder
+		.then( compileCss )    // bundle/minimize the CSS from 'src' to 'dist' folder
+		.then( uncommentCDN )  // serve libraries from CDN in production
+		.then( versionAssets ) // version assets to ensure browser won't cache old
+                               // assets when making new releases.
+        catch( ( e ) => {      // catch any error and log to console
+            console.log( e );
+        } );
 }
 ```
 
@@ -217,40 +217,40 @@ Below is **compileJS()** which transforms ES6 into ES5 and bundles ES6 modules i
 ```js
 // Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
 function compileJS( ) {
-	let p = new Promise( function ( resolve, reject ) {
+    let p = new Promise( function ( resolve, reject ) {
 
-		// Note that findRollupPlugin looks up a Rollup plugin with the same name in order
-		// for us to further configure the plugin before running the production build.
-		let ractiveCompiler = findRollupPlugin( "ractive-compiler" );
+        // Note that findRollupPlugin looks up a Rollup plugin with the same name in order
+        // for us to further configure the plugin before running the production build.
+        let ractiveCompiler = findRollupPlugin( "ractive-compiler" );
 
-		ractiveCompiler.compile = true; // We want to precompile Ractive templates
+        ractiveCompiler.compile = true; // We want to precompile Ractive templates
 
-		rollupConfig.plugins.push( uglify( ) ); // Add uglify plugin to minimize JS
+        rollupConfig.plugins.push( uglify( ) ); // Add uglify plugin to minimize JS
 
-		rollup.rollup( rollupConfig )
-				.then( function ( bundle ) {
-					// Generate bundle + sourcemap
+        rollup.rollup( rollupConfig )
+            .then( function ( bundle ) {
+                // Generate bundle + sourcemap
 
-					bundle.write( {
-						dest: 'dist/js/app/app.js', // Output file
-						format: rollupConfig.targets[0].format, // output format IIFE, CJS etc.
-						sourceMap: true // Yes we want a sourcemap
+                bundle.write( {
+                    dest: 'dist/js/app/app.js', // Output file
+                    format: rollupConfig.targets[0].format, // output format IIFE, CJS etc.
+                    sourceMap: true // Yes we want a sourcemap
 
-					} ).then( function ( ) {
-                        // JS compilation step completed, so we continue to the next section.
-						resolve();
+                } ).then( function ( ) {
+                    // JS compilation step completed, so we continue to the next section.
+                    resolve();
 
-					} ).catch( function ( e ) {
-						reject( e );
-					} );
+                } ).catch( function ( e ) {
+                    reject( e );
+                } );
 
-				} ).catch( function ( e ) {
-			reject( e );
-		} );
-	} );
+            } ).catch( function ( e ) {
+                reject( e );
+            } );
+        } );
 
-	return p;
-}
+        return p;
+    }
 ```
 
 First we modify the rollConfig object for a production build by switching on the *compile* property for templates and adding the *uglify()* plugin to minimize our Javascript. *uglify* is a node module that will *minimize* the JS code.
@@ -433,7 +433,7 @@ function versionAssets( ) {
 
     let htmlPath = path.join( distFolder, 'index.html' );
 
-    var version = new versioning( {
+    let version = new versioning( {
 
         assets: [
             distFolder + '/css/site.css',
@@ -443,7 +443,7 @@ function versionAssets( ) {
         grepFiles: [ htmlPath ]
     } );
 
-    var promise = new Promise( function ( resolve, reject ) {
+    let promise = new Promise( function ( resolve, reject ) {
 
         version.run( function () {
             resolve();
@@ -515,7 +515,7 @@ module.exports = {
     ]
 };
 ```
-Now we have a Node environment setup that transpiles and bundles our ES6 source into an ES5 bundle that we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
+Now we have a Node based build system to create a production ready distribution of our application. Our JS and CSS is bundled and transpiled from ES6 to ES5, minimized so that our application can transfer over the network as quickly as possible and versioned so future releases won't have browsers serve up files from previous versions.
 
 This cannot get any better!
 
