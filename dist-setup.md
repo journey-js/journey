@@ -289,14 +289,14 @@ function compileCss( ) {
     // We use cleanCSS node module to bundle and minimize the CSS
     let result = new CleanCSS( { rebaseTo: path.join( srcFolder, 'css' ) } ).minify( [ source ] );
 
-	let compiledCss = result.styles;
+    let compiledCss = result.styles;
 
-	let cssFolder = path.join( distFolder, 'css' );
-	fs.ensureDirSync( cssFolder );
+    let cssFolder = path.join( distFolder, 'css' );
+    fs.ensureDirSync( cssFolder );
 
-	let target = path.join( cssFolder, 'site.css' );
-	fs.writeFileSync( target, compiledCss, 'utf-8' );
-	return Promise.resolve();
+    let target = path.join( cssFolder, 'site.css' );
+    fs.writeFileSync( target, compiledCss, 'utf-8' );
+    return Promise.resolve();
 }
 ```
 
