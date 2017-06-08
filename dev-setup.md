@@ -77,8 +77,9 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">        
         <title>My App</title>
+        <!-- Our app CSS -->
         <link rel="stylesheet" type="text/css" href="css/site.css" />
 
     </head>
@@ -91,7 +92,20 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
         <div id="container"></div> <!-- Our views will be rendered here -->
     </body>
 
-    <script src="js/app/app.js" defer nomodule></script>
+<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD, we can place them in comments as shown below. In our dist.js script we
+will create a function to comment the local jQuery script and uncomment the CDN jQuery
+script. We can place as many external libraries in the comments as we like. -->
+
+	<!-- start DEV imports -->
+	<script src="js/lib/jquery-3.2.1.js"></script>
+    <!-- end DEV imports -->
+
+    <!-- start PROD imports
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+end PROD imports -->
+
+    <script src="js/app/app.js" defer nomodule></script> <!-- Entry point to our app -->
+
 </html>
 ```
 
@@ -104,11 +118,11 @@ You can find the complete *dev.js* source [here](dev.js.md).
 
 Our project layout has a *src* folder where we will develop our application and a *build* folder where our *src* code is *compiled*  to (or transpiled to if you prefer the term). Our *src* folder should be under source control (git, svn etc).
 
-In order to view the application in a browser we need to setup a server to serve content from our *build* folder. In our *dev.js* script we will also setup an Express server.
+In order to view the application in a browser we need to setup a server to serve content from our *build* folder. In our *dev.js* script we will also setup an [Express](https://expressjs.com/) server.
 
-We need a way to keep the *src* and *build* folder in sync, so whenever files are changed in the *src* folder they must be copied to the *build* folder.
+We structure dev.js into sections (JS functions) that match our [Goals](#goal). The functions will return a promise so we don't have to worry about which section performs asynchronous work.
 
-First we create a function, **watchAssets** to watch the *src* folder for files that are updated, and copy those files to the *build* folder. When this function is called upon startup, all files will be copied to the *build* folder.
+To kick things off we create a **start** function that assembles all the various sections into a working development environment. Once we have **start** defined we will add the different sections to our script.
 
 ```js
 let fsPath = require( 'path' );
@@ -118,93 +132,160 @@ var rollup = require( 'rollup' );
 var watch = require( 'rollup-watch' );
 var rollupConfig = require( './rollup.config.js' ); // Rollup config is covered in the next section
 
-// For our Express server
-var express = require( 'express' );
+var express = require( 'express' ); // For our Express server
 var open = require( 'open' );
 
-// Define variables for src and build folders
+// Set source/build folders
 const buildFolder = 'build';
 const srcFolder = 'src';
 
-// Watch files for changes and copy changed files to the build folder
-watchAssets();
+// Set the destination where Rollup will write the transpiled Javascript bundle to
+const rollupDest = buildFolder + '/js/app/app.js';
 
-// Start transpiling and bundling our ES6 JS into ES5 JS.
-compileJS();
+// Start the development environment
+start( );
 
-// Setup a watcher to copy changed files to the build folder
+// start() drives the logic
+function start() {
+
+    // Watch files for changes and copy changed files to the build folder
+    watchAssets()
+        .then( compileJS )	 // Start transpiling and bundling our ES6 JS into ES5 JS.
+        .then( startServer ) // We can start a Node based server such as Express to view our application.
+                            // Or we can setup an external server to serve content from the
+                            // 'build' folder.
+
+        .catch( ( e ) => {      // catch any error and log to console
+            console.log( e );   // Log errors to console
+        } );
+}
+```
+
+When developing we need a way to keep the *src* and *build* folder in sync, so whenever files are changed in the *src* folder they must be copied to the *build* folder.
+
+We create the function **watchAssets** to watch the *src* folder for files that are updated, and copy those files to the *build* folder. When this function is called upon startup, all files will be copied to the *build* folder.
+
+```js
+// Setup a watcher on our 'src' so that modified files are
+// copied to the build folder
 function watchAssets() {
 
+	// Watch all files for changes and when a file is created, updated or deleted the 'all' events is fired.
 	chokidar.watch( srcFolder + '/**/*' ).on( 'all', ( event, path ) => {
 
 		// No need to copy directories
 		if ( ! fs.lstatSync( path ).isDirectory() ) {
 
+			// We copy the changed file to the build folder
 			writeToDest( path );
 		}
 	} );
-}
 
-// Function to write given path to the build folder
-function writeToDest( path ) {
-
-	// Set buildPath by replacing 'src' str with 'build' str
-	let buildPath = buildFolder + path.slice(srcFolder.length);
-
-	let buildDir = fsPath.dirname( buildPath );
-
-	// Ensure the build folder exists
-	fs.ensureDirSync( buildDir );
-
-	fs.copySync( path, buildPath );
-}
-
-// Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
-function compileJS() {
-
-	// setup rollup' watcher in order to run rollup
-	// whenever a JS file is changed
-	let watcher = watch( rollup, rollupConfig );
-
-	// We setup a listener for certain Rollup events
-	watcher.on( 'event', e => {
-
-		// If Rollup encounters an error, we log to console so we can debug
-		if ( e.code === 'ERROR' ) {
-			console.log( e );
-		}
-
-		// Note: every time a file changes Rollup will tire a 'BUILD_END' event
-		if ( e.code == 'BUILD_END' ) {
-
-			// At this point our JS has been transpiled and bundled into ES5 code.
-			// We can start a Node based server such as Express to view our application.
-			// Or we can setup an external server to serve content from the
-			// 'build' folder.
-
-			startServer(); // Later on we will add a startServer script for Express.
-		}
-	} );
-
-	// Starting express server is optional. If you are developing on an external
-	// server, you can remove this function
-	function startServer() {
-
-		// Start an express serve for our dev environment
-		var app = express();
-		let serverFolder = path.join(__dirname, buildFolder );
-		app.use( express.static( serverFolder ) );
-		app.listen( 9988 );
-
-		// Launch browser
-		open( 'http://localhost:9988/' );
-	}
+	return Promise.resolve();
 }
 ```
 
+We use [chokidar](https://github.com/paulmillr/chokidar) to watch files for changes. Whenever a file is created, updated or deleted, chokidar fires the 'all' event, passing the path to the file that changed. We then copy that file to the *build* folder through the **writeToDest** function.
+
+Below is the **writeToDest** function:
+
+```js
+// Function to write given path to the build folder
+function writeToDest( path ) {
+
+    // Set buildPath by replacing 'src' string with 'build' string
+    let buildPath = buildFolder + path.slice(srcFolder.length);
+
+    // Ensure the build folder exists
+    let buildDir = fsPath.dirname( buildPath );
+    fs.ensureDirSync( buildDir );
+
+    fs.copySync( path, buildPath );
+
+    return Promise.resolve(); // All our functions return a promise
+}
+```
+
+Next we transpile our ES6 Javascript into ES5 and create a bundle in the [IIFE](https://en.wikipedia.org/wiki/Immediately-invoked_function_expression) format.
+
+Here is the **copileJS** function:
+
+```js
+// Setup Rollup to transpile and bundle our ES6 JS into ES5 JS.
+function compileJS() {
+
+    let p = new Promise( function ( resolve, reject ) {
+
+        // Set the destination where Rollup should write the ES5 bundle to.
+        rollupConfig.targets[0].dest = rollupDest; // Output file
+
+        // setup rollup' watcher in order to run rollup
+        // whenever a JS file is changed
+        let watcher = watch( rollup, rollupConfig );
+
+        // We setup a listener for certain Rollup events
+        watcher.on( 'event', e => {
+
+            // Note: every time a file changes Rollup will tire a 'BUILD_END' event
+            if ( e.code == 'BUILD_END' ) {
+
+                // At this point our JS has been transpiled and bundled into ES5 code
+                // so we can resolve the promise.				
+                resolve();
+            }
+
+            // If Rollup encounters an error, we reject the promise and eventually log the error in start()
+            if ( e.code === 'ERROR' ) {
+                console.log( e );   // Log Rollup errors to console so we can debug.
+                reject( e );
+            }
+        } );
+    } );
+
+    return p;
+}
+```
+
+**compileJS** returns a promise that either fails or succeeds depending on if our code contains errors or not.
+
+We start Rollup with [Rollup Watch](https://github.com/rollup/rollup-watch) and pass in the
+ [rollup.config.js](#rollup.config.js) which specifies that the ES5 output should be written to '*'build/js/app/myapp.js'*.
+
+  The watcher fires events as files are transpiled and bundled. We are interested in two events, namely 'BUILD_END' and 'ERROR'.
+
+ 'BULD_END' is fired when all the ES6 code has been transpiled and bundled successfully, so we resolve the promise.
+
+ 'ERROR' is fired if our code contains errors, so we log the error to the console for debugging purposes and reject the promise.
+
+ Because we use Rollup' watcher, every time a Javascript file is added, modified or deleted, this process is repeated - Rollup transpiles and bundles the code and writes it to the *buildFolder* and if an errors occurs we log the error to the console.
+
+ *Note*: promises can only resolve/reject once, so after the first run, the resolve/reject calls won't make a difference. But that is ok, we only returned promises from this method to tie into the rest of our script' asynchronous nature.
+
+ The final step is to start a server to serve our application. This is an optional step if we instead serve our application from an external server such as Apache, NGINX, Tomcat etc.
+
+ Below we show the function **startServer**:
+
+ ```js
+// Starting express server is optional. If you are developing on an external
+// server, you can remove this function
+function startServer() {
+
+    // Start an express serve for our dev environment
+    var app = express();
+    let serverFolder = fsPath.join( __dirname, buildFolder );
+    app.use( express.static( serverFolder ) );
+    app.listen( 9988 );
+
+    // Launch browser
+    open( 'http://localhost:9988/' );
+
+    return Promise.resolve(); // All our functions return a promise
+}
+  ```
+
 Hopefully not too daunting? That covers our *dev.js* script.
 
-**Note:** you can also use Grunt/Gulp/somethingElse to develop and create a distribution with.
+**Note:** you can also use Webpack/Grunt/Gulp/somethingElse to develop and create a distribution with.
 
 The only outstanding part is the Rollup configuration. Let's cover it next.
 
