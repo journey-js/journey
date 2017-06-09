@@ -477,6 +477,7 @@ Below is our Rollup configuration to bundle our ES6 Modules into an output forma
 var buble = require( 'rollup-plugin-buble' );
 var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
 var stringToModule = require( 'rollup-plugin-string' );
+var pkg = require( './package.json' );
 
 module.exports = {
 
@@ -516,6 +517,7 @@ module.exports = {
                                            // for distribution this value is
                                         // changed to 'dist/js/app/app.js'
             format: 'iife',
+            banner: '/* journey-examples version ' + pkg.version + ' */',
             sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
         }
