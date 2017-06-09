@@ -92,9 +92,10 @@ We also reference the application CSS: ```<link rel="stylesheet" type="text/css"
         <div id="container"></div> <!-- Our views will be rendered here -->
     </body>
 
-<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD, we can place them in comments as shown below. In our dist.js script we
-will create a function to comment the local jQuery script and uncomment the CDN jQuery
-script. We can place as many external libraries in the comments as we like. -->
+<!-- If we want to use external libraries such as jQuery and load them from our localhost in 
+DEV and CDN in PROD, we can place them in comments as shown below. In our dist.js script we
+will create a function to comment the local jQuery script and uncomment the CDN jQuery script.
+We can place as many external libraries in the comments as we like. -->
 
 	<!-- start DEV imports -->
 	<script src="js/lib/jquery-3.2.1.js"></script>
