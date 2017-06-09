@@ -324,7 +324,7 @@ module.exports = {
 		ractiveCompiler( {
 			include: [ '**/*.html' ],
 
-			compile: false,
+			compile: false
 		} ),
 
 		// this plugin allows us to import plain text/json files as ES6 Modules.
