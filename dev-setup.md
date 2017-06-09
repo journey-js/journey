@@ -311,6 +311,7 @@ Below is our Rollup configuration to bundle our ES6 Modules into an output forma
 var buble = require( 'rollup-plugin-buble' );
 var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
 var stringToModule = require( 'rollup-plugin-string' );
+var pkg = require( './package.json' );
 
 module.exports = {
 
