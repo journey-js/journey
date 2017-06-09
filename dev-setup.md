@@ -131,6 +131,7 @@ var fs = require( 'fs-extra' );
 var rollup = require( 'rollup' );
 var watch = require( 'rollup-watch' );
 var rollupConfig = require( './rollup.config.js' ); // Rollup config is covered in the next section
+var pkg = require( './package.json' );
 
 var express = require( 'express' ); // For our Express server
 var open = require( 'open' );
@@ -347,6 +348,7 @@ module.exports = {
 			dest: 'build/js/app/myapp.js', // Rollup output during development,
 						       // ignored for production build
 			format: 'iife',
+			banner: '/* myApp version ' + pkg.version + ' */',
 			 sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
 		}
