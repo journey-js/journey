@@ -14,6 +14,7 @@ var fs = require( 'fs-extra' );
 var glob = require( 'glob' );
 var replaceInFile = require( 'replace-in-file' );
 var versioning = require( 'node-version-assets' );
+var jetpack = require('fs-jetpack');
 
 const distFolder = 'dist';
 const srcFolder = 'src';
@@ -39,15 +40,15 @@ function start( ) {
 // Remove the previous distribution folder
 function clean() {
     fs.removeSync( distFolder );
-
-    // Ensure the build folder exists
-    fs.ensureDirSync( distFolder );
     return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 
 // Copy all the assets to the distribution folder
 function copyAssets( ) {
-    fs.copySync( srcFolder, distFolder );
+
+    // Copy src to dist but exclude *.css and *.js files
+	jetpack.copy(srcFolder, distFolder, { matching: [ '!**/*.css', '!**/*.js' ] });
+
     return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 
