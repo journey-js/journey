@@ -161,7 +161,6 @@ First we create a **start** function that assembles all the various sections int
 var rollup = require( 'rollup' );
 var buble = require( 'rollup-plugin-buble' );
 var rollupConfig = require( './rollup.config.js' );
-const pkg = require( './package.json' );
 var path = require( 'path' );
 var uglify = require( 'rollup-plugin-uglify' );
 var CleanCSS = require( 'clean-css' );
@@ -205,7 +204,7 @@ function clean() {
 }
 ```
 
-Next up is **copyAssets()** which copies all the assets (JS/CSS/images etc) from the *src* to the *dist* folder:
+Next up is **copyAssets()** which copies assets ( images/index.html but not CSS or JS files) from *src* to the *dist* folder:
 ```js
 function copyAssets( ) {
     
