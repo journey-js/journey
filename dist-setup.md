@@ -158,13 +158,19 @@ We structure *dist.js* into sections (JS functions) that match our [Goals](#goal
 First we create a **start** function that assembles all the various sections into a distribution. Once we have **start** defined we will add the different sections to our script.
 
 ```js
-let fsPath = require( 'path' );
-var fs = require( 'fs-extra' );
 var rollup = require( 'rollup' );
-var watch = require( 'rollup-watch' );
-var rollupConfig = require( './rollup.config.js' ); // Rollup config is covered in the next section
+var buble = require( 'rollup-plugin-buble' );
+var rollupConfig = require( './rollup.config.js' );
+const pkg = require( './package.json' );
+var path = require( 'path' );
+var uglify = require( 'rollup-plugin-uglify' );
+var CleanCSS = require( 'clean-css' );
+var fs = require( 'fs-extra' );
+var replaceInFile = require( 'replace-in-file' );
+var versioning = require( 'node-version-assets' );
+var jetpack = require('fs-jetpack');
 
-// Define variables for src and build folders
+// Define variables for src and distribution folders
 const distFolder = 'dist';
 const srcFolder = 'src';
 
@@ -195,9 +201,6 @@ Below we show the **clean()** function to remove the previous distribution:
 ```js
 function clean() {
     fs.removeSync( distFolder );
-
-    // Ensure the build folder exists
-    fs.ensureDirSync( distFolder );
     return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 ```
@@ -205,7 +208,10 @@ function clean() {
 Next up is **copyAssets()** which copies all the assets (JS/CSS/images etc) from the *src* to the *dist* folder:
 ```js
 function copyAssets( ) {
-    fs.copySync( srcFolder, distFolder );
+    
+    // Copy src to dist but exclude *.css and *.js files
+    jetpack.copy(srcFolder, distFolder, { matching: [ '!**/*.css', '!**/*.js' ] });
+    
     return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 ```
