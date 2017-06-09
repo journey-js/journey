@@ -346,12 +346,12 @@ module.exports = {
 
 	targets: [
 		{
-			dest: 'build/js/app/myapp.js', // Rollup output during development,
-						       // ignored for production build
-			format: 'iife',
-			banner: '/* myApp version ' + pkg.version + ' */',
-			 sourceMap: true // NB: generating a SourceMap allows us to debug
-                            // our code in the browser in it's original ES6 format.
+		    dest: 'build/js/app/myapp.js', // Rollup output during development,
+						   // ignored for production build
+		    format: 'iife',
+		    banner: '/* myApp version ' + pkg.version + ' */',
+		    sourceMap: true // NB: generating a SourceMap allows us to debug
+                                    // our code in the browser in it's original ES6 format.
 		}
 	]
 };
