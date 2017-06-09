@@ -7,8 +7,7 @@ var buble = require( 'rollup-plugin-buble' );
 var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
 var stringToModule = require( 'rollup-plugin-string' );
 var includePaths = require( 'rollup-plugin-includepaths' );
-
-const pkg = require( './package.json' );
+var pkg = require( './package.json' );
 
 let includePathOptions = {
     include: { },
