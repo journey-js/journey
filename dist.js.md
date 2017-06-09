@@ -16,6 +16,7 @@ var replaceInFile = require( 'replace-in-file' );
 var versioning = require( 'node-version-assets' );
 var jetpack = require('fs-jetpack');
 
+// Define variables for src and distribution folders
 const distFolder = 'dist';
 const srcFolder = 'src';
 
