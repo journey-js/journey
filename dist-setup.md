@@ -168,6 +168,7 @@ var fs = require( 'fs-extra' );
 var replaceInFile = require( 'replace-in-file' );
 var versioning = require( 'node-version-assets' );
 var jetpack = require('fs-jetpack');
+var pkg = require( './package.json' );
 
 // Define variables for src and distribution folders
 const distFolder = 'dist';
@@ -239,6 +240,7 @@ function compileJS( ) {
                 bundle.write( {
                     dest: distFolder + '/js/app/app.js', // Output file
                     format: rollupConfig.targets[0].format, // output format IIFE, CJS etc.
+		    banner: '/* myApp version ' + pkg.version + ' */',
                     sourceMap: true // Yes we want a sourcemap
 
                 } ).then( function ( ) {
