@@ -316,8 +316,12 @@ var pkg = require( './package.json' );
 
 module.exports = {
 
-	 entry: 'src/js/app.js', // app.js bootstraps our application.
-                            // app.js is referenced from index.html <script> tag
+	 entry: 'src/js/app.js', // app.js is referenced from index.html <script> tag
+                            
+    // We don't bundle Ractive with our app, instead we load it as a <script> in index.html
+	 external: [
+		'Ractive.js'
+	],
 
 	plugins: [
 
@@ -347,8 +351,8 @@ module.exports = {
 
 	targets: [
 		{
-		    dest: 'build/js/app/myapp.js', // Rollup output during development,
-						   // ignored for production build
+		    dest: 'build/js/app/myapp.js', // 'dest' is Rollup output during development, but is
+						   // overridden in dist.js for production builds
 		    format: 'iife',
 		    banner: '/* myApp version ' + pkg.version + ' */',
 		    sourceMap: true // NB: generating a SourceMap allows us to debug
