@@ -481,8 +481,12 @@ var pkg = require( './package.json' );
 
 module.exports = {
 
-    entry: 'src/js/app.js', // app.js bootstraps our application.
-                            // app.js is referenced from index.html <script> tag
+    entry: 'src/js/app.js', // app.js is referenced from index.html <script> tag
+
+    // We don't bundle Ractive with our app, instead we load it as a <script> in index.html
+    external: [
+        'Ractive.js'
+    ],
 
     plugins: [
 
