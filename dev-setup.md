@@ -60,7 +60,7 @@ Here is the layout we will use for our web app:
          |-- app // our web application
               |-- app.js // our application entry point that is referenced
               			   // from index.html: <script src="js/app/app.js">
-         |-- lib // Racive, jQuery etc.
+         |-- lib // Ractive, jQuery etc.
     |-- fonts
     |-- images
     index.html
@@ -99,10 +99,14 @@ We can place as many external libraries in the comments as we like. -->
 
 	<!-- start DEV imports -->
 	<script src="js/lib/jquery-3.2.1.js"></script>
+    <script src="js/lib/polyfills.js"></script>
+    <script src="js/lib/ractive.js"></script>
     <!-- end DEV imports -->
 
     <!-- start PROD imports
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/polyfills.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 end PROD imports -->
 
     <script src="js/app/app.js" defer nomodule></script> <!-- Entry point to our app -->
