@@ -379,6 +379,7 @@ The ```package.json``` below lists all the node modules required to setup a *dev
     "clean-css": "4.1.2",
     "express": "4.13.3",
     "fs-extra": "3.0.1",
+    "fs-jetpack": "^1.0.0",
     "glob": "7.1.1",
     "node-version-assets": "1.2.0",
     "open": "0.0.5",
