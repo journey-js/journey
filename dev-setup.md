@@ -320,7 +320,7 @@ module.exports = {
                             
     // We don't bundle Ractive with our app, instead we load it as a <script> in index.html
 	 external: [
-		'Ractive.js'
+	    'Ractive.js'
 	],
 
 	plugins: [
