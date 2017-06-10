@@ -343,9 +343,7 @@ module.exports = {
         // Setup Buble plugin to transpiler ES6 to ES5
         buble( {
             exclude: [ '**/*.html' ] // Skip HTML files
-        } ),
-
-        includePaths( includePathOptions )
+        } )
     ],
     moduleName: 'myApp',
 
