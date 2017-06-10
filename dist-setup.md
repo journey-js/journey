@@ -91,17 +91,21 @@ Below we list the full *index.html* content:
         <div id="container"></div> <!-- Our views will be rendered here -->
     </body>
 
-<!-- If we want to use external libraries such as jQuery and load them from our localhost in DEV and CDN in PROD,
+<!-- If we want to use external libraries such as jQuery/Ractive and load them from our localhost in DEV and CDN in PROD,
 we can place them in comments as shown below. In our dist.js script we will create a function to comment the
-local jQuery script and uncomment the CDN jQuery script. We can place as many external libraries in the comments
+local jQuery/Ractive scripts and uncomment the CDN scripts. We can place as many external libraries in the comments
 as we like. -->
 
 	<!-- start DEV imports -->
 	<script src="js/lib/jquery-3.2.1.js"></script>
+	<script src="js/lib/polyfills.js"></script>
+    	<script src="js/lib/ractive.js"></script>
     <!-- end DEV imports -->
 
     <!-- start PROD imports
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/polyfills.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 end PROD imports -->
 
     <script src="js/app/app.js" defer nomodule></script> <!-- Entry point to our app -->
@@ -111,14 +115,18 @@ end PROD imports -->
 
 We will start with our *index.html* which serves up our application. The entry point to our SPA is: ``` <script src="js/app/app.js">```.
 
-We also use an external library, jQuery in this case, so we have a second ```<script src="js/lib/jquery-3.2.1.js">```.
-The surrounding comments of our jQuery librari is important. When we develop our application, we want to load the jQuery lib from our local server. But in production we to serve it from CDN, so that we can independently upgrade our application or external library without having to re-download the other.
+We also use external libraries, jQuery and Ractive. The surrounding comments of our external libraries is important.
+When we develop our application, we want to load the jQuery and Ractive libs from our local server. But in production
+we wan to serve them from CDN, so that we can independently upgrade our application or external libraries without having
+to re-download the other.
 
 We wrap our DEV libraries with the comment:
 
 ```html
  <!-- start DEV imports -->
 	<script src="lib/jquery3.2.1.js"></script>
+	<script src="js/lib/polyfills.js"></script>
+    	<script src="js/lib/ractive.js"></script>
  <!-- end DEV imports -->
 ```
 
@@ -127,6 +135,8 @@ Then we comment our PROD libraries with:
 ```html
 <!-- start PROD imports
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/polyfills.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 end PROD imports -->
 ```
 
@@ -135,10 +145,14 @@ We will add a function to *dist.js* called **uncommentCDN**, which replaces the 
 ```html
  <!-- start DEV imports
 	<script src="lib/jquery3.2.1.js"></script>
+	<script src="js/lib/polyfills.js"></script>
+    	<script src="js/lib/ractive.js"></script>
 end DEV imports -->
 
 <!-- start PROD imports -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/polyfills.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 <!-- end PROD imports -->
 ```
 
@@ -319,10 +333,14 @@ Recall from [index.html](#index.html) we had these comments:
 ```html
 <!-- start DEV imports -->
 <script src="js/lib/jquery-3.2.1.js"></script>
+<script src="js/lib/polyfills.js"></script>
+<script src="js/lib/ractive.js"></script>
 <!-- end DEV imports -->
 
 <!-- start PROD imports
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/polyfills.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 end PROD imports -->
 ```
 
@@ -345,6 +363,8 @@ which effectively comments out the jQuery script:
 ```html
 <!-- start DEV imports
 <script src="js/lib/jquery-3.2.1.js"></script>
+<script src="js/lib/polyfills.js"></script>
+    <script src="js/lib/ractive.js"></script>
 end DEV imports -->
 ```
 
@@ -363,6 +383,8 @@ which gives us the uncommented CDN script:
 ```html
 <!-- start PROD imports-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/polyfills.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 <!-- end PROD imports -->
 ```
 
