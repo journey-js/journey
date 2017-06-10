@@ -316,38 +316,38 @@ var pkg = require( './package.json' );
 
 module.exports = {
 
-	 entry: 'src/js/app.js', // app.js is referenced from index.html <script> tag
-                            
+    entry: 'src/js/app.js', // app.js is referenced from index.html <script> tag
+                        
     // We don't bundle Ractive with our app, instead we load it as a <script> in index.html
-	 external: [
-	    'Ractive.js'
-	],
+    external: [
+        'Ractive.js'
+    ],
 
-	plugins: [
+    plugins: [
 
-		// this plugin allows us to import Ractive templates and optionally compile them
-		// for production use. We disable compile by default and switch it back on for
-		// production in dist.js
-		ractiveCompiler( {
-			include: [ '**/*.html' ],
+        // this plugin allows us to import Ractive templates and optionally compile them
+        // for production use. We disable compile by default and switch it back on for
+        // production in dist.js
+        ractiveCompiler( {
+            include: [ '**/*.html' ],
 
-			compile: false
-		} ),
+            compile: false
+        } ),
 
-		// this plugin allows us to import plain text/json files as ES6 Modules.
-		// We configure this plugin to handle files with the pattern 'xxx.text.html'.
-		stringToModule({
-			include: '**/*.text.html'
-		}),
+        // this plugin allows us to import plain text/json files as ES6 Modules.
+        // We configure this plugin to handle files with the pattern 'xxx.text.html'.
+        stringToModule({
+            include: '**/*.text.html'
+        }),
 
-		// Setup Buble plugin to transpiler ES6 to ES5
-		buble( {
-			exclude: [ '**/*.html' ] // Skip HTML files
-		} ),
+        // Setup Buble plugin to transpiler ES6 to ES5
+        buble( {
+            exclude: [ '**/*.html' ] // Skip HTML files
+        } ),
 
-		includePaths( includePathOptions )
-	],
-	moduleName: 'myApp',
+        includePaths( includePathOptions )
+    ],
+    moduleName: 'myApp',
 
 	targets: [
 		{
@@ -361,6 +361,7 @@ module.exports = {
 	]
 };
 ```
+
 Now we have a Node script to transpile and bundle our ES6 source into an ES5 bundle we can serve to the browser. Changes to JS will automatically be re-bundled/re-transpiled, including a sourcemap for easy debugging.
 
 ### <a id="package.json"></a>package.json
