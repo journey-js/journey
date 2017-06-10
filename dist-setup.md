@@ -513,9 +513,8 @@ module.exports = {
 
     targets: [
         {
-            dest: 'build/js/app/myapp.js', // Rollup output during development,
-                                           // for distribution this value is
-                                        // changed to 'dist/js/app/app.js'
+            dest: 'build/js/app/myapp.js',  // 'dest' is Rollup output during development, but is
+					    // overridden in dist.js for production builds
             format: 'iife',
             banner: '/* journey-examples version ' + pkg.version + ' */',
             sourceMap: true // NB: generating a SourceMap allows us to debug
@@ -543,6 +542,7 @@ The ```package.json``` below lists all the node modules required to setup a *dev
     "clean-css": "4.1.2",
     "express": "4.13.3",
     "fs-extra": "3.0.1",
+    "fs-jetpack": "^1.0.0",
     "glob": "7.1.1",
     "node-version-assets": "1.2.0",
     "open": "0.0.5",
