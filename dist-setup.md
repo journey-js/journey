@@ -505,7 +505,9 @@ module.exports = {
 
     entry: 'src/js/app.js', // app.js is referenced from index.html <script> tag
 
-    // We don't bundle Ractive with our app, instead we load it as a <script> in index.html
+    // Ractive.js is loaded as an external library through index.html <script> tag. However
+    // we want to import Ractive in our modules with: import Ractive fcrom 'Ractibe.js'.
+    // So we inform Rollup that the 'Ractive.js' import is for an external library
     external: [
         'Ractive.js'
     ],
