@@ -581,7 +581,7 @@ The ```package.json``` below lists all the node modules required to setup a *dev
     "rollup-plugin-includepaths": "0.2.2",
     "rollup-plugin-ractive-compiler": "0.0.5",
     "rollup-plugin-string": "2.0.2",
-    "rollup-plugin-uglify": "1.0.2",
+    "rollup-plugin-uglify": "2.0.1",
     "rollup-watch": "^3.2.2"
   },
   "scripts": {
