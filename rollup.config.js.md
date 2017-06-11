@@ -9,17 +9,18 @@ var stringToModule = require( 'rollup-plugin-string' );
 var includePaths = require( 'rollup-plugin-includepaths' );
 var pkg = require( './package.json' );
 
+// Set './src/js' as a relative path for imports in modules
+// so we can do: import journey from 'lib/mylib.js';
 let includePathOptions = {
-    include: { },
-    paths: [ '../journey/src/js', './src/js', '../../ractive/src' ],
-    external: [ ],
-    extensions: [ '.js', '.json', '.html' ]
+    paths: [ '../journey/src/js', './src/js', '../../ractive/src' ]
 };
 
 module.exports = {
     entry: 'src/js/app/app.js',
 
-    // We don't bundle Ractive with our app, instead we load it as a <script> in index.html
+    // Ractive.js is loaded as an external library through index.html <script> tag. However
+    // we want to import Ractive in our modules with: import Ractive fcrom 'Ractibe.js'.
+    // So we inform Rollup that the 'Ractive.js' import is for an external library
 	 external: [
 		'Ractive.js'
 	],
