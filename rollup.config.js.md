@@ -49,7 +49,7 @@ module.exports = {
 
         includePaths( includePathOptions )
     ],
-    moduleName: 'journey',
+    moduleName: 'myTemplate',
 
     targets: [
         {
