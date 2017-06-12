@@ -20,7 +20,7 @@ module.exports = {
     entry: 'src/js/app/app.js',
 
     // Ractive.js is loaded as an external library through index.html <script> tag. However
-    // we want to import Ractive in our modules with: import Ractive fcrom 'Ractibe.js'.
+    // we want to import Ractive in our modules with: import Ractive fcrom 'Ractive.js'.
     // So we inform Rollup that the 'Ractive.js' import is for an external library
 	 external: [
 		'Ractive.js'
