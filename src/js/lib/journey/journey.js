@@ -220,4 +220,3 @@ function wrapRoadtripGoto() {
 }
 
 export default journey;
-

@@ -39,23 +39,37 @@ function setupServer() {
 }
 
 function watchAssets() {
+	let p = new Promise( function ( resolve, reject ) {
 
-	chokidar.watch( 'src/**/*', { ignored: [ 'src/**/*.js' ] } ).on( 'all', ( event, path ) => {
+		let watcher = chokidar.watch( 'src/**/*', { ignored: [ 'src/**/*.js' ] } );
 
-		if ( ! fs.lstatSync( path ).isDirectory() ) {
-			var dest = path.replace( /^(src\\)/, "dist/" );
-			fs.copySync( path, dest );
-		}
+		// 'ready' event fires when all files have been scanned and copied to the 'build' folder
+		watcher.on( 'ready', ( ) => {
+			console.log( 'initial scan complete' );
+			resolve( 'initial scan complete' );
+		} );
+
+		watcher.on( 'all', ( event, path ) => {
+
+			if ( ! fs.lstatSync( path ).isDirectory() ) {
+				var dest = path.replace( /^(src\\)/, "dist/" );
+				fs.copySync( path, dest );
+			}
+		} );
+
+
 	} );
+
+	return p;
 
 }
 
 function startServer() {
-	
+
 	var root = "/dist";
 
 	var app = express();
-	
+
 	// requests with . in them is passed to original request eg: my.js -> my.js, my.css -> my.css etc. Requests without an extension
 	// are handled below
 	app.get( "*.*", function ( req, res, next ) {

@@ -3,7 +3,7 @@
   "description": "test",
   "version": "0.0.1",
   "main": "dist/journey.js",
-  "module": "dist/journey.esm.js",
+  "module": "dist/journey.mjs.js",
   "devDependencies": {
     "body-parser": "^1.14.1",
     "chokidar": "^1.6.1",
@@ -20,9 +20,10 @@
     "open": "0.0.5",
     "rollup": "^0.41.6",
     "rollup-plugin-buble": "^0.15.0",
-    "rollup-plugin-uglify": "^1.0.2",
+    "rollup-plugin-uglify": "2.0.1",
     "rollup-watch": "^3.2.2",
-    "simulant": "^0.2.2"
+    "simulant": "^0.2.2",
+    "uglify-es": "^3.0.15"
   },
   "scripts": {
     "test": "mocha",
