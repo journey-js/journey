@@ -31,13 +31,14 @@
     "pretest": "npm run build",
     "build": "cross-env mode=dev rollup -c",
     "dist": "cross-env mode=prod rollup -c",
-    "dev": "node server",
     "prepublish.old": "npm run rm -rf dist",
     "lint": "eslint src"
   },
   "files": [
     "dist",
     "src",
-    "README.md"
+    "test",
+    "README.md",
+    "LICENSE"
   ]
 }
