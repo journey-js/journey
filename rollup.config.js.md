@@ -9,10 +9,11 @@ var stringToModule = require( 'rollup-plugin-string' );
 var includePaths = require( 'rollup-plugin-includepaths' );
 var pkg = require( './package.json' );
 
-// Set './src/js' as a relative path for imports in modules
-// so we can do: import journey from 'lib/mylib.js';
+// Set './src/js' as a relative path for imports in modules so we can do: 
+// import myLib from 'lib/myLib.js' 
+// where 'src/js/lib/myLib.js' is a valid entry
 let includePathOptions = {
-    paths: [ '../journey/src/js', './src/js', '../../ractive/src' ]
+    paths: [ './src/js' ]
 };
 
 module.exports = {
@@ -26,6 +27,8 @@ module.exports = {
 	],
 
     plugins: [
+        // Setup relative paths for module imports
+        includePaths( includePathOptions ),
 
         ractiveCompiler( {
             include: [ '**/*.html' ],
