@@ -499,7 +499,15 @@ Below is our Rollup configuration to bundle our ES6 Modules into an output forma
 var buble = require( 'rollup-plugin-buble' );
 var ractiveCompiler = require( 'rollup-plugin-ractive-compiler' );
 var stringToModule = require( 'rollup-plugin-string' );
+var includePaths = require( 'rollup-plugin-includepaths' );
 var pkg = require( './package.json' );
+
+// Set './src/js' as a relative path for imports in modules so we can do: 
+// import myLib from 'lib/myLib.js' 
+// where 'src/js/lib/myLib.js' is a valid entry
+let includePathOptions = {
+    paths: [ './src/js' ]
+};
 
 module.exports = {
 
@@ -513,6 +521,8 @@ module.exports = {
     ],
 
     plugins: [
+        // Setup relative paths for module imports
+	    includePaths( includePathOptions ),
 
         // this plugin allows us to import Ractive templates and optionally compile them
         // for production use. We disable compile by default and switch it back on for
