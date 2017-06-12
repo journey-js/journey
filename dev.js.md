@@ -47,7 +47,7 @@ function watchAssets() {
         // Watch all files (except JS in 'app' folder, since Rollup takes care of those) for changes 
 		// and  when a file is created,  updated or deleted the 'all' events is fired.
 		let watchPath = srcFolder + '/**/*';
-        let ignorePath = srcFolder + '/**/app/**/*.js';
+        	let ignorePath = srcFolder + '/**/app/**/*.js';
 		let watcher = chokidar.watch( watchPath, { ignored: [ ignorePath ] } );
 
         // 'ready' event fires when all files have been scanned and copied to the 'build' folder
