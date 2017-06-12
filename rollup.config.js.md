@@ -53,7 +53,6 @@ module.exports = {
 
     targets: [
         {
-            dest: pkg.main,
             format: 'iife',
             banner: '/* myApp version ' + pkg.version + ' */',
             sourceMap: true

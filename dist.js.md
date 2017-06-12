@@ -6,15 +6,14 @@ Below is the complete **dist.js**.
 var rollup = require( 'rollup' );
 var buble = require( 'rollup-plugin-buble' );
 var rollupConfig = require( './rollup.config.js' );
-const pkg = require( './package.json' );
 var path = require( 'path' );
 var uglify = require( 'rollup-plugin-uglify' );
 var CleanCSS = require( 'clean-css' );
 var fs = require( 'fs-extra' );
-var glob = require( 'glob' );
 var replaceInFile = require( 'replace-in-file' );
 var versioning = require( 'node-version-assets' );
 var jetpack = require('fs-jetpack');
+const pkg = require( './package.json' );
 
 // Define variables for src and distribution folders
 const distFolder = 'dist';
@@ -28,7 +27,7 @@ function start( ) {
 
     clean()
         .then( copyAssets )
-        .then(compileJS)
+        .then( compileJS )
         .then( compileCss )
         .then( uncommentCDN )
         .then( versionAssets )
@@ -44,7 +43,7 @@ function clean() {
     return Promise.resolve(); // This function is synchronous so we return a resolved promise
 }
 
-// Copy all the assets to the distribution folder
+// Copy all the assets, except JS and CSS files to the distribution folder
 function copyAssets( ) {
 
     // Copy src to dist but exclude *.css and *.js files
@@ -73,7 +72,7 @@ function compileJS( ) {
                 bundle.write( {
                     dest: distFolder + '/js/app/app.js', // Output file
                     format: rollupConfig.targets[0].format, // output format IIFE, CJS etc.
-		    banner: '/* myApp version ' + pkg.version + ' */',
+                    banner: '/* myApp version ' + pkg.version + ' */',
                     sourceMap: true // Yes we want a sourcemap
 
                 } ).then( function ( ) {

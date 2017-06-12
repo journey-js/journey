@@ -14,11 +14,11 @@ Below is the complete package.json.
     "clean-css": "4.1.2",
     "express": "4.13.3",
     "fs-extra": "3.0.1",
-    "fs-jetpack": "^1.0.0",
+    "fs-jetpack": "1.0.0",
     "glob": "7.1.1",
     "node-version-assets": "1.2.0",
     "open": "0.0.5",
-    "ractive": "^0.9.0",
+    "ractive": "0.9.0",
     "replace-in-file": "2.5.0",
     "rollup": "0.41.6",
     "rollup-plugin-buble": "0.15.0",
@@ -26,7 +26,7 @@ Below is the complete package.json.
     "rollup-plugin-ractive-compiler": "0.0.5",
     "rollup-plugin-string": "2.0.2",
     "rollup-plugin-uglify": "2.0.1",
-    "rollup-watch": "^3.2.2"
+    "rollup-watch": "3.2.2"
   },
   "scripts": {
     "dist": "node dist",

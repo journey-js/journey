@@ -551,10 +551,8 @@ module.exports = {
 
     targets: [
         {
-            dest: 'build/js/app/myapp.js',  // 'dest' is Rollup output during development, but is
-					    // overridden in dist.js for production builds
             format: 'iife',
-            banner: '/* journey-examples version ' + pkg.version + ' */',
+            banner: '/* myApp version ' + pkg.version + ' */',
             sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
         }
