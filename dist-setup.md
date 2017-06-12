@@ -522,7 +522,7 @@ module.exports = {
 
     plugins: [
         // Setup relative paths for module imports
-	    includePaths( includePathOptions ),
+        includePaths( includePathOptions ),
 
         // this plugin allows us to import Ractive templates and optionally compile them
         // for production use. We disable compile by default and switch it back on for
