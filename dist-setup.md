@@ -552,7 +552,7 @@ module.exports = {
     targets: [
         {
             format: 'iife',
-            banner: '/* journey-examples version ' + pkg.version + ' */',
+            banner: '/* myApp version ' + pkg.version + ' */',
             sourceMap: true // NB: generating a SourceMap allows us to debug
                             // our code in the browser in it's original ES6 format.
         }
