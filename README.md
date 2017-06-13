@@ -346,8 +346,10 @@ let product = {
 
 		if (isFormDirty) {
 
-			// By returning a rejected promise, Journey won't continue with the navigation. This is one way we can force users to save their forms ;-)			
-			return Promise.reject("Product view  contains unsaved data. Please save data before continuing.");
+			// By returning a rejected promise, Journey won't continue with the
+            // navigation. This is one way we can force users to save their forms ;-)			
+			return Promise.reject(
+                "Product view  contains unsaved data. Please save data before continuing.");
 		}
 
 		// otherwise we return and continue with the next handler
@@ -622,12 +624,12 @@ route: {
 
 	isInitial(boolean): will be true if this is the first route we visit, false otherwise
 
-	scrollX(number): the scrollX position of the view. We can use this value when navigating back to the view
-    to restore the scrollbar.
+	scrollX(number): the scrollX position of the view. We can use this value when navigating
+     back to the view to restore the scrollbar.
     default: 0
 
-	scrollY(number): the scrollY position of the view. We can use this value when navigating back to the view
-    to restore the scrollbar.
+	scrollY(number): the scrollY position of the view. We can use this value when navigating
+     back to the view to restore the scrollbar.
     default: 0
 
 	pathname(string): the path used when mapping this route eg. journey.add("/clients", ....);
@@ -668,31 +670,34 @@ options {
 
 	- debug (boolean): whether to log debug statements to the console. default: true
 
-	- target (string): set a default target (element ID or CSS selector) where views should be rendered to. This
-    property is passed to 'enter', 'leave' and 'update' methods to be used during view
-    construction.
+	- target (string): set a default target (element ID or CSS selector) where views should
+     be rendered to. This property is passed to 'enter', 'leave' and 'update' methods
+     to be used during view construction.
     default: null
 
-	- fallback (string): use this route if no route is found for a given path. default: null
+	- fallback (string): use this route if no route is found for a given path.
+    default: null
 
-	- base (string): a path that is prefixed to routes. Useful when using HTML5 pushState and where multiple
-    applications are hosted on separate "context paths". default: ''
+	- base (string): a path that is prefixed to routes. Useful when using HTML5 pushState and
+    where  multiple applications are hosted on separate "context paths".
+    default: ''
 
 	- useHash (boolean): specify whether the application should use hash based routing (true) or HTML5
     - pushState (false). Note: HTML5 pushState and onpopstate will still be used as the
     history mechanism (if supported by the browser) and not 'onhashchange'.
     default: false
 
-	- useOnHashChange (boolean): if true, forces Journey to use the browser onhashchange event, even if HTML5 pushState is supported. Mostly used for testing purposes.
+	- useOnHashChange (boolean): if true, forces Journey to use the browser onhashchange event,
+    even if HTML5 pushState is supported. Mostly used for testing purposes.
 	default false
 
     - hash (string): specifies the value of the hash string eg. '#' or '#!'.
     default:  '#'
 
-	- defaultRoute (string): when the application is started and the url contains no route path or hash value
-    (eg. http//:host/ or http://host#) set the url to the defaultRoute, in effect loading
-    this route if none is provided. This differs from the 'fallback' option which is used
-    if a specific route cannot be found.
+	- defaultRoute (string): when the application is started and the url contains no route path
+    or hash value (eg. http//:host/ or http://host#) set the url to the defaultRoute,
+    in effect loading this route if none is provided. This differs from the 'fallback'
+    option which is used if a specific route cannot be found.
     default: null
 };
 ```
