@@ -1,3 +1,4 @@
+import './utils/polyfill.js';
 import roadtrip from  "../roadtrip/roadtrip";
 import eventer from "./handler/eventer";
 import journeyUtils from "./utils/util.js";
