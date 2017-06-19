@@ -280,7 +280,7 @@ describe( 'history', () => {
 			} );
 		} );
 		
-		it( 'ensure goto "/#" routes work eg goto(/#foo) "', ( ) => {
+		it( 'ensure goto "/#" routes work eg. goto(/#foo) - useHash: true"', ( ) => {
 			return createTestEnvironment( ).then( window => {
 				const journey = window.journey;
 				let fooEntered = false;
@@ -290,7 +290,25 @@ describe( 'history', () => {
 								fooEntered = true;
 							}
 						} )
-						.start().then( goto("/#foo") )
+						.start( { useHash: true } ).then( goto("/#foo") )
+						.then( () => {
+					assert.ok( fooEntered );
+					window.close( );
+				} );
+			} );
+		} );
+
+		it( 'ensure goto "/#" routes work eg goto(/#foo) - useHash: false "', ( ) => {
+			return createTestEnvironment( ).then( window => {
+				const journey = window.journey;
+				let fooEntered = false;
+				return journey
+						.add( '/foo', {
+							enter( ) {
+								fooEntered = true;
+							}
+						} )
+						.start( { useHash: false } ).then( goto("/#foo") )
 						.then( () => {
 					assert.ok( fooEntered );
 					window.close( );

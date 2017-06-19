@@ -1,7 +1,7 @@
 {
-  "name": "test",
-  "description": "test",
-  "version": "0.0.1",
+  "name": "journey-js",
+  "description": "Journey-JS client-side router.",
+  "version": "0.0.2",
   "main": "dist/journey.js",
   "module": "dist/journey.mjs.js",
   "devDependencies": {

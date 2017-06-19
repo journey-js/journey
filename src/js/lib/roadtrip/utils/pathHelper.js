@@ -5,9 +5,10 @@ import window from './window.js';
 let pathHelper = {
 
 	getGotoPath: href => {
-		if ( config.useHash ) {
-			return href;
-		}
+		// TODO should this part be uncommented?
+//		if ( config.useHash ) {
+//			return href;
+//		}
 		
 		href = pathHelper.stripSlashOrHashPrefix( href );
 		return href;

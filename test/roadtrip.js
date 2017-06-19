@@ -194,7 +194,7 @@ describe( 'journey', () => {
 								left[ route.params.id ] = true;
 							}
 						} )
-						.start();
+						.start( { useHash: false } );
 
 				return journey.goto( '/bar' ).then( () => {
 					assert.ok( left.foo );
@@ -219,7 +219,7 @@ describe( 'journey', () => {
 								left.push( route.query.a );
 							}
 						} )
-						.start()
+						.start({useHash: false})
 						.then( () => {
 							assert.deepEqual( entered, [ '1' ] );
 							assert.deepEqual( left, [ ] );
@@ -265,7 +265,7 @@ describe( 'journey', () => {
 							}
 						} );
 
-				journey.start();
+				journey.start( {useHash: false} );
 
 				return journey.start()
 						.then( () => journey.goto( '/foo#baz' ) )
@@ -296,7 +296,7 @@ describe( 'journey', () => {
 								this.enter( route );
 							}
 						} )
-						.start();
+						.start({useHash: false});
 
 				return journey.goto( '/bar' ).then( () => {
 					assert.deepEqual( ids, [
@@ -327,7 +327,7 @@ describe( 'journey', () => {
 							}
 						} );
 
-				return roadtrip.start().then( () => {
+				return roadtrip.start( { useHash: false } ).then( () => {
 					assert.ok( enteredBar );
 					assert.equal( window.location.href, 'http://journey.com/foo' );
 					window.close();

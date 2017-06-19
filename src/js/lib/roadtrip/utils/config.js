@@ -3,7 +3,7 @@ let config = {
 	
 	base: '',
 
-	useHash: false,
+	useHash: true,
 	
 	useOnHashChange: false,
 
