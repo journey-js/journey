@@ -5,6 +5,7 @@
   "main": "dist/journey.js",
   "module": "dist/journey.mjs.js",
   "devDependencies": {
+    "bestzip": "1.1.4",
     "body-parser": "^1.14.1",
     "chokidar": "^1.6.1",
     "console-group": "^0.3.3",
@@ -30,7 +31,9 @@
     "testnb": "mocha",
     "pretest": "npm run build",
     "build": "cross-env mode=dev rollup -c",
+    "predist": "npm run test",
     "dist": "cross-env mode=prod rollup -c",
+    "postdist": "node zip",
     "prepublish.old": "npm run rm -rf dist",
     "lint": "eslint src"
   },
