@@ -718,7 +718,10 @@ options {
     // or hash value (eg. http//:host/ or http://host#) set the url to the defaultRoute,
     // in effect loading this route if none is provided. This differs from the 'fallback'
     // option which is used if a specific route cannot be found.
-	defaultRoute (string): null
+	defaultRoute (string): null,
+    
+    // The amount time Journey waits for route abuse to stop. In other wordes the amount of time from when Journey emits **routeAbuseStart** until **routeAbuseStop** is called. Generally you will set this value depending on how long your view animations take. If animations take longer, increase this value, otherwise you can decrease it.
+    abuseTimeout(number): 1000
 };
 ```
 
