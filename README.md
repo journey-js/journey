@@ -15,6 +15,7 @@
 - [Error](#error)
 - [Base Path](#base)
 - [Hash](#hash)
+- [Route abuse](#routeabuse)
 - [API](#api)
   - [journey.add](#journey.add)
   - [journey.enter](#journey.handlers)
@@ -401,24 +402,31 @@ let clients {
 ```
 
 ## <a id="events"></a>Events
-Journey fires the following events when changing routes:
-* **beforeenter** - event fired _before_ the *beforeenter* method is called
-* **beforeenterComplete** - event fired *after* the *beforeenter* method is called
-* **enter** - event fired *before* the *enter* method is called
-* **entered** - event fired *after* the *enter* method is called
-* **update** - event fired *before* the *update* method is called
-* **updated** - event fired *after* the *update* method is called
-* **leave** - event fired *before* the *leave* method is called
-* **left** - event fired *after* the *leave* method is called
-* * **error** - whenever journey throws an error the "error" event is raised
+
+Journey raises the following events when changing routes:
+
+* **beforeenter** - event raised _before_ the *beforeenter* method is called
+* **beforeenterComplete** - event raised *after* the *beforeenter* method is called
+* **enter** - event raised *before* the *enter* method is called
+* **entered** - event raised *after* the *enter* method is called
+* **update** - event raised *before* the *update* method is called
+* **updated** - event raised *after* the *update* method is called
+* **leave** - event raised *before* the *leave* method is called
+* **left** - event raised *after* the *leave* method is called
+* **error** - whenever journey throws an error the "error" event is raised
+* **routeAbuseStart** - when journey detects that a route is entered before
+the previous route has left, *routeAbuseStart* is raised
+* **routeAbuseEnd** - after *routeAbuseStart* is raised, Journey waits
+a bit then checks the routing enter/leave calls and if it is back to normal,
+**routeAbuseEnd** is raised
 
 We can listen to the events through the *journey.on( eventName, callback )* method.
 
 For example:
+```js
 import journey from "lib/journey.js";
 import loadIndicator from "lib/loadIndicator.js";
 
-```js
 journey.on("enter", function(event) {
 	// event.from 	              : the route we are leaving
     // event.to   	              : the route we are entering
@@ -517,34 +525,12 @@ journey.goto( '/myapp/clients' ); // we specify the base path in the route
 // becomes: http://host/myapp/clients
 ```
 
-This approach requires more boilerplate code, however if for some reason we need to specify routes that execute on different applications (eg one route on '/appone', another route on '/apptwo'), this might be the only option avaialable to us.
+This approach requires more boilerplate code, however if for some reason we need to specify routes that execute on different applications (eg one route on '/appone', another route on '/apptwo'), this might be the only option available to us.
 
 **Note:** when using hash based urls, you generally don't have to be concerned with this since the hash routing does not change the url paths.
 
-## <a id="hash"></a>Hash based routing
-Journey by default uses [HTML5 PushState](TODO) so performing a route change will alter the URL path:
-
-For example, given our application is hosted at:
-```
-http://host/
-```
-
-executing
-```js
-journey.goto("/clients");
-```
-
-changes the URL to:
-
-```
-http://host/clients
-```
-
-PushState assumes that the server can handle this url. In other words when a user refreshes the browser the url: http://host/clients should still serve up our application. This is generally done on the server by setting up a mapping so that all requests (/*) returns our application *index.html* page content.
-
-Note: REST requests will have a more specific subpath mapped so that Ajax calls can return our data and not the *index.html* content.
-
-An alternative (and simpler approach) to pushState is to use it's older cousin - *hash based routing*.
+## <a id="hash"></a> Hash and pushState routing
+Journey by default uses [Hash based routing](https://developer.mozilla.org/en/docs/Web/API/WindowEventHandlers/onhashchange)
 
 With hash based routing, only the hash part of the URL is changed. Browsers do not send the hash part of a URL to the server, so the server only has to be configured to handle a single application URL.
 
@@ -566,6 +552,34 @@ http://host/
 
 which is still the original URL our server is configured to serve. With *hash based routing* there is no need to configure the server to handle different URLs.
 
+An alternative to hashes is to use the newer [HTML5 pushState](https://developer.mozilla.org/en/docs/Web/API/History_API).
+
+*PushState* can be enabled by toggling the **useHash** startup option:
+```js
+journey.start({ useHash: false });
+```
+
+
+ With *pushState* based routing a route change will alter the URL path:
+
+For example, given our application is hosted at:
+```
+http://host/
+```
+
+executing
+```js
+journey.goto("/clients");
+```
+
+changes the URL to:
+
+```
+http://host/clients
+```
+
+PushState assumes that the server can handle this url. In other words when a user refreshes the browser the url: http://host/clients should still serve up our application. This is generally done on the server by setting up a mapping so that all requests (/*) returns our application *index.html* page content.
+
 ## <a id="api"></a>API
 #### <a id="journey.add"></a>journey.add(path, options)
 
@@ -579,6 +593,10 @@ options: {
 
 	},
 
+    update: function(route, options) {
+
+    }
+
 	leave: function(route, nextRoute, options) {
 
 	},
@@ -587,9 +605,10 @@ options: {
 
 	},
 
-	update: function(route, options) {
+    beforeleave: function(route, options) {
 
-	}
+	},
+
 }
 ```
 
@@ -610,40 +629,40 @@ journey.add( '/clients', { enter: function(route, prevRoute, options) {
 
 Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter*, *beforeleave* and *update*.Also note: *route*, *prevRoute* and *nextRoute* are all route objects.
 
-```
+```js
 route: {
 
-	params(object): any mapped URL parameters as a object of key/value pairs.
-	default: {}
+    // Any mapped URL parameters as a object of key/value pairs.
+	params(object): {}
 
-	query(object): the URL query string parsed into an object of key/value pairs.
-	default: {}
+    // The URL query string parsed into an object of key/value pairs.
+	query(object): {}
 
-	hash(string): the URL hash value.
-	default: ''
+    // The URL hash value.
+	hash(string): ''
 
-	isInitial(boolean): will be true if this is the first route we visit, false otherwise
+    // Will be true if this is the first route we visit, false otherwise
+	isInitial(boolean): true
 
-	scrollX(number): the scrollX position of the view. We can use this value when navigating
-     back to the view to restore the scrollbar.
-    default: 0
+    // The scrollX position of the view. We can use this value when navigating
+     // back to the view to restore the scrollbar.
+	scrollX(number): 0
 
-	scrollY(number): the scrollY position of the view. We can use this value when navigating
-     back to the view to restore the scrollbar.
-    default: 0
+    // The scrollY position of the view. We can use this value when navigating
+    // back to the view to restore the scrollbar.
+	scrollY(number): 0
 
-	pathname(string): the path used when mapping this route eg. journey.add("/clients", ....);
+    // The path used when mapping this route eg. journey.add("/clients", ....);
+    // Here pathname will be "clients"
+	pathname(string): ''
 };
 
 options: {
-	target (string): the target provided through journey.start( { target: '#main' } ).
-	default: null
+    //  the target provided through journey.start( { target: '#main' } ).
+	target (string): null,
 
-	sartOptions(object): copy of the options given to journey.start( options ).
-	default: {
-    	debug: true,
-        target: null
-    }
+    // copy of the options given to journey.start( options ).
+	startOptions(object): {	debug: true, target: null },
 }
 ```
 
@@ -668,37 +687,38 @@ journey.add( '/clients', { enter: function(route, prevRoute, options) {
 ```js
 options {
 
-	- debug (boolean): whether to log debug statements to the console. default: true
+    // Whether to log debug statements to the console.
+	debug (boolean): true
 
-	- target (string): set a default target (element ID or CSS selector) where views should
-     be rendered to. This property is passed to 'enter', 'leave' and 'update' methods
-     to be used during view construction.
-    default: null
+    // Set a default target (element ID or CSS selector) where views should
+    // be rendered to. This property is passed to 'enter', 'leave' and 'update' methods
+    // to be used during view construction.
+	target (string): null
 
-	- fallback (string): use this route if no route is found for a given path.
-    default: null
+    // Use this route if no route is found for a given path.
+	fallback (string): null
 
-	- base (string): a path that is prefixed to routes. Useful when using HTML5 pushState and
-    where  multiple applications are hosted on separate "context paths".
-    default: ''
+    // A path that is prefixed to routes. Useful when using HTML5 pushState and
+    // where  multiple applications are hosted on separate "context paths".
+	base (string): ''
 
-	- useHash (boolean): specify whether the application should use hash based routing (true) or HTML5
-    - pushState (false). Note: HTML5 pushState and onpopstate will still be used as the
-    history mechanism (if supported by the browser) and not 'onhashchange'.
-    default: false
+    // Specify whether the application should use hash based routing (true) or HTML5 pushState
+    // (false). Note: HTML5 *pushState* and *onpopstate* will still be used as the
+    // history mechanism (if supported by the browser) and not 'onhashchange'.
+	useHash (boolean): false
 
-	- useOnHashChange (boolean): if true, forces Journey to use the browser onhashchange event,
-    even if HTML5 pushState is supported. Mostly used for testing purposes.
-	default false
+    // If true, forces Journey to use the browser onhashchange event,
+    // even if HTML5 pushState is supported. Mostly used for testing purposes.
+	useOnHashChange (boolean): false
 
-    - hash (string): specifies the value of the hash string eg. '#' or '#!'.
-    default:  '#'
+    // Specifies the value of the hash string eg. '#' or '#!'.
+    hash (string):  '#'
 
-	- defaultRoute (string): when the application is started and the url contains no route path
-    or hash value (eg. http//:host/ or http://host#) set the url to the defaultRoute,
-    in effect loading this route if none is provided. This differs from the 'fallback'
-    option which is used if a specific route cannot be found.
-    default: null
+    // When the application is started and the url contains no route path
+    // or hash value (eg. http//:host/ or http://host#) set the url to the defaultRoute,
+    // in effect loading this route if none is provided. This differs from the 'fallback'
+    // option which is used if a specific route cannot be found.
+	defaultRoute (string): null
 };
 ```
 
@@ -713,10 +733,18 @@ journey.start({ target: '#main' });
 path (string): the route to navigate to eg. '/clients' or '/clients/1?limit=20'
 
 options : {
-	- invisible (boolean): if true, the URL will not be updated when navigating to the specified route.
-   	- forceReload (boolean): by default Journey will only perform a route if the URL change eg navigating
-to the current route, wont reload the view. forceReload can override this behavior and
-force a route to be loaded again, even if the URL does not change.
+
+    // Informs journey this is a redirect to another view. When redirecting Journey will
+    // not fire **routeAbuseStart** or **routeAbuseEnd**.
+    redirect (boolean): false
+
+    // If true, the URL will not be updated when navigating to the specified route.
+	invisible (boolean): false
+
+// By default Journey will only navigate to a route if the URL change eg. navigating
+// to the current route, wont reload the view. forceReload can override this behavior and
+// force a route to be loaded again, even if the URL does not change.
+   	forceReload (boolean): false
 }
 ```
 
