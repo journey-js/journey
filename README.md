@@ -416,9 +416,9 @@ Journey raises the following events when changing routes:
 * **error** - whenever journey throws an error the "error" event is raised
 * **routeAbuseStart** - when journey detects that a route is entered before
 the previous route has left, *routeAbuseStart* is raised
-* **routeAbuseEnd** - after *routeAbuseStart* is raised, Journey waits
+* **routeAbuseStop** - after *routeAbuseStart* is raised, Journey waits
 a bit then checks the routing enter/leave calls and if it is back to normal,
-**routeAbuseEnd** is raised
+**routeAbuseStop** is raised
 
 We can listen to the events through the *journey.on( eventName, callback )* method.
 
@@ -735,7 +735,7 @@ path (string): the route to navigate to eg. '/clients' or '/clients/1?limit=20'
 options : {
 
     // Informs journey this is a redirect to another view. When redirecting Journey will
-    // not fire **routeAbuseStart** or **routeAbuseEnd**.
+    // not fire **routeAbuseStart** or **routeAbuseStop**.
     redirect (boolean): false
 
     // If true, the URL will not be updated when navigating to the specified route.
