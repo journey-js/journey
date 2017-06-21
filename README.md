@@ -465,7 +465,60 @@ journey.on("error", function(event) {
 });
 ```
 
+## <a id="hash"></a> Hash and pushState routing
+Journey by default uses [Hash based routing](https://developer.mozilla.org/en/docs/Web/API/WindowEventHandlers/onhashchange)
+
+With hash based routing, only the hash part of the URL is changed. Browsers do not send the hash part of a URL to the server, so the server only has to be configured to handle a single application URL.
+
+For example, given our application is hosted at:
+```
+http://host/
+```
+
+When navigating to #clients, the URL is updated to:
+
+```
+http://host/#clients
+```
+
+If the user refreshes the browser, the server will receive the URL:
+```
+http://host/
+```
+
+which is still the original URL our server is configured to serve. With *hash based routing* there is no need to configure the server to handle different URLs.
+
+An alternative to hashes is to use the newer [HTML5 pushState](https://developer.mozilla.org/en/docs/Web/API/History_API).
+
+*PushState* can be enabled by toggling the **useHash** startup option:
+```js
+journey.start({ useHash: false });
+```
+
+
+ With *pushState* based routing a route change will alter the URL path:
+
+For example, given our application is hosted at:
+```
+http://host/
+```
+
+executing
+```js
+journey.goto("/clients");
+```
+
+changes the URL to:
+
+```
+http://host/clients
+```
+
+PushState assumes that the server can handle this url. In other words when a user refreshes the browser the url: http://host/clients should still serve up our application. This is generally done on the server by setting up a mapping so that all requests (/*) returns our application *index.html* page content.
+
 ## <a id="base"></a>Base path
+
+**Note:** this section is only relevant for [HTML5 pushState](https://developer.mozilla.org/en/docs/Web/API/History_API). When using hash based routing (Journey's default), you generally don't have to be concerned with the **base** property since hash routing does not change url paths.
 
 Often  multiple applications are hosted on a server where each application is mounted on a different *root* or *context path*.
 
@@ -526,59 +579,6 @@ journey.goto( '/myapp/clients' ); // we specify the base path in the route
 ```
 
 This approach requires more boilerplate code, however if for some reason we need to specify routes that execute on different applications (eg one route on '/appone', another route on '/apptwo'), this might be the only option available to us.
-
-**Note:** when using hash based urls, you generally don't have to be concerned with this since the hash routing does not change the url paths.
-
-## <a id="hash"></a> Hash and pushState routing
-Journey by default uses [Hash based routing](https://developer.mozilla.org/en/docs/Web/API/WindowEventHandlers/onhashchange)
-
-With hash based routing, only the hash part of the URL is changed. Browsers do not send the hash part of a URL to the server, so the server only has to be configured to handle a single application URL.
-
-For example, given our application is hosted at:
-```
-http://host/
-```
-
-When navigating to #clients, the URL is updated to:
-
-```
-http://host/#clients
-```
-
-If the user refreshes the browser, the server will receive the URL:
-```
-http://host/
-```
-
-which is still the original URL our server is configured to serve. With *hash based routing* there is no need to configure the server to handle different URLs.
-
-An alternative to hashes is to use the newer [HTML5 pushState](https://developer.mozilla.org/en/docs/Web/API/History_API).
-
-*PushState* can be enabled by toggling the **useHash** startup option:
-```js
-journey.start({ useHash: false });
-```
-
-
- With *pushState* based routing a route change will alter the URL path:
-
-For example, given our application is hosted at:
-```
-http://host/
-```
-
-executing
-```js
-journey.goto("/clients");
-```
-
-changes the URL to:
-
-```
-http://host/clients
-```
-
-PushState assumes that the server can handle this url. In other words when a user refreshes the browser the url: http://host/clients should still serve up our application. This is generally done on the server by setting up a mapping so that all requests (/*) returns our application *index.html* page content.
 
 ## <a id="api"></a>API
 #### <a id="journey.add"></a>journey.add(path, options)
