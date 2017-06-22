@@ -18,10 +18,11 @@
 - [Route abuse](#routeabuse)
 - [API](#api)
   - [journey.add](#journey.add)
-  - [journey.enter](#journey.handlers)
-  - [journey.leave](#journey.handlers)
-  - [journey.beforeenter](#journey.handlers)
-  - [journey.beforeleave](#journey.handlers)
+  - [journey.enter](#journey.enter)
+  - [journey.leave](#journey.leave)
+  - [journey.beforeenter](#journey.beforeenter)
+  - [journey.beforeleave](#journey.beforeleave)
+  - [journey.update](#journey.updated)
   - [journey.start](#journey.start)
   - [journey.goto](#journey.goto)
 
@@ -133,7 +134,7 @@ let async {
 
     leave: function(route, prevRoute) {
         let promise = view.teardown(); // Assuming teardown returns a promise which resolves once the fade out
-				       // effect is completed.
+                       // effect is completed.
         return promise;
     }
 }
@@ -341,19 +342,19 @@ For example:
 ```js
 let product = {
 
-	let isFormDirty = false; // This could be modified when editing the product form
+    let isFormDirty = false; // This could be modified when editing the product form
 
     beforeleave: function(route) {
 
-		if (isFormDirty) {
+        if (isFormDirty) {
 
-			// By returning a rejected promise, Journey won't continue with the
-            // navigation. This is one way we can force users to save their forms ;-)			
-			return Promise.reject(
+            // By returning a rejected promise, Journey won't continue with the
+            // navigation. This is one way we can force users to save their forms ;-)            
+            return Promise.reject(
                 "Product view  contains unsaved data. Please save data before continuing.");
-		}
+        }
 
-		// otherwise we return and continue with the next handler
+        // otherwise we return and continue with the next handler
     }
 }
 ```
@@ -372,6 +373,9 @@ When navigating to a new route the order is:
 - *beforeenter* for the **new** route (Journey will wait if promise is returned before continuing)
 - *leave* for the **current** route (Journey will wait if promise is returned before continuing)
 - *enter* for the **new** route
+
+When *updating* a view (occurs when query parameters change for the  same view) the order is:
+- *update* only *update* will be called, no other handlers are called
 
 
 ## <a id="goto"></a>Navigate Programmatically
@@ -405,6 +409,8 @@ let clients {
 
 Journey raises the following events when changing routes:
 
+* **beforeleave** - event raised _before_ the *beforeleave* method is called
+* **beforeleaveComplete** - event raised *after* the *beforeleave* method is called
 * **beforeenter** - event raised _before_ the *beforeenter* method is called
 * **beforeenterComplete** - event raised *after* the *beforeenter* method is called
 * **enter** - event raised *before* the *enter* method is called
@@ -418,7 +424,7 @@ Journey raises the following events when changing routes:
 the previous route has left, *routeAbuseStart* is raised
 * **routeAbuseStop** - after *routeAbuseStart* is raised, Journey waits
 a bit then checks the routing enter/leave calls and if it is back to normal,
-**routeAbuseStop** is raised
+*routeAbuseStop* is raised
 
 We can listen to the events through the *journey.on( eventName, callback )* method.
 
@@ -428,18 +434,99 @@ import journey from "lib/journey.js";
 import loadIndicator from "lib/loadIndicator.js";
 
 journey.on("enter", function(event) {
-	// event.from 	              : the route we are leaving
-    // event.to   	              : the route we are entering
-    // event.options              : the same options that was passed to the enter function
+    // event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the enter handler
     // event.options.startOptions : the options that was passed to journey.start(options);
 
-	//When entering a route, let's show  a loading indicator
-	loadIndicator.show();
+    //When entering a route, let's show  a loading indicator
+    loadIndicator.show();
 });
 
 journey.on("entered", function(event) {
-	// After we entered we hide the loading indicator
-	loadIndicator.hide();
+// event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the enter handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+
+    // After we entered we hide the loading indicator
+    loadIndicator.hide();
+});
+
+journey.on("leave", function(event) {
+    // event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the leave handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("left", function(event) {
+// event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the leave handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("update", function(event) {
+    // event.route                   : the route being updated
+    // event.options              : the same options that was passed to the update handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("updated", function(event) {
+    // event.route                   : the route being updated
+    // event.options              : the same options that was passed to the update handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("beforeleave", function(event) {
+    // event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the beforeleave handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("beforeleaveComplete", function(event) {
+    // event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the beforeleave handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("beforeenter", function(event) {
+    // event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the beforeenter handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("beforeenterComplete", function(event) {
+    // event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.options              : the same options that was passed to the beforeenter handler
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("error", function(event) {
+    // event.event : the name of the event when the rror occurred eg. "enter", "entered", "leave" etc.
+    // event.from  : the route we are leaving
+    // event.to    : the route we are entering
+    // event.route : the current route, which is either event.to or event.from depending 
+                    // on the type of event during which the error occurred
+    // event.error : the Javascript error object
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("routeAbuseStart", function(event) {
+    // event.pathname: href  : the pathname of the route that caused the route abuse
+    // event.href: location.href : the url when the route abuse started
+    // event.startOptions : the options that was passed to journey.start(options);
+});
+
+journey.on("routeAbuseStop", function(event) {
+    // event.pathname: href  : the pathname of the route that caused the route abuse
+    // event.href: location.href : the url when the route abuse started
+    // event.startOptions : the options that was passed to journey.start(options);
 });
 
 ```
@@ -454,13 +541,13 @@ var options = { error: err, event: event, from: from, to: to, route: route };
 ```js
 journey.on("error", function(event) {
 
-	// event.event 	              : the name of the event when the rror occurred eg. "enter", "entered",
-	// 				"leave" etc.
-	// event.from 	              : the route we are leaving
-	// event.to   	              : the route we are entering
-	// event.route   	      : the current route, which is either event.to or event.from depending
-	//				on the type of event during which the error occurred
-	// event.error		      : the Javascript error object
+    // event.event                   : the name of the event when the rror occurred eg. "enter", "entered",
+    //                 "leave" etc.
+    // event.from                   : the route we are leaving
+    // event.to                     : the route we are entering
+    // event.route             : the current route, which is either event.to or event.from depending
+    //                on the type of event during which the error occurred
+    // event.error              : the Javascript error object
 
 });
 ```
@@ -524,31 +611,31 @@ Often  multiple applications are hosted on a server where each application is mo
 
 For example:
 
-	http://host/appOne
+    http://host/appOne
     http://host/appTwo
 
 HTML5 PushState allows us to route by changing the url paths.
 
-	given the url
-	http://host/appOne
+    given the url
+    http://host/appOne
 
     routing to relative route "clients"
     will result in
     http://host/appOne/clients
 
     routing to an absolute url "/clients" (absolute paths are prefixed with a '/')
-   	results in
-   	http://host/clients
+       results in
+       http://host/clients
 
 If our application is hosted on the context path */appOne*, we should not route beyond that path in the url. Otherwise the url will not refer to our application.
 
 In other words the url
 
-	http://host/appOne/clients
+    http://host/appOne/clients
 
 links to clients inside the application *appOne*, while
 
-	http://host/clients
+    http://host/clients
 
 links to a different application called *clients*.
 
@@ -589,43 +676,44 @@ path (string): the path used to match this route to a given URL.
 
 options: {
 
-	enter: function(route, prevRoute, options) {
+    enter: function(route, prevRoute, options) {
 
-	},
+    },
 
     update: function(route, options) {
 
     }
 
-	leave: function(route, nextRoute, options) {
+    leave: function(route, nextRoute, options) {
 
-	},
+    },
 
-	beforeenter: function(route, options) {
+    beforeenter: function(route, options) {
 
-	},
+    },
 
     beforeleave: function(route, options) {
 
-	},
-
+    },
 }
 ```
 
 ```js
 // example
-journey.add( '/clients', { enter: function(route, prevRoute, options) {
-	let target = options.target;
-	route.view = document.createElement("div");
-    route.view.innerHTML = "Hello world";
-}});
+journey.add( '/clients', { 
+    enter: function(route, prevRoute, options) {
+        let target = options.target;
+        route.view = document.createElement("div");
+        route.view.innerHTML = "Hello world";
+    }
+});
 ```
 
-#### <a id="journey.handlers"></a>enter: function(route, prevRoute, options)
-#### leave: function(route, nextRoute, options)
-#### update: function(route, options)
-#### beforeenter: function(route, prevRoute, options)
-#### beforeleave: function(route, nextRoute, options)
+#### <a id="journey.enter"></a>enter: function(route, prevRoute, options)
+#### <a id="journey.leave"></a>leave: function(route, nextRoute, options)
+#### <a id="journey.update"></a>update: function(route, options)
+#### <a id="journey.beforeenter"></a>beforeenter: function(route, prevRoute, options)
+#### <a id="journey.beforeleave"></a>beforeleave: function(route, nextRoute, options)
 
 Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter*, *beforeleave* and *update*.Also note: *route*, *prevRoute* and *nextRoute* are all route objects.
 
@@ -633,36 +721,36 @@ Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter*, *b
 route: {
 
     // Any mapped URL parameters as a object of key/value pairs.
-	params(object): {}
+    params(object): {}
 
     // The URL query string parsed into an object of key/value pairs.
-	query(object): {}
+    query(object): {}
 
     // The URL hash value.
-	hash(string): ''
+    hash(string): ''
 
     // Will be true if this is the first route we visit, false otherwise
-	isInitial(boolean): true
+    isInitial(boolean): true
 
     // The scrollX position of the view. We can use this value when navigating
-     // back to the view to restore the scrollbar.
-	scrollX(number): 0
+    // back to the view to restore the scrollbar.
+    scrollX(number): 0
 
     // The scrollY position of the view. We can use this value when navigating
     // back to the view to restore the scrollbar.
-	scrollY(number): 0
+    scrollY(number): 0
 
     // The path used when mapping this route eg. journey.add("/clients", ....);
     // Here pathname will be "clients"
-	pathname(string): ''
+    pathname(string): ''
 };
 
 options: {
     //  the target provided through journey.start( { target: '#main' } ).
-	target (string): null,
+    target (string): null,
 
     // copy of the options given to journey.start( options ).
-	startOptions(object): {	debug: true, target: null },
+    startOptions(object): {    debug: true, target: null },
 }
 ```
 
@@ -670,14 +758,14 @@ options: {
 // example
 journey.add( '/clients', { enter: function(route, prevRoute, options) {
 
-	let target = options.target;
+    let target = options.target;
 
     let id = route.query.id; // journey.add('/clients/:id, ...) -> http://host/clients/3
 
     let priority = route.params.priority; // journey.add('/clents', ...) -> http://host/clients?priority=3
 
     // Set a view on the route for reference later on
-	route.view = document.createElement("div");
+    route.view = document.createElement("div");
 
 }});
 ```
@@ -688,28 +776,29 @@ journey.add( '/clients', { enter: function(route, prevRoute, options) {
 options {
 
     // Whether to log debug statements to the console.
-	debug (boolean): true
+
+    debug (boolean): true
 
     // Set a default target (element ID or CSS selector) where views should
     // be rendered to. This property is passed to 'enter', 'leave' and 'update' methods
     // to be used during view construction.
-	target (string): null
+    target (string): null
 
     // Use this route if no route is found for a given path.
-	fallback (string): null
+    fallback (string): null
 
     // A path that is prefixed to routes. Useful when using HTML5 pushState and
     // where  multiple applications are hosted on separate "context paths".
-	base (string): ''
+    base (string): ''
 
     // Specify whether the application should use hash based routing (true) or HTML5 pushState
     // (false). Note: HTML5 *pushState* and *onpopstate* will still be used as the
     // history mechanism (if supported by the browser) and not 'onhashchange'.
-	useHash (boolean): false
+    useHash (boolean): false
 
     // If true, forces Journey to use the browser onhashchange event,
     // even if HTML5 pushState is supported. Mostly used for testing purposes.
-	useOnHashChange (boolean): false
+    useOnHashChange (boolean): false
 
     // Specifies the value of the hash string eg. '#' or '#!'.
     hash (string):  '#'
@@ -718,9 +807,12 @@ options {
     // or hash value (eg. http//:host/ or http://host#) set the url to the defaultRoute,
     // in effect loading this route if none is provided. This differs from the 'fallback'
     // option which is used if a specific route cannot be found.
-	defaultRoute (string): null,
+    defaultRoute (string): null,
     
-    // The amount time Journey waits for route abuse to stop. In other wordes the amount of time from when Journey emits **routeAbuseStart** until **routeAbuseStop** is called. Generally you will set this value depending on how long your view animations take. If animations take longer, increase this value, otherwise you can decrease it.
+    // The amount time Journey waits for route abuse to stop. In other wordes the amount of time
+    from when Journey emits **routeAbuseStart** until **routeAbuseStop** is called. Generally
+    you will set this value depending on how long your view animations take. If animations take
+    longer, increase this value, otherwise you can decrease it.
     abuseTimeout(number): 1000
 };
 ```
@@ -742,12 +834,12 @@ options : {
     redirect (boolean): false
 
     // If true, the URL will not be updated when navigating to the specified route.
-	invisible (boolean): false
+    invisible (boolean): false
 
 // By default Journey will only navigate to a route if the URL change eg. navigating
 // to the current route, wont reload the view. forceReload can override this behavior and
 // force a route to be loaded again, even if the URL does not change.
-   	forceReload (boolean): false
+       forceReload (boolean): false
 }
 ```
 
