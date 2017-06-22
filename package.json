@@ -1,7 +1,7 @@
 {
   "name": "journey-js",
   "description": "Journey-JS client-side router.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/journey.js",
   "module": "dist/journey.mjs.js",
   "devDependencies": {
@@ -27,9 +27,8 @@
     "uglify-es": "^3.0.15"
   },
   "scripts": {
-    "test": "mocha",
-    "testnb": "mocha",
     "pretest": "npm run build",
+    "test": "mocha",
     "build": "cross-env mode=dev rollup -c",
     "predist": "npm run test",
     "dist": "cross-env mode=prod rollup -c",

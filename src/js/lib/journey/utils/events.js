@@ -9,6 +9,9 @@ const events = {
 	UPDATED: "updated",
 	LEAVE: "leave",
 	LEFT: "left",
+	ROUTE_ABUSE_START: "routeAbuseStart",
+	ROUTE_ABUSE_STOP: "routeAbuseStop",
+	_GOTO: "_goto",
 	ERROR: "error"
 };
 

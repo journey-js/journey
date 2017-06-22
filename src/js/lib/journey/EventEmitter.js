@@ -15,7 +15,6 @@
      * @class EventEmitter Manages event registering and emitting.
      */
     function EventEmitter() {}
-	
 
     // Shortcuts to improve speed and size
     var proto = EventEmitter.prototype;
@@ -456,7 +455,5 @@
     if (typeof module === 'object' && module.exports) {
         module.exports = EventEmitter;
     }
-    
 
 export default EventEmitter;
-

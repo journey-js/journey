@@ -54,10 +54,13 @@ journey.goto = function ( href, internalOptions = {}) {
 		return promise;
 	}
 
-	journey.emit( journey, "goto", {href: location.href} );
+	let emitOptions = {
+		redirect: internalOptions.redirect,
+		pathname: href,
+		href: location.href
+	};
 
-	//routeAbuseMonitor.push();
-	//callstack.check();
+	journey.emit( journey, events._GOTO, emitOptions );
 
 	return promise;
 };
@@ -129,7 +132,7 @@ function enhanceEvent( name, options ) {
 			// convert arguments into a proper array
 			var args = Array.prototype.slice.call(arguments);
 			
-			var options = {};
+			let options = {};
 			
 			if (name === events.UPDATE) { // update only accepts one argument
 				args[1] = options;
@@ -206,6 +209,8 @@ function gatherErrorOptions( event, args, err ) {
 		from = args[0];
 	}
 	var options = { error: err, event: event, from: from, to: to, route: route };
+	options.target = config.target;
+	options.startOptions = config;
 	return options;
 
 }

@@ -1,67 +1,77 @@
-import eventer from "./eventer";
-import utils from  "../utils/util";
+import eventer from "./eventer.js";
+import utils from  "../utils/util.js";
+import config from  "../utils/config.js";
+import events from  "../utils/events.js";
 
-var callstack = [ ];
+let callstack = [ ];
 
-var resetRequest = false;
+let resetRequest = false;
+
+let busy = false;
 
 setupListeners();
 
 var handler = {
 
-	//init: ( options ) => {
-	//},
-
-	check: () => {
+	check: ( options ) => {
 		if ( callstack.length > 1 ) {
-			eventer.emit( "routeAbuseStart" );
+			
+			if ( !busy ) {
+				busy = true;
+				options.startOptions = config;
+				eventer.emit( events.ROUTE_ABUSE_START, options );
+			}
 
 			// After a short delay we check if the callstack is back to normal.
-			// If at the end of the dely the callstack is normal, we emit "callstackNormal" event.
+			// If at the end of the delay the callstack is normal, we emit ROUTE_ABUSE_STOP event.
 			// If the callstack overflows again during the delay, we cancel the reset request
 			// and begin a new reset request after a delay.
-			var delay = 2000;
-			resetWhenNormal( delay );
+			var delay = config.abuseTimeout;
+			resetWhenNormal( delay, options );
 		}
 	},
-	reset: () => {
+	reset: ( options ) => {
 		callstack = [ ];
-		eventer.emit( "routeAbuseEnd" );
+		resetRequest = false;
+		busy = false;
+		options.startOptions = config;
+		eventer.emit( events.ROUTE_ABUSE_STOP, options );
 	},
 
-	push: () => {
+	push: ( options ) => {
 		callstack.push( 1 );
-		handler.check();
+		handler.check( options );
 	},
 
 	pop: () => {
 		callstack.splice( 0, 1 );
-		if ( callstack.length === 0 ) {
-		}
 	}
 };
 
 function setupListeners() {
 
-	eventer.on( "goto", ( options ) => {
-		handler.push();
+	eventer.on( events._GOTO, ( options ) => {
+		if ( options.redirect === true ) {
+			return;
+		}
+		handler.push( options );
 	} );
 
 
-	eventer.on( "error", ( options ) => {
+	eventer.on( events.ERROR, ( options ) => {
 		handler.pop();
 	} );
 
-	eventer.on( "entered", ( options ) => {
+	eventer.on( events.ENTERED, ( options ) => {
 		handler.pop();
 	} );
 
-	eventer.on( "updated", ( options ) => {
+	eventer.on( events.UPDATED, ( options ) => {
 		handler.pop();
 	} );
 }
 
-function resetWhenNormal( delay = 2000 ) {
+function resetWhenNormal( delay = config.abuseTimeout, options ) {
 
 	// if a request was already made to reenable animations, clear it and make a new request
 	if ( resetRequest ) {
@@ -70,7 +80,7 @@ function resetWhenNormal( delay = 2000 ) {
 
 	// We wait a bit before restting callstack in case user is still thrashing UI.
 	resetRequest = setTimeout( function ( ) {
-		handler.reset( );
+		handler.reset( options );
 	}, delay );
 }
 
