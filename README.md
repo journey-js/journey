@@ -413,12 +413,12 @@ Journey raises the following events when changing routes:
 * **beforeleaveComplete** - event raised *after* the *beforeleave* method is called
 * **beforeenter** - event raised _before_ the *beforeenter* method is called
 * **beforeenterComplete** - event raised *after* the *beforeenter* method is called
-* **enter** - event raised *before* the *enter* method is called
-* **entered** - event raised *after* the *enter* method is called
-* **update** - event raised *before* the *update* method is called
-* **updated** - event raised *after* the *update* method is called
-* **leave** - event raised *before* the *leave* method is called
-* **left** - event raised *after* the *leave* method is called
+* **enter** - event raised *before* the *enter* handler is called
+* **entered** - event raised *after* the *enter* handler is complete
+* **update** - event raised *before* the *update* handler is called
+* **updated** - event raised *after* the *update* handler is complete
+* **leave** - event raised *before* the *leave* handler is called
+* **left** - event raised *after* the *leave* handler is complete
 * **error** - whenever journey throws an error the "error" event is raised
 * **routeAbuseStart** - when journey detects that a route is entered before
 the previous route has left, *routeAbuseStart* is raised
