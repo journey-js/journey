@@ -434,9 +434,10 @@ import journey from "lib/journey.js";
 import loadIndicator from "lib/loadIndicator.js";
 
 journey.on("enter", function(event) {
-    // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
+    // event.from                 : the route we are leaving
+    // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the enter handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 
     //When entering a route, let's show  a loading indicator
@@ -445,65 +446,74 @@ journey.on("enter", function(event) {
 
 journey.on("entered", function(event) {
 // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
-    // event.options              : the same options that was passed to the enter handler
-    // event.options.startOptions : the options that was passed to journey.start(options);
+    // event.to                    : the route we are entering
+    // event.options               : the same options that was passed to the enter handler
+    // event.options.hasHandler    : true if the event has an associated handler implemented in the route
+    // event.options.startOptions  : the options that was passed to journey.start(options);
 
     // After we entered we hide the loading indicator
     loadIndicator.hide();
 });
 
 journey.on("leave", function(event) {
-    // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
+    // event.from                 : the route we are leaving
+    // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the leave handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("left", function(event) {
 // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
+    // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the leave handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("update", function(event) {
-    // event.route                   : the route being updated
+    // event.route                : the route being updated
     // event.options              : the same options that was passed to the update handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("updated", function(event) {
-    // event.route                   : the route being updated
+    // event.route                : the route being updated
     // event.options              : the same options that was passed to the update handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeleave", function(event) {
-    // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
+    // event.from                 : the route we are leaving
+    // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeleave handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeleaveComplete", function(event) {
-    // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
+    // event.from                 : the route we are leaving
+    // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeleave handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeenter", function(event) {
-    // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
+    // event.from                 : the route we are leaving
+    // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeenter handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeenterComplete", function(event) {
-    // event.from                   : the route we are leaving
-    // event.to                     : the route we are entering
+    // event.from                 : the route we are leaving
+    // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeenter handler
+    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
