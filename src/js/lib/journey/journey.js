@@ -73,41 +73,6 @@ journey.getCurrentRoute = function( ) {
 	return roadtrip.getCurrentRoute();
 };
 
-function raiseError( options ) {
-	journeyUtils.logError( options.error );
-	journey.emit( journey, "error", options );
-}
-
-function raiseEvent( event, args ) {
-	var options = { };
-	if ( event === events.UPDATE || event === events.UPDATED ) {
-		options.route = args[0];
-		options.options = args[1];
-
-	} else if ( event === events.BEFORE_ENTER || event === events.BEFORE_ENTER_COMPLETE ) {
-		options.to = args[0];
-		options.from = args[1];
-		options.options = args[2];
-
-	} else if ( event === events.ENTER || event === events.ENTERED ) {
-		options.to = args[0];
-		options.from = args[1];
-		options.options = args[2];
-		
-	} else if ( event === events.BEFORE_LEAVE || event === events.BEFORE_LEAVE_COMPLETE) {
-		options.from = args[0];
-		options.to = args[1];
-		options.options = args[2];
-
-	} else if ( event === events.LEAVE || event === events.LEFT ) {
-		options.from = args[0];
-		options.to = args[1];
-		options.options = args[2];
-	}
-
-	journey.emit( journey, event, options );
-}
-
 function wrap( options ) {
 	enhanceEvent( events.ENTER, options );
 	enhanceEvent( events.UPDATE, options );
@@ -117,20 +82,16 @@ function wrap( options ) {
 }
 
 function enhanceEvent( name, options ) {
-	var handler = options[name];
+	let handler = options[name];
 
-	if ( handler == null ) {
-		return;
-	}
-
-	var wrapper = function ( ) {
-		var that = this;
+	let wrapper = function ( ) {
+		let that = this;
 		//var thatArgs = arguments;
 
 		// Handle errors thrown by handler: enter, leave, update or beforeenter
 		try {
 			// convert arguments into a proper array
-			var args = Array.prototype.slice.call(arguments);
+			let args = Array.prototype.slice.call(arguments);
 			
 			let options = {};
 			
@@ -152,11 +113,16 @@ function enhanceEvent( name, options ) {
 			// Ensure default target is passed to events, but don't override if already present
 			options.target = config.target;
 			options.startOptions = config;
+			options.hasHandler = handler != null;
 
 			raiseEvent( name, args );
 
 			// Call handler
-			var result = handler.apply( that, args );
+			let result;
+
+			if ( handler != null ) {
+				result = handler.apply( that, args );
+			}
 
 			result = Promise.all( [ result ] ); // Ensure handler result can be handled as promise
 			result.then( () => {
@@ -191,6 +157,41 @@ function enhanceEvent( name, options ) {
 	};
 
 	options[name] = wrapper;
+}
+
+function raiseEvent( event, args ) {
+	var options = { };
+	if ( event === events.UPDATE || event === events.UPDATED ) {
+		options.route = args[0];
+		options.options = args[1];
+
+	} else if ( event === events.BEFORE_ENTER || event === events.BEFORE_ENTER_COMPLETE ) {
+		options.to = args[0];
+		options.from = args[1];
+		options.options = args[2];
+
+	} else if ( event === events.ENTER || event === events.ENTERED ) {
+		options.to = args[0];
+		options.from = args[1];
+		options.options = args[2];
+		
+	} else if ( event === events.BEFORE_LEAVE || event === events.BEFORE_LEAVE_COMPLETE) {
+		options.from = args[0];
+		options.to = args[1];
+		options.options = args[2];
+
+	} else if ( event === events.LEAVE || event === events.LEFT ) {
+		options.from = args[0];
+		options.to = args[1];
+		options.options = args[2];
+	}
+
+	journey.emit( journey, event, options );
+}
+
+function raiseError( options ) {
+	journeyUtils.logError( options.error );
+	journey.emit( journey, "error", options );
 }
 
 function gatherErrorOptions( event, args, err ) {
