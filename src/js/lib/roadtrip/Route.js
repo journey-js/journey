@@ -30,7 +30,7 @@ RouteData.prototype = {
 };
 
 export default function Route( path, options ) {
-	path = pathHelper.stripSlashOrHashPrefix(path);	
+	path = pathHelper.stripSlashOrHashPrefix(path);
 
 	this.path = path;
 	this.segments = path.split( '/' );

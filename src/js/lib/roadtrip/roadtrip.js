@@ -208,20 +208,20 @@ function _goto ( target ) {
 		newData = newData.extend({}, currentData, newData);
 
 		promise = newRoute.update( newData );
-		
+
 	} else {
-		
+
 		promise = new roadtrip.Promise((resolve, reject) => {
-			
+
 					roadtrip.Promise.all([ currentRoute.beforeleave( currentData, newData )	])
-							.then( () => Promise.all( [ newRoute.beforeenter( newData, currentData ) ]))
-							.then( () => Promise.all( [ currentRoute.leave( currentData, newData ) ]))
+							.then( () => roadtrip.Promise.all( [ newRoute.beforeenter( newData, currentData ) ]))
+							.then( () => roadtrip.Promise.all( [ currentRoute.leave( currentData, newData ) ]))
 							.then( () => {
 								resolve();
 								newRoute.enter( newData, currentData )
 							})
 							.catch( ( e ) => {
-										reject( e );
+								reject( e );
 							} );
 						} );
 	}
@@ -241,7 +241,7 @@ function _goto ( target ) {
 
 			} else {
 				target.fulfil();
-				//updateHistory(target);
+				updateHistory(target);
 			}
 		})
 		.catch( e => {
@@ -249,7 +249,8 @@ function _goto ( target ) {
 			target.reject(e);
 		});
 
-		updateHistory(target);
+		// If we want the URL to change to the target irrespective if an error occurs or not, uncomment below
+		//updateHistory(target);
 }
 
 function updateHistory(target) {

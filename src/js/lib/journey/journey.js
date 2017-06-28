@@ -11,20 +11,20 @@ import config from "./utils/config.js";
 // Enables HTML5-History-API polyfill: https://github.com/devote/HTML5-History-API
 const location = window && ( window.history.location || window.location );
 
-var journey = {	};
+var journey = { };
 
 eventer.init( journey );
 
 journey.add = function add( path, options ) {
-	
-	if (path == null) {
-		throw new Error("journey.add does not accept 'null' path");
+
+	if ( path == null ) {
+		throw new Error( "journey.add does not accept 'null' path" );
 	}
-	
-	if (options == null) {
-		throw new Error("journey.add does not accept 'null' options");
+
+	if ( options == null ) {
+		throw new Error( "journey.add does not accept 'null' options" );
 	}
-	
+
 	options = roadtripUtils.extend( { }, options );
 	wrap( options );
 
@@ -33,24 +33,25 @@ journey.add = function add( path, options ) {
 	return journey;
 };
 
-journey.start = function( options ) {
+journey.start = function ( options ) {
 
 	roadtripUtils.extend( config, options );
 
 	mode.DEBUG = config.debug;
-	
+
 	wrapRoadtripGoto();
 
 	return roadtrip.start( options );
 };
 
-journey.goto = function ( href, internalOptions = {}) {
-	if (roadtrip._origGoto == null) {
-		throw new Error("call start() before using journey");
+journey.goto = function ( href, internalOptions = {} ) {
+	if ( roadtrip._origGoto == null ) {
+		throw new Error( "call start() before using journey" );
 	}
-		var promise = roadtrip._origGoto( href, internalOptions );
 
-	if (promise._sameRoute) {
+	var promise = roadtrip._origGoto( href, internalOptions );
+
+	if ( promise._sameRoute ) {
 		return promise;
 	}
 
@@ -65,17 +66,25 @@ journey.goto = function ( href, internalOptions = {}) {
 	return promise;
 };
 
-journey.getBase = function( ) {
+journey.getBase = function ( ) {
 	return roadtrip.base;
 };
 
-journey.getCurrentRoute = function( ) {
+journey.getCurrentRoute = function ( ) {
 	return roadtrip.getCurrentRoute();
 };
 
 function wrap( options ) {
 	enhanceEvent( events.ENTER, options );
-	enhanceEvent( events.UPDATE, options );
+
+	// Only enhance 'update' if it is declared on route, otherwise Roadtrip will see every route as updateable
+	// and could call update (depending on the route url) instead of the normal enter/leave cycle as the user intended
+	// by not declaring an update handler.
+	let handler = options[events.UPDATE];
+	if ( handler != null ) {
+		enhanceEvent( events.UPDATE, options );
+	}
+
 	enhanceEvent( events.BEFORE_ENTER, options );
 	enhanceEvent( events.LEAVE, options );
 	enhanceEvent( events.BEFORE_LEAVE, options );
@@ -86,28 +95,29 @@ function enhanceEvent( name, options ) {
 
 	let wrapper = function ( ) {
 		let that = this;
+		let args;
 		//var thatArgs = arguments;
 
 		// Handle errors thrown by handler: enter, leave, update or beforeenter
 		try {
 			// convert arguments into a proper array
-			let args = Array.prototype.slice.call(arguments);
-			
-			let options = {};
-			
-			if (name === events.UPDATE) { // update only accepts one argument
+			args = Array.prototype.slice.call( arguments );
+
+			let options = { };
+
+			if ( name === events.UPDATE ) { // update only accepts one argument
 				args[1] = options;
 				/*
-				if (options == null) {
-					options = args[1] = {};
-				}*/
+				 if (options == null) {
+				 options = args[1] = {};
+				 }*/
 
 			} else {
 				args[2] = options;
 				/*
-				if (options == null) {
-					options = args[2] = {};
-				}*/
+				 if (options == null) {
+				 options = args[2] = {};
+				 }*/
 			}
 
 			// Ensure default target is passed to events, but don't override if already present
@@ -133,7 +143,8 @@ function enhanceEvent( name, options ) {
 				} else if ( name === events.ENTER ) {
 					raiseEvent( events.ENTERED, args );
 
-				} if ( name === events.BEFORE_LEAVE ) {
+				}
+				if ( name === events.BEFORE_LEAVE ) {
 					raiseEvent( events.BEFORE_LEAVE_COMPLETE, args );
 
 				} else if ( name === events.LEAVE ) {
@@ -174,8 +185,8 @@ function raiseEvent( event, args ) {
 		options.to = args[0];
 		options.from = args[1];
 		options.options = args[2];
-		
-	} else if ( event === events.BEFORE_LEAVE || event === events.BEFORE_LEAVE_COMPLETE) {
+
+	} else if ( event === events.BEFORE_LEAVE || event === events.BEFORE_LEAVE_COMPLETE ) {
 		options.from = args[0];
 		options.to = args[1];
 		options.options = args[2];
@@ -218,12 +229,13 @@ function gatherErrorOptions( event, args, err ) {
 
 function wrapRoadtripGoto() {
 	// Ensure to only wrap goto once, in case journey.start is called more than once
-	if (roadtrip._origGoto != null) return;
+	if ( roadtrip._origGoto != null )
+		return;
 
 	roadtrip._origGoto = roadtrip.goto;
 	roadtrip.goto = journey.goto;
 
-	
+
 }
 
 export default journey;

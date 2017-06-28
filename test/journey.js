@@ -81,7 +81,8 @@ describe( 'journey', () => {
 							}
 						} );
 
-				return journey.start().then( goto( 'foo' ) )
+				return journey.start()
+						.then( goto( 'foo' ) )
 						.then( back )    // root
 						.then( forward )    // foo
 
@@ -133,7 +134,8 @@ describe( 'journey', () => {
 					useOnHashChange: true
 				};
 
-				return journey.start( options ).then( goto( 'foo' ) )
+				return journey.start( options )
+						.then( goto( 'foo' ) )
 						.then( back )    // root
 						.then( forward )    // foo
 
@@ -153,16 +155,13 @@ describe( 'journey', () => {
 			return createTestEnvironment().then( window => {
 				const journey = window.journey;
 
-				let hashAppended = false;
-
 				return journey
 						.add( '/', {
-							enter() {
-								let href = window.location.href;
-								hashAppended = href[href.length - 1] === '#';
-							}
 						} )
 						.start( { useHash: true } ).then( () => {
+
+						let href = window.location.href;
+						let hashAppended = href[href.length - 1] === '#';
 					assert.ok( hashAppended );
 					window.close();
 				} );
@@ -188,18 +187,21 @@ describe( 'journey', () => {
 
 						.add( '/foo', {
 							enter: ( ) => {
-								let href = window.location.href;
-								assert.ok( href.endsWith( "#foo" ) );
 								routes.push( 'foo' );
 							}
 						} );
 
-				return journey.start( { useHash: true } ).then( goto( 'foo' ) )
+				return journey.start( { useHash: true } )
+						.then( goto( 'foo' ) )
 						.then( back )    // root
 						.then( forward )    // foo
 
 						.then( () => {
 							assert.deepEqual( routes, [ 'root', 'foo', 'root', 'foo' ] );
+
+							let href = window.location.href;
+							assert.ok( href.endsWith( "#foo" ) );
+
 							window.close();
 						} );
 			} );
@@ -215,11 +217,12 @@ describe( 'journey', () => {
 				return journey
 						.add( '/', {
 							enter( ) {
-								let href = window.location.href;
-								hashAppended = href[href.length - 1] === '#';
 							}
 						} )
 						.start( { useHash: true, useOnHashChange: true } ).then( ( ) => {
+					let href = window.location.href;
+					hashAppended = href[href.length - 1] === '#';
+							
 					assert.ok( hashAppended );
 					window.close( );
 				} );
@@ -236,26 +239,34 @@ describe( 'journey', () => {
 						.add( '/', {
 							enter: ( ) => {
 								routes.push( 'root' );
-
-								let href = window.location.href;
-								assert.ok( href.endsWith( "#" ) );
 							}
 						} )
 
 						.add( '/foo', {
 							enter: ( ) => {
-								let href = window.location.href;
-								assert.ok( href.endsWith( "#foo" ) );
 								routes.push( 'foo' );
 							}
 						} );
 
-				return journey.start( { useHash: true, useOnHashChange: true } ).then( goto( 'foo' ) )
-						.then( back )    // root
+				return journey.start( { useHash: true, useOnHashChange: true } )
+						.then( function() {
+					
+							// Ensure the url updated
+							let href = window.location.href;
+							assert.ok( href.endsWith( "#" ) );
+
+							let promise = goto( 'foo' )();
+							return promise;
+						}).then( back )    // root
+						//.then( back )    // root
 						.then( forward )    // foo
 
 						.then( () => {
 							assert.deepEqual( routes, [ 'root', 'foo', 'root', 'foo' ] );
+							
+							// ensue the url updated
+							let href = window.location.href;
+							assert.ok( href.endsWith( "#foo" ) );
 							window.close();
 						} );
 			} );

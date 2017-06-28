@@ -385,10 +385,10 @@ describe( 'journey', () => {
 						} )
 						.add( '/:id', {
 							enter( route ) {
-								routes.push( route.params.id );
+								let id = route.params.id;
+								routes.push( id );
 							}
-						} )
-						.start();
+						} );
 
 				function goto( href ) {
 					return () => {
@@ -405,8 +405,8 @@ describe( 'journey', () => {
 					window.history.forward();
 					return wait();
 				}
-
-				return journey.goto( '/foo' )
+				return journey.start()
+						.then(goto( '/foo' ))
 						.then( goto( '/bar' ) )
 						.then( goto( '/baz' ) )
 						.then( back )    // bar
