@@ -179,9 +179,6 @@ describe( 'journey', () => {
 						.add( '/', {
 							enter: ( ) => {
 								routes.push( 'root' );
-
-								let href = window.location.href;
-								assert.ok( href.endsWith( "#" ) );
 							}
 						} )
 
@@ -192,7 +189,13 @@ describe( 'journey', () => {
 						} );
 
 				return journey.start( { useHash: true } )
-						.then( goto( 'foo' ) )
+						.then( function() {
+
+							let href = window.location.href;
+					assert.ok( href.endsWith( "#" ) );
+
+							return goto( 'foo' )();
+						})
 						.then( back )    // root
 						.then( forward )    // foo
 
