@@ -63,6 +63,11 @@ journey.goto = function ( href, internalOptions = {} ) {
 
 	journey.emit( journey, events._GOTO, emitOptions );
 
+	promise.catch( function(e) {
+		// TODO should we catch this one here? If further inside the plumbing an error is also thrown we end up logging the error twice
+		raiseError( { error: e } );
+	});
+
 	return promise;
 };
 
@@ -72,6 +77,10 @@ journey.getBase = function ( ) {
 
 journey.getCurrentRoute = function ( ) {
 	return roadtrip.getCurrentRoute();
+};
+
+journey.getCurrentData = function ( ) {
+	return roadtrip.getCurrentData();
 };
 
 function wrap( options ) {
@@ -202,7 +211,7 @@ function raiseEvent( event, args ) {
 
 function raiseError( options ) {
 	journeyUtils.logError( options.error );
-	journey.emit( journey, "error", options );
+	journey.emit( journey, events.ERROR, options );
 }
 
 function gatherErrorOptions( event, args, err ) {

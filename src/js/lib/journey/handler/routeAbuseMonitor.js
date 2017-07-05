@@ -15,7 +15,7 @@ var handler = {
 
 	check: ( options ) => {
 		if ( callstack.length > 1 ) {
-			
+
 			if ( !busy ) {
 				busy = true;
 				options.startOptions = config;

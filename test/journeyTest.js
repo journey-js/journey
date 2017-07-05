@@ -1,43 +1,15 @@
 /*global require, describe, it, __dirname */
-const path = require( 'path' );
-const fs = require( 'fs' );
-const jsdom = require( "jsdom/lib/old-api.js" );
 const assert = require( 'assert' );
+const util = require('./util');
 
 require( 'console-group' ).install();
 
-const journeysrc = fs.readFileSync( path.resolve( __dirname, '../dist/journey.js' ), 'utf-8' );
-//const simulantSrc = fs.readFileSync( require.resolve( 'simulant' ), 'utf-8' );
-
-let global;
-
 describe( 'journey', () => {
-	function createTestEnvironment( initial ) {
-		return new Promise( ( fulfil, reject ) => {
-
-			jsdom.env( {
-				html: '',
-				url: 'http://journey.com' + ( initial || '' ),
-				src: [ journeysrc ],
-				done( err, window ) {
-
-					if ( err ) {
-						reject( err );
-					} else {
-						global = window;
-						window.Promise = window.journey.Promise = Promise;
-						window.console = console;
-						fulfil( window );
-					}
-				}
-			} );
-		} );
-	}
 
 	describe( 'history scroll location', () => {
 
-		it( 'store scroll positions ahen navigating between routes', () => {
-			return createTestEnvironment( "/" ).then( window => {
+		it( 'store scroll positions when navigating between routes', () => {
+			return util.createTestEnvironment( "/" ).then( window => {
 
 				const journey = window.journey;
 				const routes = [ ];
@@ -80,11 +52,13 @@ describe( 'journey', () => {
 								scrollPos.foo.push( pos );
 							}
 						} );
+						
+						console.log("-----------------------", util)
 
 				return journey.start()
-						.then( goto( 'foo' ) )
-						.then( back )    // root
-						.then( forward )    // foo
+						.then( util.goto( 'foo' ) )
+						.then( util.back )    // root
+						.then( util.forward )    // foo
 
 						.then( () => {
 							assert.deepEqual( scrollPos.root, [ { x: 0, y: 0 }, { x: 100, y: 200 } ] );
@@ -96,7 +70,7 @@ describe( 'journey', () => {
 		} );
 
 		it( 'journey start( { onHashChange: true } ), wont be able to store scroll positions when navigating between routes', () => {
-			return createTestEnvironment( "/" ).then( window => {
+			return util.createTestEnvironment( "/" ).then( window => {
 
 				const journey = window.journey;
 				const routes = [ ];
@@ -135,9 +109,9 @@ describe( 'journey', () => {
 				};
 
 				return journey.start( options )
-						.then( goto( 'foo' ) )
-						.then( back )    // root
-						.then( forward )    // foo
+						.then( util.goto( 'foo' ) )
+						.then( util.back )    // root
+						.then( util.forward )    // foo
 
 						.then( () => {
 							assert.deepEqual( scrollPos.root, [ { x: 0, y: 0 }, { x: 0, y: 0 } ] );
@@ -152,7 +126,7 @@ describe( 'journey', () => {
 	describe( 'test journey.start( { useHash: true } )', () => {
 
 		it( 'ensure hash is appended to route', () => {
-			return createTestEnvironment().then( window => {
+			return util.createTestEnvironment().then( window => {
 				const journey = window.journey;
 
 				return journey
@@ -170,7 +144,7 @@ describe( 'journey', () => {
 		} );
 
 		it( 'ensure hash history works', () => {
-			return createTestEnvironment( ).then( window => {
+			return util.createTestEnvironment( ).then( window => {
 
 				const journey = window.journey;
 				const routes = [ ];
@@ -194,10 +168,10 @@ describe( 'journey', () => {
 							let href = window.location.href;
 					assert.ok( href.endsWith( "#" ) );
 
-							return goto( 'foo' )();
+							return util.goto( 'foo' )();
 						})
-						.then( back )    // root
-						.then( forward )    // foo
+						.then( util.back )    // root
+						.then( util.forward )    // foo
 
 						.then( () => {
 							assert.deepEqual( routes, [ 'root', 'foo', 'root', 'foo' ] );
@@ -214,7 +188,7 @@ describe( 'journey', () => {
 	describe( 'test journey.start( useHash: true, useOnHashChange: true )', ( ) => {
 
 		it( 'ensure hash is appended to route', ( ) => {
-			return createTestEnvironment( ).then( window => {
+			return util.createTestEnvironment( ).then( window => {
 				const journey = window.journey;
 				let hashAppended = false;
 				return journey
@@ -233,7 +207,7 @@ describe( 'journey', () => {
 		} );
 
 		it( 'ensure hash history works', () => {
-			return createTestEnvironment( ).then( window => {
+			return util.createTestEnvironment( ).then( window => {
 
 				const journey = window.journey;
 				const routes = [ ];
@@ -258,11 +232,11 @@ describe( 'journey', () => {
 							let href = window.location.href;
 							assert.ok( href.endsWith( "#" ) );
 
-							let promise = goto( 'foo' )();
+							let promise = util.goto( 'foo' )();
 							return promise;
-						}).then( back )    // root
+						}).then( util.back )    // root
 						//.then( back )    // root
-						.then( forward )    // foo
+						.then( util.forward )    // foo
 
 						.then( () => {
 							assert.deepEqual( routes, [ 'root', 'foo', 'root', 'foo' ] );
@@ -279,14 +253,14 @@ describe( 'journey', () => {
 	describe( 'route abusing', ( ) => {
 		
 		it( 'ensures routeAbuseStart and routeAbuseStop is called', ( ) => {
-			return createTestEnvironment( '/#foo' ).then( window => {
+			return util.createTestEnvironment( '/#foo' ).then( window => {
 				const journey = window.journey;
 
 				let routeAbuseStart = false;
 				let routeAbuseStop = false;
 
 				// in journey.start() we set abuseTimeout to 0ms, so wait a little longer than that so routeAbuseStop  is called and we can test.
-				let timeToWaitForAbuseToStop = 100; 				
+				let timeToWaitForAbuseToStop = 100;
 
 				journey.on( 'routeAbuseStart', function () {
 					routeAbuseStart = true;
@@ -304,23 +278,21 @@ describe( 'journey', () => {
 						
 				journey.add( '/bar', {
 					enter( ) {
-						
 					}
 				} );
 
-			return journey.start( { abuseTimeout: 0 } ).then( ( ) => {
-							
-							return wait( timeToWaitForAbuseToStop ).then( () => {
-								assert.ok( routeAbuseStart );
-								assert.ok( routeAbuseStop );
-								window.close( );
-							});
+				return journey.start( { abuseTimeout: 0 } ).then( ( ) => {
+					return util.wait( timeToWaitForAbuseToStop ).then( () => {
+						assert.ok( routeAbuseStart );
+						assert.ok( routeAbuseStop );
+						window.close( );
+					} );
 				} );
 			} );
 		} );
 		
 		it( 'ensures default abuseTimeout is 1000ms', ( ) => {
-			return createTestEnvironment( '/#foo' ).then( window => {
+			return util.createTestEnvironment( '/#foo' ).then( window => {
 				const journey = window.journey;
 
 				let routeAbuseStart = false;
@@ -351,7 +323,7 @@ describe( 'journey', () => {
 				
 				return journey.start( ).then( ( ) => {
 
-					return wait( timeToWaitForAbuseToStop ).then( () => {
+					return util.wait( timeToWaitForAbuseToStop ).then( () => {
 						assert.ok( routeAbuseStart === true ); // routeAbuseStart have run
 						assert.ok( routeAbuseStop === false ); // routeAbuseStop should not run because its still waiting for it's timeout at this stage
 						window.close( );
@@ -361,7 +333,7 @@ describe( 'journey', () => {
 		} );
 		
 		it( 'ensures abuseTimeout works', ( ) => {
-			return createTestEnvironment( '/#foo' ).then( window => {
+			return util.createTestEnvironment( '/#foo' ).then( window => {
 				const journey = window.journey;
 
 				let routeAbuseStart = false;
@@ -392,7 +364,7 @@ describe( 'journey', () => {
 
 				return journey.start( { abuseTimeout: 0 } ).then( ( ) => {
 
-					return wait( timeToWaitForAbuseToStop ).then( () => {
+					return util.wait( timeToWaitForAbuseToStop ).then( () => {
 						assert.ok( routeAbuseStart === true );
 						assert.ok( routeAbuseStop === true );
 						window.close( );
@@ -405,7 +377,7 @@ describe( 'journey', () => {
 	describe( 'misc tests', ( ) => {
 
 		it( 'ensure routes with prefix "/#" is supported eg. "/#home"', ( ) => {
-			return createTestEnvironment( '/#foo' ).then( window => {
+			return util.createTestEnvironment( '/#foo' ).then( window => {
 				const journey = window.journey;
 				let fooEntered = false;
 				return journey
@@ -422,7 +394,7 @@ describe( 'journey', () => {
 		} );
 
 		it( 'ensure goto "/#" routes work eg. goto(/#foo) - useHash: true"', ( ) => {
-			return createTestEnvironment( ).then( window => {
+			return util.createTestEnvironment( ).then( window => {
 				const journey = window.journey;
 				let fooEntered = false;
 				return journey
@@ -431,7 +403,7 @@ describe( 'journey', () => {
 								fooEntered = true;
 							}
 						} )
-						.start( { useHash: true } ).then( goto( "/#foo" ) )
+						.start( { useHash: true } ).then( util.goto( "/#foo" ) )
 						.then( () => {
 							assert.ok( fooEntered );
 							window.close( );
@@ -440,7 +412,7 @@ describe( 'journey', () => {
 		} );
 
 		it( 'ensure goto "/#" routes work eg goto(/#foo) - useHash: false "', ( ) => {
-			return createTestEnvironment( ).then( window => {
+			return util.createTestEnvironment( ).then( window => {
 				const journey = window.journey;
 				let fooEntered = false;
 				return journey
@@ -449,7 +421,7 @@ describe( 'journey', () => {
 								fooEntered = true;
 							}
 						} )
-						.start( { useHash: false } ).then( goto( "/#foo" ) )
+						.start( { useHash: false } ).then( util.goto( "/#foo" ) )
 						.then( () => {
 							assert.ok( fooEntered );
 							window.close( );
@@ -459,24 +431,3 @@ describe( 'journey', () => {
 
 	} );
 } );
-
-
-function goto( href ) {
-	return () => {
-		return global.journey.goto( href );
-	};
-}
-
-function back() {
-	global.history.back();
-	return wait();
-}
-
-function forward() {
-	global.history.forward();
-	return wait();
-}
-
-function wait( ms ) {
-	return new Promise( fulfil => setTimeout( fulfil, ms || 50 ) );
-}

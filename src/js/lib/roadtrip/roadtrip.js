@@ -18,7 +18,7 @@ let currentData = {};
 let currentRoute = {
 	enter: () => roadtrip.Promise.resolve(),
 	leave: () => roadtrip.Promise.resolve(),
-	beforeleave: () => roadtrip.Promise.resolve(),
+	beforeleave: () => roadtrip.Promise.resolve()
 };
 
 let _target;
@@ -78,7 +78,9 @@ const roadtrip = {
 				scrollY: internalOptions.scrollY || 0,
 				internalOptions,
 				fulfil,
-				reject
+				reject,
+				currentRoute: currentRoute,
+				currentData: currentData
 			};
 		});
 		
@@ -88,7 +90,7 @@ const roadtrip = {
 		
 		if ( isTransitioning ) {
 			promise._locked = true;
-			return promise;
+			//return promise;
 		}
 
 		_goto( target );
@@ -97,8 +99,12 @@ const roadtrip = {
 		return promise;
 	},
 
-	getCurrentRoute () {
+	getCurrentData () {
 		return currentData;
+	},
+
+	getCurrentRoute () {
+		return currentRoute;
 	}
 };
 
@@ -137,27 +143,30 @@ function historyListener(options) {
 		let url = util.stripBase(options.url, config.base);
 
 	const internalOptions = {};
+	let target;
 
-		_target = {
+		target = _target = {
 			href: url,
 			hashChange: options.hashChange, // so we know not to manipulate the history
 			popState: options.popState, // so we know not to manipulate the history
+			internalOptions,
 			fulfil: noop,
 			reject: noop,
-			internalOptions
+			currentRoute: currentRoute,
+			currentData: currentData
 		};
 
 		if(options.popEvent != null) {
 			const scroll = scrollHistory[ options.popEvent.state.uid ] || {x: 0, y: 0};
-			_target.scrollX = scroll.x;
-			_target.scrollY = scroll.y;
+			target.scrollX = scroll.x;
+			target.scrollY = scroll.y;
 
 		} else {
-			_target.scrollX = 0;
-			_target.scrollY = 0;
+			target.scrollX = 0;
+			target.scrollY = 0;
 		}
 
-		_goto( _target );
+		_goto( target );
 
 		if(options.popEvent != null) {
 			currentID = options.popEvent.state.uid;
@@ -188,60 +197,99 @@ function _goto ( target ) {
 	newRoute = result.newRoute;
 
 	target._sameRoute = false;
-	if ( !newRoute || (isSameRoute( newRoute, currentRoute, newData, currentData ) && !forceReloadRoute) ) {
+	let _isSameRoute = isSameRoute( newRoute, target.currentRoute, newData, target.currentData );
+	if ( !newRoute || ( _isSameRoute && !forceReloadRoute) ) {
 		target.fulfil();
 		target._sameRoute = true;
 		return;
 	}
 
 	scrollHistory[ currentID ] = {
-		x: ( currentData.scrollX = window.scrollX ),
-		y: ( currentData.scrollY = window.scrollY )
+		x: ( target.currentData.scrollX = window.scrollX ),
+		y: ( target.currentData.scrollY = window.scrollY )
 	};
 
 	isTransitioning = true;
 
 	let promise;
-	if ( !forceReloadRoute && ( newRoute === currentRoute ) && newRoute.updateable ) {
+	if ( !forceReloadRoute && ( newRoute === target.currentRoute ) && newRoute.updateable ) {
 
 		// For updates, merge newData into currentData, in order to preserve custom data that was set during enter or beforeenter events
-		newData = newData.extend({}, currentData, newData);
+		newData = newData.extend({}, target.currentData, newData);
 
 		promise = newRoute.update( newData );
 
 	} else {
 
 		promise = new roadtrip.Promise((resolve, reject) => {
+			
+					let transitionPromise;
 
-					roadtrip.Promise.all([ currentRoute.beforeleave( currentData, newData )	])
-							.then( () => roadtrip.Promise.all( [ newRoute.beforeenter( newData, currentData ) ]))
-							.then( () => roadtrip.Promise.all( [ currentRoute.leave( currentData, newData ) ]))
+						transitionPromise = roadtrip.Promise.all([ target.currentRoute.beforeleave( target.currentData, newData )	]);
+
+					transitionPromise
 							.then( () => {
-								resolve();
-								newRoute.enter( newData, currentData )
+								if ( _target === target ) {
+									return roadtrip.Promise.all( [ newRoute.beforeenter( newData, target.currentData ) ]);
+								} else {
+
+									resolve( {interrupted: true, msg: "route interrupted"} );
+									return roadtrip.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
+								}
+							})
+
+							.then( () => {
+								if ( _target === target ) {
+
+									target._left = true;
+									return roadtrip.Promise.all( [ target.currentRoute.leave( target.currentData, newData ) ]);
+
+								} else {
+									let promiseResult = {interrupted: true, msg: "route interrupted"};
+
+									resolve( promiseResult  );
+									return roadtrip.Promise.resolve( promiseResult );
+								}
+							})
+
+							.then( () => {
+								target.currentRoute._left = true;
+
+								if ( _target === target ) {
+									// Only update currentRoute *after* .leave is called and the route hasn't changed in the meantime
+									currentRoute = newRoute;
+									currentData = newData;
+
+                                    return newRoute.enter( newData, target.currentData ).then( () => resolve() );
+
+								} else {
+									resolve( {interrupted: true, msg: "route interrupted"} );
+									return roadtrip.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
+								}
+							}).then( () => {
+								if ( _target === target ) {
+									// Route entered, so we switch off left prop
+									newRoute._left = false;
+								}
 							})
 							.catch( ( e ) => {
-								reject( e );
+								return reject( e );
 							} );
 						} );
 	}
 
 	promise
-		.then( () => {
-			currentRoute = newRoute;
-			currentData = newData;
+		.then( ( ) => {
 
 			isTransitioning = false;
 
-			// if the user navigated while the transition was taking
-			// place, we need to do it all again
-			if ( _target !== target ) {
-				_goto( _target );
-				_target.promise.then( target.fulfil, target.reject );
-
-			} else {
+			if ( _target === target ) {
 				target.fulfil();
 				updateHistory(target);
+
+			} else {
+				newRoute._interrupted = true;
+				_target.promise.then( target.fulfil, target.reject );
 			}
 		})
 		.catch( e => {
@@ -251,7 +299,7 @@ function _goto ( target ) {
 
 		// If we want the URL to change to the target irrespective if an error occurs or not, uncomment below
 		//updateHistory(target);
-}
+} // * _goto end*
 
 function updateHistory(target) {
 	
