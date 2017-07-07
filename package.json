@@ -28,7 +28,7 @@
   },
   "scripts": {
     "pretest": "npm run build",
-    "test": "mocha",
+    "test": "mocha --recursive",
     "build": "cross-env mode=dev rollup -c",
     "predist": "npm run test",
     "dist": "cross-env mode=prod rollup -c",

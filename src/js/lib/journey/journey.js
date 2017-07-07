@@ -151,8 +151,8 @@ function enhanceEvent( name, options ) {
 
 				} else if ( name === events.ENTER ) {
 					raiseEvent( events.ENTERED, args );
-
 				}
+
 				if ( name === events.BEFORE_LEAVE ) {
 					raiseEvent( events.BEFORE_LEAVE_COMPLETE, args );
 

@@ -83,6 +83,7 @@ const roadtrip = {
 				currentData: currentData
 			};
 		});
+		console.log("lockdown currentRoute:", target.currentRoute.path, " for:", href)
 		
 		promise._locked = false;
 		
@@ -229,7 +230,7 @@ function _goto ( target ) {
 
 					transitionPromise
 							.then( () => {
-								if ( _target === target ) {
+								if ( continueTransition( target ) ) {
 									return roadtrip.Promise.all( [ newRoute.beforeenter( newData, target.currentData ) ]);
 								} else {
 
@@ -239,11 +240,9 @@ function _goto ( target ) {
 							})
 
 							.then( () => {
-								if ( _target === target ) {
+								if ( continueTransition( target ) ) {
 
-									target._left = true;
 									return roadtrip.Promise.all( [ target.currentRoute.leave( target.currentData, newData ) ]);
-
 								} else {
 									let promiseResult = {interrupted: true, msg: "route interrupted"};
 
@@ -253,23 +252,19 @@ function _goto ( target ) {
 							})
 
 							.then( () => {
-								target.currentRoute._left = true;
 
-								if ( _target === target ) {
+								if ( continueTransition( target ) ) {
 									// Only update currentRoute *after* .leave is called and the route hasn't changed in the meantime
 									currentRoute = newRoute;
 									currentData = newData;
 
                                     return newRoute.enter( newData, target.currentData ).then( () => resolve() );
-
 								} else {
 									resolve( {interrupted: true, msg: "route interrupted"} );
 									return roadtrip.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
 								}
 							}).then( () => {
-								if ( _target === target ) {
-									// Route entered, so we switch off left prop
-									newRoute._left = false;
+								if ( continueTransition( target ) ) {
 								}
 							})
 							.catch( ( e ) => {
@@ -283,12 +278,16 @@ function _goto ( target ) {
 
 			isTransitioning = false;
 
-			if ( _target === target ) {
+			if ( continueTransition( target ) ) {
+				
 				target.fulfil();
 				updateHistory(target);
 
 			} else {
-				newRoute._interrupted = true;
+				// if the user navigated while the transition was taking
+				// place, we need to do it all again
+				//console.log("target != _target", newRoute.path)
+				//_goto( _target );
 				_target.promise.then( target.fulfil, target.reject );
 			}
 		})
@@ -338,7 +337,11 @@ function updateHistory(target) {
 		x: target.scrollX,
 		y: target.scrollY
 	};
-	
+}
+
+function continueTransition(target) {
+	if (_target === target) return true;
+	return false;
 }
 
 export default roadtrip;
