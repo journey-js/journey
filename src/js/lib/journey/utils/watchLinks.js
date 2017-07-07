@@ -1,5 +1,4 @@
 import window from './window.js';
-import roadtrip from '../roadtrip.js';
 import routes from '../routes.js';
 import util from './util.js';
 import watchHistory from './watchHistory.js';

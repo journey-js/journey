@@ -1,250 +1,383 @@
-import './utils/polyfill.js';
-import roadtrip from  "../roadtrip/roadtrip";
-import eventer from "./handler/eventer";
-import journeyUtils from "./utils/util.js";
-import roadtripUtils from "../roadtrip/utils/util.js";
+import Route from './Route.js';
+import watchLinks from './utils/watchLinks.js';
+import pathHelper from './utils/pathHelper.js';
+import isSameRoute from './utils/isSameRoute.js';
+import window from './utils/window.js';
+import routes from './routes.js';
+import watchHistory from './utils/watchHistory.js';
+import util from './utils/util.js';
+import config from './utils/config.js';
+import eventer from "./event/eventer";
 import mode from "./utils/mode";
-import events from "./utils/events";
+import events from "./event/events.js";
+import './utils/polyfill.js';
 import "./handler/routeAbuseMonitor";
-import config from "./utils/config.js";
 
 // Enables HTML5-History-API polyfill: https://github.com/devote/HTML5-History-API
 const location = window && ( window.history.location || window.location );
 
-var journey = { };
+function noop () {}
 
-eventer.init( journey );
-
-journey.add = function add( path, options ) {
-
-	if ( path == null ) {
-		throw new Error( "journey.add does not accept 'null' path" );
-	}
-
-	if ( options == null ) {
-		throw new Error( "journey.add does not accept 'null' options" );
-	}
-
-	options = roadtripUtils.extend( { }, options );
-	wrap( options );
-
-	roadtrip.add( path, options );
-
-	return journey;
+let currentData = {};
+let currentRoute = {
+	enter: () => journey.Promise.resolve(),
+	leave: () => journey.Promise.resolve(),
+	beforeleave: () => journey.Promise.resolve()
 };
 
-journey.start = function ( options ) {
+let _target;
+let isTransitioning = false;
 
-	roadtripUtils.extend( config, options );
+const scrollHistory = {};
+let uniqueID = 1;
+let currentID = uniqueID;
+
+const journey = {
+	Promise,
+
+	add ( path, options ) {
+
+		if ( path == null ) {
+			throw new Error( "journey.add() requires a path argument!" );
+		}
+
+		options = util.extend( { }, options );
+
+		eventer.addEvents( options );
+
+		routes.push( new Route( path, options ) );
+		return journey;
+	},
+
+	start ( options = {} ) {
+
+		util.extend( config, options );
 
 	mode.DEBUG = config.debug;
+		
+		watchHistory.start(config);
+		watchHistory.setListener(historyListener);
 
-	wrapRoadtripGoto();
+		let path = pathHelper.getInitialPath();
 
-	return roadtrip.start( options );
-};
+		let matchFound = routes.some( route => route.matches( path ) );
+		const href = matchFound ?
+			path :
+			config.fallback;
 
-journey.goto = function ( href, internalOptions = {} ) {
-	if ( roadtrip._origGoto == null ) {
-		throw new Error( "call start() before using journey" );
-	}
+			const internalOptions = {
+				replaceState: true,
+				scrollX: window.scrollX,
+				scrollY: window.scrollY
+			};
+			const otherOptions = {};
 
-	var promise = roadtrip._origGoto( href, internalOptions );
+		return journey.goto( href, otherOptions, internalOptions);
+	},
 
-	if ( promise._sameRoute ) {
-		return promise;
-	}
+	goto ( href, internalOptions = {}) {
+		if (href == null) return journey.Promise.resolve();
 
-	let emitOptions = {
+		href = pathHelper.getGotoPath(href);
+
+		scrollHistory[ currentID ] = {
+			x: window.scrollX,
+			y: window.scrollY
+		};
+
+		let target;
+		const promise = new journey.Promise( ( fulfil, reject ) => {
+			target = _target = {
+				href,
+				scrollX: internalOptions.scrollX || 0,
+				scrollY: internalOptions.scrollY || 0,
+				internalOptions,
+				fulfil,
+				reject,
+				currentRoute: currentRoute,
+				currentData: currentData
+			};
+		});
+		console.log("lockdown currentRoute:", target.currentRoute.path, " for:", href)
+		
+		promise._locked = false;
+		
+		_target.promise = promise;
+		
+		if ( isTransitioning ) {
+			promise._locked = true;
+			//return promise;
+		}
+
+		_goto( target );
+		
+		if ( target._sameRoute ) {
+			return promise;
+		}
+
+		let emitOptions = {
 		redirect: internalOptions.redirect,
 		pathname: href,
 		href: location.href
 	};
 
 	journey.emit( journey, events._GOTO, emitOptions );
+	
+		promise.catch( function ( e ) {
+			// TODO should we catch this one here? If further inside the plumbing an error is also thrown we end up logging the error twice
+			eventer.raiseError( { error: e } );
+		} );
 
-	promise.catch( function(e) {
-		// TODO should we catch this one here? If further inside the plumbing an error is also thrown we end up logging the error twice
-		raiseError( { error: e } );
-	});
+		return promise;
+	},
 
-	return promise;
-};
+	getCurrentData () {
+		return currentData;
+	},
 
-journey.getBase = function ( ) {
-	return roadtrip.base;
-};
+	getCurrentRoute () {
+		return currentRoute;
+	},	
 
-journey.getCurrentRoute = function ( ) {
-	return roadtrip.getCurrentRoute();
-};
-
-journey.getCurrentData = function ( ) {
-	return roadtrip.getCurrentData();
-};
-
-function wrap( options ) {
-	enhanceEvent( events.ENTER, options );
-
-	// Only enhance 'update' if it is declared on route, otherwise Roadtrip will see every route as updateable
-	// and could call update (depending on the route url) instead of the normal enter/leave cycle as the user intended
-	// by not declaring an update handler.
-	let handler = options[events.UPDATE];
-	if ( handler != null ) {
-		enhanceEvent( events.UPDATE, options );
+	getBase ( ) {
+		return config.base;
 	}
+};
 
-	enhanceEvent( events.BEFORE_ENTER, options );
-	enhanceEvent( events.LEAVE, options );
-	enhanceEvent( events.BEFORE_LEAVE, options );
+eventer.init( journey );
+
+if ( window ) {
+	watchLinks( href => {
+		journey.goto( href )
+
+			.catch(e => {
+				isTransitioning = false; 
+			} );
+	});
 }
 
-function enhanceEvent( name, options ) {
-	let handler = options[name];
+function getNewData(target) {
+	let newData;
+	let newRoute;
 
-	let wrapper = function ( ) {
-		let that = this;
-		let args;
-		//var thatArgs = arguments;
+	for ( let i = 0; i < routes.length; i += 1 ) {
+		const route = routes[i];
+		newData = route.exec( target );
 
-		// Handle errors thrown by handler: enter, leave, update or beforeenter
-		try {
-			// convert arguments into a proper array
-			args = Array.prototype.slice.call( arguments );
-
-			let options = { };
-
-			if ( name === events.UPDATE ) { // update only accepts one argument
-				args[1] = options;
-				/*
-				 if (options == null) {
-				 options = args[1] = {};
-				 }*/
-
-			} else {
-				args[2] = options;
-				/*
-				 if (options == null) {
-				 options = args[2] = {};
-				 }*/
-			}
-
-			// Ensure default target is passed to events, but don't override if already present
-			options.target = config.target;
-			options.startOptions = config;
-			options.hasHandler = handler != null;
-
-			raiseEvent( name, args );
-
-			// Call handler
-			let result;
-
-			if ( handler != null ) {
-				result = handler.apply( that, args );
-			}
-
-			result = Promise.all( [ result ] ); // Ensure handler result can be handled as promise
-			result.then( () => {
-
-				if ( name === events.BEFORE_ENTER ) {
-					raiseEvent( events.BEFORE_ENTER_COMPLETE, args );
-
-				} else if ( name === events.ENTER ) {
-					raiseEvent( events.ENTERED, args );
-				}
-
-				if ( name === events.BEFORE_LEAVE ) {
-					raiseEvent( events.BEFORE_LEAVE_COMPLETE, args );
-
-				} else if ( name === events.LEAVE ) {
-					raiseEvent( events.LEFT, args );
-
-				} else if ( name === events.UPDATE ) {
-					raiseEvent( events.UPDATED, args );
-				}
-			} ).catch( err => {
-				var options = gatherErrorOptions( name, args, err );
-				raiseError( options );
-			} );
-
-			return result;
-
-		} catch ( err ) {
-			var options = gatherErrorOptions( name, args, err );
-			raiseError( options );
-			return Promise.reject( "error occurred in [" + name + "] - " + err.message ); // let others handle further up the stack
+		if ( newData ) {
+			newRoute = route;
+			break;
 		}
+	}
+
+	return {
+		newRoute: newRoute,
+		newData: newData
+	};
+}
+
+function historyListener(options) {
+
+		let url = util.stripBase(options.url, journey.getBase());
+
+	const internalOptions = {};
+	let target;
+
+		target = _target = {
+			href: url,
+			hashChange: options.hashChange, // so we know not to manipulate the history
+			popState: options.popState, // so we know not to manipulate the history
+			internalOptions,
+			fulfil: noop,
+			reject: noop,
+			currentRoute: currentRoute,
+			currentData: currentData
+		};
+
+		if(options.popEvent != null) {
+			const scroll = scrollHistory[ options.popEvent.state.uid ] || {x: 0, y: 0};
+			target.scrollX = scroll.x;
+			target.scrollY = scroll.y;
+
+		} else {
+			target.scrollX = 0;
+			target.scrollY = 0;
+		}
+
+		_goto( target );
+
+		if(options.popEvent != null) {
+			currentID = options.popEvent.state.uid;
+		}
+}
+
+function _goto ( target ) {
+	let newRoute;
+	let newData;
+	let forceReloadRoute = target.internalOptions.forceReload || false;
+
+	let targetHref = pathHelper.prefixWithSlash(target.href);
+	target.href = targetHref;
+
+	var result = getNewData(target);
+
+	if (!result.newData) {
+		// If we cannot find data, it is because the requested url isn't mapped to a route. Use fallback to render page. Keep url pointing to requested url for 
+		// debugging.
+		let tempHref = target.href;
+		target.href = config.fallback;
+		result = getNewData(target);
+		target.href = tempHref;
+	}
+
+	newData = result.newData;
+	newRoute = result.newRoute;
+
+	target._sameRoute = false;
+	let _isSameRoute = isSameRoute( newRoute, target.currentRoute, newData, target.currentData );
+	if ( !newRoute || ( _isSameRoute && !forceReloadRoute) ) {
+		target.fulfil();
+		target._sameRoute = true;
+		return;
+	}
+
+	scrollHistory[ currentID ] = {
+		x: ( target.currentData.scrollX = window.scrollX ),
+		y: ( target.currentData.scrollY = window.scrollY )
 	};
 
-	options[name] = wrapper;
-}
+	isTransitioning = true;
 
-function raiseEvent( event, args ) {
-	var options = { };
-	if ( event === events.UPDATE || event === events.UPDATED ) {
-		options.route = args[0];
-		options.options = args[1];
+	let promise;
+	if ( !forceReloadRoute && ( newRoute === target.currentRoute ) && newRoute.updateable ) {
 
-	} else if ( event === events.BEFORE_ENTER || event === events.BEFORE_ENTER_COMPLETE ) {
-		options.to = args[0];
-		options.from = args[1];
-		options.options = args[2];
+		// For updates, merge newData into currentData, in order to preserve custom data that was set during enter or beforeenter events
+		newData = newData.extend({}, target.currentData, newData);
 
-	} else if ( event === events.ENTER || event === events.ENTERED ) {
-		options.to = args[0];
-		options.from = args[1];
-		options.options = args[2];
+		promise = newRoute.update( newData );
 
-	} else if ( event === events.BEFORE_LEAVE || event === events.BEFORE_LEAVE_COMPLETE ) {
-		options.from = args[0];
-		options.to = args[1];
-		options.options = args[2];
+	} else {
 
-	} else if ( event === events.LEAVE || event === events.LEFT ) {
-		options.from = args[0];
-		options.to = args[1];
-		options.options = args[2];
+		promise = new journey.Promise((resolve, reject) => {
+			
+					let transitionPromise;
+
+						transitionPromise = journey.Promise.all([ target.currentRoute.beforeleave( target.currentData, newData )	]);
+
+					transitionPromise
+							.then( () => {
+								if ( continueTransition( target ) ) {
+									return journey.Promise.all( [ newRoute.beforeenter( newData, target.currentData ) ]);
+								} else {
+
+									resolve( {interrupted: true, msg: "route interrupted"} );
+									return journey.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
+								}
+							})
+
+							.then( () => {
+								if ( continueTransition( target ) ) {
+
+									return journey.Promise.all( [ target.currentRoute.leave( target.currentData, newData ) ]);
+								} else {
+									let promiseResult = {interrupted: true, msg: "route interrupted"};
+
+									resolve( promiseResult  );
+									return journey.Promise.resolve( promiseResult );
+								}
+							})
+
+							.then( () => {
+
+								if ( continueTransition( target ) ) {
+									// Only update currentRoute *after* .leave is called and the route hasn't changed in the meantime
+									currentRoute = newRoute;
+									currentData = newData;
+
+                                    return newRoute.enter( newData, target.currentData ).then( () => resolve() );
+								} else {
+									resolve( {interrupted: true, msg: "route interrupted"} );
+									return journey.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
+								}
+							}).then( () => {
+								if ( continueTransition( target ) ) {
+								}
+							})
+							.catch( ( e ) => {
+								return reject( e );
+							} );
+						} );
 	}
 
-	journey.emit( journey, event, options );
-}
+	promise
+		.then( ( ) => {
 
-function raiseError( options ) {
-	journeyUtils.logError( options.error );
-	journey.emit( journey, events.ERROR, options );
-}
+			isTransitioning = false;
 
-function gatherErrorOptions( event, args, err ) {
-	var route, from, to;
+			if ( continueTransition( target ) ) {
+				
+				target.fulfil();
+				updateHistory(target);
 
-	if ( event === events.UPDATE ) {
-		route = args[0];
+			} else {
+				// if the user navigated while the transition was taking
+				// place, we need to do it all again
+				//console.log("target != _target", newRoute.path)
+				//_goto( _target );
+				_target.promise.then( target.fulfil, target.reject );
+			}
+		})
+		.catch( e => {
+			isTransitioning = false;
+			target.reject(e);
+		});
 
-	} else if ( event === events.BEFORE_ENTER || event === events.ENTER ) {
-		route = args[0];
-		to = args[0];
-		from = args[1];
-	} else { // LEAVE and BEFORE_LEAVE
-		route = args[1];
-		to = args[1];
-		from = args[0];
+		// If we want the URL to change to the target irrespective if an error occurs or not, uncomment below
+		//updateHistory(target);
+} // * _goto end*
+
+function updateHistory(target) {
+	
+	if ( target.popState || target.hashChange ) return;
+
+	const { replaceState, invisible } = target.internalOptions;
+	if ( invisible ) return;
+	
+	const uid = replaceState ? currentID : ++uniqueID;
+
+	let targetHref = target.href;
+
+	if (watchHistory.useOnHashChange) {
+		targetHref = pathHelper.prefixWithHash(targetHref);
+		target.href = targetHref;
+		watchHistory.setHash( targetHref, target.internalOptions );
+
+	} else {
+
+		if (config.useHash) {
+			targetHref = pathHelper.prefixWithHash(targetHref);
+			target.href = targetHref;
+
+		} else {
+			targetHref = pathHelper.prefixWithSlash(targetHref);
+			// Add base path for pushstate, as we are routing to an absolute path '/' eg. /base/page1
+			targetHref = util.prefixWithBase(targetHref, journey.getBase());
+			target.href = targetHref;
+		}
+
+		history[ target.internalOptions.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
 	}
-	var options = { error: err, event: event, from: from, to: to, route: route };
-	options.target = config.target;
-	options.startOptions = config;
-	return options;
 
+	currentID = uid;
+	scrollHistory[ currentID ] = {
+		x: target.scrollX,
+		y: target.scrollY
+	};
 }
 
-function wrapRoadtripGoto() {
-	// Ensure to only wrap goto once, in case journey.start is called more than once
-	if ( roadtrip._origGoto != null )
-		return;
-
-	roadtrip._origGoto = roadtrip.goto;
-	roadtrip.goto = journey.goto;
-
-
+function continueTransition(target) {
+	if (_target === target) return true;
+	return false;
 }
 
 export default journey;

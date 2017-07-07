@@ -1,4 +1,4 @@
-import roadtrip from './roadtrip.js';
+import journey from './journey.js';
 import pathHelper from "./utils/pathHelper.js";
 import watchHistory from "./utils/watchHistory.js";
 
@@ -51,7 +51,7 @@ export default function Route( path, options ) {
 				value = options[ handler ]( route, other, opts );
 			}
 
-			return roadtrip.Promise.resolve( value );
+			return journey.Promise.resolve( value );
 		};
 	} );
 }

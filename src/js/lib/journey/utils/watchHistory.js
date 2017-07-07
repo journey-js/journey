@@ -44,7 +44,7 @@ let watchHistory = {
 	},
 
 	popstateEventLisener( e ) {
-		if ( e.state == null ) return; // hashchange, or otherwise outside roadtrip's control
+		if ( e.state == null ) return; // hashchange, or otherwise outside journey's control
 
 		//let url = location.pathname;
 		let url = config.useHash ? window.location.hash : window.location.pathname;
