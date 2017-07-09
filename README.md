@@ -308,7 +308,7 @@ The data we load in the *beforeenter* method must be passed to *enter* in order 
 ```js
 let clients = {
 
-    beforeenter: function(route) {
+    beforeenter: function(route, prevRoute, options) {
         let promise = xhr.get("/data/clients").then( function( clients ) {
 
             promise.then(function(clients) {
@@ -321,7 +321,7 @@ let clients = {
         return promise;
     }
 
-    enter: function(route, prevRoute) {
+    enter: function(route, prevRoute, options) {
 
         route.view = createView(route.data);
     }
@@ -344,7 +344,7 @@ let product = {
 
     let isFormDirty = false; // This could be modified when editing the product form
 
-    beforeleave: function(route) {
+    beforeleave: function(route, nextRoue, options) {
 
         if (isFormDirty) {
 
@@ -698,11 +698,11 @@ options: {
 
     },
 
-    beforeenter: function(route, options) {
+    beforeenter: function(route, prevRoute, options) {
 
     },
 
-    beforeleave: function(route, options) {
+    beforeleave: function(route, nextRoute, options) {
 
     },
 }
