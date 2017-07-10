@@ -18,7 +18,6 @@ eventer.emit = function ( that ) {
 	origEmit.apply( this, arguments );
 };
 
-
 eventer.init = ( arg ) => {
 	journey = arg;
 
@@ -44,22 +43,7 @@ eventer.init = ( arg ) => {
 	};
 };
 
-eventer.addEvents = function( options ) {
-	addEvent( events.ENTER, options );
-
-	// Only enhance 'update' if it is declared on route, otherwise Journey will see every route as updateable
-	// and could call update (depending on the route url) instead of the normal enter/leave cycle as the user intended
-	// by not declaring an update handler.
-	let handler = options[events.UPDATE];
-	if ( handler != null ) {
-		addEvent( events.UPDATE, options );
-	}
-
-	addEvent( events.BEFORE_ENTER, options );
-	addEvent( events.LEAVE, options );
-	addEvent( events.BEFORE_LEAVE, options );
-}
-
+/*
 function addEvent( name, options ) {
 	let handler = options[name];
 
@@ -77,25 +61,16 @@ function addEvent( name, options ) {
 
 			if ( name === events.UPDATE ) { // update only accepts one argument
 				args[1] = options;
-				/*
-				 if (options == null) {
-				 options = args[1] = {};
-				 }*/
-
+				
 			} else {
-				args[2] = options;
-				/*
-				 if (options == null) {
-				 options = args[2] = {};
-				 }*/
-			}
+				args[2] = options;		
 
 			// Ensure default target is passed to events, but don't override if already present
 			options.target = config.target;
 			options.startOptions = config;
 			options.hasHandler = handler != null;
 
-			raiseEvent( name, args );
+			eventer.raiseEvent( name, args );
 
 			// Call handler
 			let result;
@@ -104,44 +79,45 @@ function addEvent( name, options ) {
 				result = handler.apply( that, args );
 			}
 
-			result = Promise.all( [ result ] ); // Ensure handler result can be handled as promise
+			result = journey.Promise.all( [ result ] ); // Ensure handler result can be handled as promise
 			result.then( () => {
 
 				if ( name === events.BEFORE_ENTER ) {
-					raiseEvent( events.BEFORE_ENTER_COMPLETE, args );
-					
+					eventer.raiseEvent( events.BEFORE_ENTER_COMPLETE, args );
+
 				} else if ( name === events.ENTER ) {
-					raiseEvent( events.ENTERED, args );
+					eventer.raiseEvent( events.ENTERED, args );
 				}
 
 				if ( name === events.BEFORE_LEAVE ) {
-					raiseEvent( events.BEFORE_LEAVE_COMPLETE, args );
+					eventer.raiseEvent( events.BEFORE_LEAVE_COMPLETE, args );
 
 				} else if ( name === events.LEAVE ) {
-					raiseEvent( events.LEFT, args );
+					eventer.raiseEvent( events.LEFT, args );
 
 				} else if ( name === events.UPDATE ) {
-					raiseEvent( events.UPDATED, args );
+					eventer.raiseEvent( events.UPDATED, args );
 				}
 			} ).catch( err => {
 				var options = gatherErrorOptions( name, args, err );
-				raiseError( options );
+				eventer.raiseError( options );
 			} );
 
 			return result;
 
 		} catch ( err ) {
 			var options = gatherErrorOptions( name, args, err );
-			raiseError( options );
-			return Promise.reject( "error occurred in [" + name + "] - " + err.message ); // let others handle further up the stack
+			eventer.raiseError( options );
+			return journey.Promise.reject( "error occurred in [" + name + "] - " + err.message ); // let others handle further up the stack
 		}
 	};
 
 	options[name] = wrapper;
 }
+*/
 
+eventer.raiseEvent = function ( event, args ) {
 
-function raiseEvent( event, args ) {
 	var options = { };
 	if ( event === events.UPDATE || event === events.UPDATED ) {
 		options.route = args[0];
@@ -171,7 +147,7 @@ function raiseEvent( event, args ) {
 	journey.emit( journey, event, options );
 }
 
-eventer.raiseError = function( options ) {
+eventer.raiseError = function ( options ) {
 	util.logError( options.error );
 	journey.emit( journey, events.ERROR, options );
 }

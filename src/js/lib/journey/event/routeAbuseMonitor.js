@@ -1,7 +1,7 @@
-import eventer from "../event/eventer.js";
+import eventer from "./eventer.js";
 import utils from  "../utils/util.js";
 import config from  "../utils/config.js";
-import events from  "../event/events.js";
+import events from  "./events.js";
 
 let callstack = [ ];
 

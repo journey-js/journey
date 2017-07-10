@@ -1,4 +1,5 @@
 import window from './window.js';
+import mode from './mode.js';
 
 var util = {
 

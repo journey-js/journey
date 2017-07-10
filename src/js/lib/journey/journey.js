@@ -8,10 +8,11 @@ import watchHistory from './utils/watchHistory.js';
 import util from './utils/util.js';
 import config from './utils/config.js';
 import eventer from "./event/eventer";
-import mode from "./utils/mode";
+import handler from "./handler.js";
 import events from "./event/events.js";
+import mode from "./utils/mode.js";
 import './utils/polyfill.js';
-import "./handler/routeAbuseMonitor";
+import "./event/routeAbuseMonitor.js";
 
 // Enables HTML5-History-API polyfill: https://github.com/devote/HTML5-History-API
 const location = window && ( window.history.location || window.location );
@@ -42,8 +43,6 @@ const journey = {
 		}
 
 		options = util.extend( { }, options );
-
-		eventer.addEvents( options );
 
 		routes.push( new Route( path, options ) );
 		return journey;
@@ -121,7 +120,7 @@ const journey = {
 		href: location.href
 	};
 
-	journey.emit( journey, events._GOTO, emitOptions );
+		journey.emit( journey, events._GOTO, emitOptions );
 	
 		promise.catch( function ( e ) {
 			// TODO should we catch this one here? If further inside the plumbing an error is also thrown we end up logging the error twice
@@ -145,6 +144,7 @@ const journey = {
 };
 
 eventer.init( journey );
+handler.init( journey );
 
 if ( window ) {
 	watchLinks( href => {
@@ -250,24 +250,36 @@ function _goto ( target ) {
 
 	let promise;
 	if ( !forceReloadRoute && ( newRoute === target.currentRoute ) && newRoute.updateable ) {
+		
+		// handler.emit(UPDATE);
 
 		// For updates, merge newData into currentData, in order to preserve custom data that was set during enter or beforeenter events
-		newData = newData.extend({}, target.currentData, newData);
+		//newData = util.extend( target.currentData, newData );
 
-		promise = newRoute.update( newData );
+		//promise = newRoute.update( newData );
+		promise = handler.update( newRoute, newData, target );
+		
+		promise.then( () => {
+
+			if ( !continueTransition( target ) ) {
+				return journey.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
+			}
+		} );
 
 	} else {
 
 		promise = new journey.Promise((resolve, reject) => {
-			
+
 					let transitionPromise;
 
-						transitionPromise = journey.Promise.all([ target.currentRoute.beforeleave( target.currentData, newData )	]);
+						//transitionPromise = journey.Promise.all([ target.currentRoute.beforeleave( target.currentData, newData )	]);
+						transitionPromise = handler.beforeleave( newRoute, newData, target );
 
 					transitionPromise
 							.then( () => {
 								if ( continueTransition( target ) ) {
-									return journey.Promise.all( [ newRoute.beforeenter( newData, target.currentData ) ]);
+									let promise = handler.beforeenter( newRoute, newData, target );
+									return promise;
 								} else {
 
 									resolve( {interrupted: true, msg: "route interrupted"} );
@@ -278,7 +290,11 @@ function _goto ( target ) {
 							.then( () => {
 								if ( continueTransition( target ) ) {
 
-									return journey.Promise.all( [ target.currentRoute.leave( target.currentData, newData ) ]);
+									let promise = handler.leave( newRoute, newData, target );
+									return promise;
+
+									//return journey.Promise.all( [ target.currentRoute.leave( target.currentData, newData ) ]);
+
 								} else {
 									let promiseResult = {interrupted: true, msg: "route interrupted"};
 
@@ -291,17 +307,18 @@ function _goto ( target ) {
 
 								if ( continueTransition( target ) ) {
 									// Only update currentRoute *after* .leave is called and the route hasn't changed in the meantime
-									currentRoute = newRoute;
-									currentData = newData;
+									//currentRoute = newRoute;
+									//currentData = newData;
 
-                                    return newRoute.enter( newData, target.currentData ).then( () => resolve() );
+                                    //return newRoute.enter( newData, target.currentData ).then( () => resolve() );
+									let promise = handler.enter( newRoute, newData, target );
+									return promise;
 								} else {
 									resolve( {interrupted: true, msg: "route interrupted"} );
 									return journey.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
 								}
 							}).then( () => {
-								if ( continueTransition( target ) ) {
-								}
+								resolve();
 							})
 							.catch( ( e ) => {
 								return reject( e );
@@ -322,14 +339,13 @@ function _goto ( target ) {
 			} else {
 				// if the user navigated while the transition was taking
 				// place, we need to do it all again
-				//console.log("target != _target", newRoute.path)
 				//_goto( _target );
 				_target.promise.then( target.fulfil, target.reject );
 			}
 		})
-		.catch( e => {
+		.catch( err => {
 			isTransitioning = false;
-			target.reject(e);
+			target.reject(err);
 		});
 
 		// If we want the URL to change to the target irrespective if an error occurs or not, uncomment below
@@ -379,5 +395,13 @@ function continueTransition(target) {
 	if (_target === target) return true;
 	return false;
 }
+
+journey.updateCurrentRoute = function( target, newRoute, newData) {
+	// Only update currentRoute if the route hasn't changed in the meantime
+	if (continueTransition(target)) {
+		currentRoute = newRoute;
+		currentData = newData;
+	}
+};
 
 export default journey;

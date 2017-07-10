@@ -19,20 +19,23 @@ describe( 'current route', ( ) => {
 
 				let leavePath, leftPath;
 
-				journey.add( '/foo', {
-					
-					leave() {
-						leavePath = journey.getCurrentRoute().path;						
-					}
-				} );
+				journey.add( '/foo' );
 
-				journey.add( '/bar', {
-				} );
+				journey.add( '/bar' );
+				
+				journey.on('leave', function() {
+					leavePath = journey.getCurrentRoute().path;
+				});
+
+				journey.on('left', function() {
+					console.log("--------------------------------")
+					leftPath = journey.getCurrentRoute().path;
+				});
 
 				journey.start().then( function () {
 					journey.goto( '/bar' )
 							.then( function () {
-								leftPath = journey.getCurrentRoute().path;
+								console.log("+++++++++++++++++++++++++++++++++", leavePath, leftPath)
 								assert.equal( leavePath, 'foo' );
 								assert.equal( leftPath, 'bar' );
 								done( );
