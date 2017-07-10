@@ -168,7 +168,7 @@ let handler = {
 	}
 }
 
-
+/*
 function processHandler( handlerName, start, end, route, to, from, err ) {
 	let options = { };
 	let args = [ newData, options ];
@@ -202,7 +202,7 @@ function processHandler( handlerName, start, end, route, to, from, err ) {
 		eventer.raiseError( options );
 		return journey.Promise.reject( "error occurred in [" + 'update' + "] - " + err.message ); // let others handle further up the stack
 	}
-}
+}*/
 
 function getDefaultOptions( route ) {
 	let options = { };

@@ -3,7 +3,7 @@ const path = require( 'path' );
 const fs = require( 'fs' );
 const jsdom = require( "jsdom/lib/old-api.js" );
 const assert = require( 'assert' );
-const util = require( './util' );
+const util = require( '../util' );
 
 require( 'console-group' ).install();
 

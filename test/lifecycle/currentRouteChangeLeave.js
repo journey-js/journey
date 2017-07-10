@@ -3,7 +3,7 @@ const path = require( 'path' );
 const fs = require( 'fs' );
 const jsdom = require( "jsdom/lib/old-api.js" );
 const assert = require( 'assert' );
-const util = require( './util' );
+const util = require( '../util' );
 
 require( 'console-group' ).install();
 
@@ -22,26 +22,24 @@ describe( 'current route', ( ) => {
 				journey.add( '/foo' );
 
 				journey.add( '/bar' );
-				
-				journey.on('leave', function() {
-					leavePath = journey.getCurrentRoute().path;
-				});
 
-				journey.on('left', function() {
-					console.log("--------------------------------")
+				journey.on( 'leave', function () {
+					leavePath = journey.getCurrentRoute().path;
+				} );
+
+				journey.on( 'left', function () {
 					leftPath = journey.getCurrentRoute().path;
-				});
+				} );
 
 				journey.start().then( function () {
 					journey.goto( '/bar' )
 							.then( function () {
-								console.log("+++++++++++++++++++++++++++++++++", leavePath, leftPath)
 								assert.equal( leavePath, 'foo' );
 								assert.equal( leftPath, 'bar' );
 								done( );
 							} )
-							.catch( function ( e) {
-								done('currentRoute did not update after leave');
+							.catch( function ( e ) {
+								done( e );
 							} );
 				} );
 
