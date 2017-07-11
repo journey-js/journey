@@ -522,8 +522,9 @@ journey.on("error", function(event) {
     // event.from  : the route we are leaving
     // event.to    : the route we are entering
     // event.route : the current route, which is either event.to or event.from depending 
-                    // on the type of event during which the error occurred
+    // on the type of event during which the error occurred
     // event.error : the Javascript error object
+    // event.options : the same options that was passed to the handler where the error occurred
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
