@@ -420,6 +420,7 @@ Journey raises the following events when changing routes:
 * **leave** - event raised *before* the *leave* handler is called
 * **left** - event raised *after* the *leave* handler is complete
 * **error** - whenever journey throws an error the "error" event is raised
+* **transitionAborted** - event raised when a route that is transitioning is stopped because the user navigated to a different route
 * **routeAbuseStart** - when journey detects that a route is entered before
 the previous route has left, *routeAbuseStart* is raised
 * **routeAbuseStop** - after *routeAbuseStart* is raised, Journey waits
@@ -517,13 +518,21 @@ journey.on("beforeenterComplete", function(event) {
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
+journey.on("transitionAborted", function(event) {
+    // event.from                 : the route we are leaving
+    // event.to                   : the route we are entering
+    // event.options              : the same options that was passed to the last handler before the transitionAborted event was raised
+    // event.options.startOptions : the options that was passed to journey.start(options);
+});
+
 journey.on("error", function(event) {
     // event.event : the name of the event when the rror occurred eg. "enter", "entered", "leave" etc.
     // event.from  : the route we are leaving
     // event.to    : the route we are entering
     // event.route : the current route, which is either event.to or event.from depending 
-                    // on the type of event during which the error occurred
+    // on the type of event during which the error occurred
     // event.error : the Javascript error object
+    // event.options : the same options that was passed to the handler where the error occurred
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 

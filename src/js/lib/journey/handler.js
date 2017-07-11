@@ -15,13 +15,14 @@ let handler = {
 
 		// For updates, merge newData into currentData, in order to preserve custom data that was set during enter or beforeenter events
 		newData = util.extend( target.currentData, newData );
-		let handlerOptions = getDefaultOptions( newRoute );
+		let handlerOptions = handler.getDefaultOptions( newRoute );
 		let eventOptions = { route: newData, from: null, to: null, options: handlerOptions };
 
 		try {
 			eventer.emit( events.UPDATE, eventOptions );
 
 			let result = newRoute.update( newData, handlerOptions );
+
 			let promise = journey.Promise.all( [ result ] ); // Ensure handler result can be handled as promise
 
 			promise.then( function () {
@@ -31,14 +32,14 @@ let handler = {
 				eventer.emit( journey, events.UPDATED, eventOptions );
 
 			} ).catch( err => {
-				let options = gatherErrorOptions( events.UPDATE, newRoute, null, null, err );
+				let options = handler.gatherErrorOptions( events.UPDATE, newRoute, null, null, err );
 				eventer.raiseError( options );
 			} );
 
 			return promise;
 
 		} catch ( err ) {
-			let options = gatherErrorOptions( events.UPDATE, newRoute, null, null, err );
+			let options = handler.gatherErrorOptions( events.UPDATE, newRoute, null, null, err );
 			eventer.raiseError( options );
 			return journey.Promise.reject( "error occurred in [" + events.UPDATE + "] - " + err.message ); // let others handle further up the stack
 		}
@@ -46,7 +47,7 @@ let handler = {
 
 	enter( newRoute, newData, target ) {
 		
-		let handlerOptions = getDefaultOptions( target.currentRoute );
+		let handlerOptions = handler.getDefaultOptions( newRoute );
 		let eventOptions = { from: target.currentData, to: newData, options: handlerOptions };
 
 		try {
@@ -60,14 +61,14 @@ let handler = {
 				eventer.emit( journey, events.ENTERED, eventOptions );
 
 			} ).catch( err => {
-				let options = gatherErrorOptions( events.ENTER, target.currentRoute, target.currentData, newData, err );
+				let options = handler.gatherErrorOptions( events.ENTER, target.currentRoute, target.currentData, newData, err );
 				eventer.raiseError( options );
 			} );
 
 			return promise;
 
 		} catch ( err ) {
-			let options = gatherErrorOptions( events.ENTER, target.currentRoute, null, null, err );
+			let options = handler.gatherErrorOptions( events.ENTER, target.currentRoute, null, null, err );
 			eventer.raiseError( options );
 			return journey.Promise.reject( "error occurred in [" + events.ENTER + "] - " + err.message ); // let others handle further up the stack
 
@@ -76,7 +77,7 @@ let handler = {
 
 	beforeenter( newRoute, newData, target ) {
 		
-		let handlerOptions = getDefaultOptions( target.currentRoute );
+		let handlerOptions = handler.getDefaultOptions( newRoute );
 		let eventOptions = { from: target.currentData, to: newData, options: handlerOptions };
 
 		try {
@@ -91,29 +92,29 @@ let handler = {
 				eventer.emit( journey, events.BEFORE_ENTER_COMPLETE, eventOptions );
 
 			} ).catch( err => {
-				let options = gatherErrorOptions( events.BEFORE_ENTER, target.currentRoute, target.currentData, newData, err );
+				let options = handler.gatherErrorOptions( events.BEFORE_ENTER, target.currentRoute, target.currentData, newData, err );
 				eventer.raiseError( options );
 			} );
 
 			return promise;
 
 		} catch ( err ) {
-			let options = gatherErrorOptions( events.BEFORE_ENTER, target.currentRoute, null, null, err );
+			let options = handler.gatherErrorOptions( events.BEFORE_ENTER, target.currentRoute, null, null, err );
 			eventer.raiseError( options );
 			return journey.Promise.reject( "error occurred in [" + events.BEFORE_ENTER + "] - " + err.message ); // let others handle further up the stack
-
 		}
 	},
 
 	beforeleave( newRoute, newData, target ) {
-		
-		let handlerOptions = getDefaultOptions( target.currentRoute );
+
+		let handlerOptions = handler.getDefaultOptions( target.currentRoute );
 		let eventOptions = { from: target.currentData, to: newData, options: handlerOptions };
 
 		try {
 			eventer.emit( events.BEFORE_LEAVE, eventOptions );
 
 			let result = target.currentRoute.beforeleave( target.currentData, newData, handlerOptions );
+
 			let promise = journey.Promise.all( [ result ] ); // Ensure handler result can be handled as promise
 
 			promise.then( function () {
@@ -121,14 +122,14 @@ let handler = {
 				eventer.emit( journey, events.BEFORE_LEAVE_COMPLETE, eventOptions );
 
 			} ).catch( err => {
-				let options = gatherErrorOptions( events.BEFORE_LEAVE, target.currentRoute, target.currentData, newData, err );
+				let options = handler.gatherErrorOptions( events.BEFORE_LEAVE, target.currentRoute, target.currentData, newData, err );
 				eventer.raiseError( options );
 			} );
 
 			return promise;
 
 		} catch ( err ) {
-			let options = gatherErrorOptions( events.BEFORE_LEAVE, target.currentRoute, null, null, err );
+			let options = handler.gatherErrorOptions( events.BEFORE_LEAVE, target.currentRoute, null, null, err );
 			eventer.raiseError( options );
 			return journey.Promise.reject( "error occurred in [" + events.BEFORE_LEAVE + "] - " + err.message ); // let others handle further up the stack
 
@@ -137,7 +138,7 @@ let handler = {
 
 	leave( newRoute, newData, target ) {
 
-		let handlerOptions = getDefaultOptions( target.currentRoute );
+		let handlerOptions = handler.getDefaultOptions( target.currentRoute );
 		let eventOptions = { from: target.currentData, to: newData, options: handlerOptions };
 
 		try {
@@ -153,20 +154,20 @@ let handler = {
 				eventer.emit( journey, events.LEFT, eventOptions );
 
 			} ).catch( err => {
-				let options = gatherErrorOptions( events.LEAVE, target.currentRoute, target.currentData, newData, err );
+				let options = handler.gatherErrorOptions( events.LEAVE, target.currentRoute, target.currentData, newData, err );
 				eventer.raiseError( options );
 			} );
 
 			return promise;
 
 		} catch ( err ) {
-			let options = gatherErrorOptions( events.LEAVE, target.currentRoute, null, null, err );
+			let options = handler.gatherErrorOptions( events.LEAVE, target.currentRoute, null, null, err );
 			eventer.raiseError( options );
 			return journey.Promise.reject( "error occurred in [" + events.LEAVE + "] - " + err.message ); // let others handle further up the stack
 
 		}
 	}
-}
+};
 
 /*
 function processHandler( handlerName, start, end, route, to, from, err ) {
@@ -191,34 +192,37 @@ function processHandler( handlerName, start, end, route, to, from, err ) {
 			eventer.raiseEvent( events.UPDATED, args );
 
 		} ).catch( err => {
-			let options = gatherErrorOptions( 'update', route, null, null, err );
+			let options = handler.gatherErrorOptions( 'update', route, null, null, err );
 			eventer.raiseError( options );
 		} );
 
 		return promise;
 
 	} catch ( err ) {
-		let options = gatherErrorOptions( 'update', route, null, null, err );
+		let options = handler.gatherErrorOptions( 'update', route, null, null, err );
 		eventer.raiseError( options );
 		return journey.Promise.reject( "error occurred in [" + 'update' + "] - " + err.message ); // let others handle further up the stack
 	}
 }*/
 
-function getDefaultOptions( route ) {
+handler.getDefaultOptions = function( route ) {
 	let options = { };
 	// Ensure default target is passed to events, but don't override if already present
 	options.target = config.target;
 	options.startOptions = config; // TODO startOptions not needed
 	//options.hasHandler = handler != null;
-	options.hasHandler = route.hasHandler;
+	options.hasHandler = route.hasHandler; //  TODO how to implement hasHandler?? There should be one boolean per handler
 	return options;
-}
+};
 
-function gatherErrorOptions( handlerName, route, to, from, err ) {
-	var options = { error: err, event: handlerName, from: from, to: to, route: route };
-	options.target = config.target;
-	options.startOptions = config; // TODO needed?
-	return options;
-}
+handler.gatherErrorOptions = function( handlerName, route, to, from, err ) {
+
+	var errorOptions = { error: err, event: handlerName, from: from, to: to, route: route };
+
+	let options = handler.getDefaultOptions( route );
+
+	errorOptions.options = options;
+	return errorOptions;
+};
 
 export default handler;

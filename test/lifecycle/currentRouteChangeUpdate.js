@@ -11,7 +11,7 @@ describe( 'journey.getCcurrentRoute', ( ) => {
 
 	describe( 'after update()', () => {
 
-		it.only( 'should return the same route', ( function ( done ) {
+		it( 'should return the same route', ( function ( done ) {
 
 			util.createTestEnvironment( '#foo' ).then( function ( window ) {
 

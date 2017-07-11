@@ -97,7 +97,6 @@ const journey = {
 				currentData: currentData
 			};
 		});
-		console.log("lockdown currentRoute:", target.currentRoute.path, " for:", href)
 		
 		promise._locked = false;
 		
@@ -115,16 +114,17 @@ const journey = {
 		}
 
 		let emitOptions = {
-		redirect: internalOptions.redirect,
-		pathname: href,
-		href: location.href
-	};
+			redirect: internalOptions.redirect,
+			pathname: href,
+			href: location.href
+		};
 
 		journey.emit( journey, events._GOTO, emitOptions );
 	
-		promise.catch( function ( e ) {
+		promise.catch( function ( err ) {
 			// TODO should we catch this one here? If further inside the plumbing an error is also thrown we end up logging the error twice
-			eventer.raiseError( { error: e } );
+			let options = handler.gatherErrorOptions( null, currentRoute, null, null, err );
+			eventer.raiseError( options );
 		} );
 
 		return promise;
@@ -261,7 +261,7 @@ function _goto ( target ) {
 		
 		promise.then( () => {
 
-			if ( !continueTransition( target ) ) {
+			if ( !continueTransition( target, newData ) ) {
 				return journey.Promise.resolve( {interrupted: true, msg: "route interrupted"} );
 			}
 		} );
@@ -277,7 +277,7 @@ function _goto ( target ) {
 
 					transitionPromise
 							.then( () => {
-								if ( continueTransition( target ) ) {
+								if ( continueTransition( target, newData ) ) {
 									let promise = handler.beforeenter( newRoute, newData, target );
 									return promise;
 								} else {
@@ -288,7 +288,7 @@ function _goto ( target ) {
 							})
 
 							.then( () => {
-								if ( continueTransition( target ) ) {
+								if ( continueTransition( target, newData ) ) {
 
 									let promise = handler.leave( newRoute, newData, target );
 									return promise;
@@ -305,7 +305,7 @@ function _goto ( target ) {
 
 							.then( () => {
 
-								if ( continueTransition( target ) ) {
+								if ( continueTransition( target, newData ) ) {
 									// Only update currentRoute *after* .leave is called and the route hasn't changed in the meantime
 									//currentRoute = newRoute;
 									//currentData = newData;
@@ -331,7 +331,7 @@ function _goto ( target ) {
 
 			isTransitioning = false;
 
-			if ( continueTransition( target ) ) {
+			if ( continueTransition( target, newData ) ) {
 				
 				target.fulfil();
 				updateHistory(target);
@@ -391,14 +391,32 @@ function updateHistory(target) {
 	};
 }
 
-function continueTransition(target) {
-	if (_target === target) return true;
+function continueTransition( target, newData ) {
+	
+	// TODO find way to emit an event 'transitionAbort' just 'once'
+	if ( target._aborted === true )	return false;
+
+	if ( _target === target ) {
+		return true;
+	}
+
+	// add guard so we don't emit transition_aborted more than once for this route transition
+	target._aborted = true;
+
+	let eventOptions = handler.getDefaultOptions( journey.getCurrentRoute() );
+	let options = {
+		to: newData,
+		from: target.currentData,
+		options: eventOptions
+};
+
+	eventer.emit( events.TRANSITION_ABORTED, options );
 	return false;
 }
 
 journey.updateCurrentRoute = function( target, newRoute, newData) {
 	// Only update currentRoute if the route hasn't changed in the meantime
-	if (continueTransition(target)) {
+	if (continueTransition(target, newData)) {
 		currentRoute = newRoute;
 		currentData = newData;
 	}
