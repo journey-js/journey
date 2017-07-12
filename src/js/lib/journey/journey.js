@@ -393,15 +393,14 @@ function updateHistory(target) {
 
 function continueTransition( target, newData ) {
 	
-	// TODO find way to emit an event 'transitionAbort' just 'once'
-	if ( target._aborted === true )	return false;
+	if ( target._transitionAborted === true )	return false;
 
 	if ( _target === target ) {
 		return true;
 	}
 
 	// add guard so we don't emit transition_aborted more than once for this route transition
-	target._aborted = true;
+	target._transitionAborted = true;
 
 	let eventOptions = handler.getDefaultOptions( journey.getCurrentRoute() );
 	let options = {

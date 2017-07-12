@@ -169,42 +169,6 @@ let handler = {
 	}
 };
 
-/*
-function processHandler( handlerName, start, end, route, to, from, err ) {
-	let options = { };
-	let args = [ newData, options ];
-
-	try {
-
-		// Ensure default target is passed to events, but don't override if already present
-		options.target = config.target;
-		options.startOptions = config; // TODO startOptions not needed
-		options.hasHandler = handler != null;
-
-		// For updates, merge newData into currentData, in order to preserve custom data that was set during enter or beforeenter events
-		newData = util.extend( currentData, newData );
-
-		eventer.raiseEvent( handlerName, args );
-
-		let promise = route.update( newData );
-
-		promise.then( function () {
-			eventer.raiseEvent( events.UPDATED, args );
-
-		} ).catch( err => {
-			let options = handler.gatherErrorOptions( 'update', route, null, null, err );
-			eventer.raiseError( options );
-		} );
-
-		return promise;
-
-	} catch ( err ) {
-		let options = handler.gatherErrorOptions( 'update', route, null, null, err );
-		eventer.raiseError( options );
-		return journey.Promise.reject( "error occurred in [" + 'update' + "] - " + err.message ); // let others handle further up the stack
-	}
-}*/
-
 handler.getDefaultOptions = function( route ) {
 	let options = { };
 	// Ensure default target is passed to events, but don't override if already present

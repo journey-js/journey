@@ -9,7 +9,7 @@ const events = {
 	UPDATED: "updated",
 	LEAVE: "leave",
 	LEFT: "left",
-	TRANSITION_ABORTED: "transitionAborted", // TODO document this event
+	TRANSITION_ABORTED: "transitionAborted",
 	ROUTE_ABUSE_START: "routeAbuseStart",
 	ROUTE_ABUSE_STOP: "routeAbuseStop",
 	_GOTO: "_goto",
