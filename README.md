@@ -10,6 +10,7 @@
 - [beforeenter](#beforeenter)
 - [beforeleave](#beforeleave)
 - [Handler Order](#order)
+- [Navigate Declaritively](#nav-declaratively)
 - [Navigate Programmatically](#goto)
 - [Events](#events)
 - [Error](#error)
@@ -377,6 +378,33 @@ When navigating to a new route the order is:
 When *updating* a view (occurs when query parameters change for the  same view) the order is:
 - *update* only *update* will be called, no other handlers are called
 
+## <a id="nav-declaratively"></a>Navigate Declaratively
+
+Generally we can navigate between routes through __links__ specified in our templates:
+
+```js
+journey.add('/client', {
+    enter() {
+         alert('Welcome to the Client view');
+});
+```
+
+```html
+<a href="/client">Client</a>.
+```
+
+When we click on this link, Journey routes to the _client_ view and if the transition is successful eg. none of the handlers throw an error or returns a rejected promise, Journey will update the URL to the new route.
+
+You might ask if the browser won't follow the above link. It won't because Journey intercepts all __click__ events on __links__ and instead route to the value specified in the link' __href attribute__ using [Journey.goto( path )](#goto).
+
+Journey will ignore the following __links__:
+  *  links to different origins eg. if our application is hosted on 
+  _http://myhost.com_ and the link is to_ http://yourHost.com_, Journey will ignore the link and allow the browser to follow the link as per normal.
+  * links with same origin but different base (or context path) eg. If our application is hosted at _http://host/myApp_ and we set Journey base property to _'myApp'_, links to _'http://host/yourApp'_ is ignored.
+  * links with the attribute _download_ or _rel="external"_ is ignored.
+  * links with an href attribute that contains 'mailto:' is ignored.
+
+```
 
 ## <a id="goto"></a>Navigate Programmatically
 
