@@ -171,11 +171,7 @@ let handler = {
 
 handler.getDefaultOptions = function( route ) {
 	let options = { };
-	// Ensure default target is passed to events, but don't override if already present
 	options.target = config.target;
-	options.startOptions = config; // TODO startOptions not needed
-	//options.hasHandler = handler != null;
-	options.hasHandler = route.hasHandler; //  TODO how to implement hasHandler?? There should be one boolean per handler
 	return options;
 };
 

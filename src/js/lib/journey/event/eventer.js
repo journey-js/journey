@@ -25,7 +25,7 @@ eventer.init = ( arg ) => {
 eventer.raiseError = function ( options ) {
 	util.logError( options.error );
 	journey.emit( journey, events.ERROR, options );
-}
+};
 
 function gatherErrorOptions( event, args, err ) {
 	var route, from, to;
@@ -44,7 +44,6 @@ function gatherErrorOptions( event, args, err ) {
 	}
 	var options = { error: err, event: event, from: from, to: to, route: route };
 	options.target = config.target;
-	options.startOptions = config;
 	return options;
 }
 

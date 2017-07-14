@@ -41,7 +41,7 @@ const journey = {
 	 * 
 	 * @param {string} path route url path eg. 'foo', '/foo', '#foo', '/foo:id', '/foo/:fooId/bar/:barId'
 	 * 
-	 * @param {Object} options specifies the route options:<pre><code> {<br/>
+	 * @param {Object} options specifies the route handlers:<pre><code> {<br/>
 	 *		&nbsp;&nbsp;<em>enter</em>: function( route, prevRoute, options ),<br/>
 	 *		&nbsp;&nbsp;<em>leave</em>: function( route, nextRoute, options ),<br/>
 	 *		&nbsp;&nbsp;<em>beforeleave</em>:  function( route, nextRoute, options ),<br/>
@@ -51,9 +51,9 @@ const journey = {
 	 * </code></pre>
 	 * 
 	 * @returns {journey} returns the journey instance to allow chaining: 
-	 * <pre>
+	 * <pre><code>
 	 * journey.add( 'foo' ).add( 'bar' ).start();
-	 * </pre>
+	 * </code></pre>
 	 */
 	add( path, options ) {
 
@@ -67,6 +67,27 @@ const journey = {
 		return journey;
 	},
 
+	/**
+	 * Start Journey with the given options.
+	 * <pre><code>
+	 * journey.add('foo');
+	 * journey.start();
+	 * 
+	 * // with options:
+	 * journey.start( { target: '#main', debug: false, fallback: '/notFound'});
+	defaultRoute: '/home'
+	 * </code></pre>
+	 * 
+	 * @param {Object} options specifies the route options:<pre><code>
+	 *  <em>target</em> (string): the default target to use for rendering views eg. '#main' to render to &lt;div id="main"&gt;&lt;/div&gt;,<br/>
+	 *  <em>fallback</em> (string): specifies a route to use when navigating to a route that does not exist,<br/>
+	 *  <em>debug</em> (boolean): specifies if Journey should print debug statements or not. default: true,<br/>
+	 *  <em>base</em> (string): specifies a base path to use when deploying the application under a specific contextPath,<br/>
+	 *  <em>defaultRoute</em> (string): specifies a default route Journey should navigate to upon startup if no route is specified,<br/>
+	 *  <em>useHash</em> (boolean): specifies whether Hashes or HTML5 pushState should be used. default: true,<br/>
+	 *  <em>hash</em> (string): specifies the hash string to eg. hash: #!, default: #,<br/>
+	 * @returns a promise that resolves after the route enters, or rejects if an error occurs
+	 */
 	start ( options = {} ) {
 
 		util.extend( config, options );
@@ -93,31 +114,19 @@ const journey = {
 	},
 
 	/**
-	 * Add a new route for the given path and options.
-	 * 
-	 * @param {string} path route url path eg. 'foo', '/foo', '#foo', '/foo:id', '/foo/:fooId/bar/:barId'
-	 * 
-	 * @param {Object} options specifies the route options:<pre>
-	 *	<em>enter</em>: function( route, prevRoute, options ),<br/>
-	 *  <em>leave</em>: function( route, nextRoute, options ),<br/>
-	 *  <em>beforeleave</em>:  function( route, nextRoute, options ),<br/>
-	 *  <em>beforeenter</em> function( route, prevRoute, options ),<br/>
-	 *  <em>update</em>: function( route, options ),	 
-	 * </pre>
-	 * 
-	 * @returns {journey} returns the journey instance to allow chaining: 
-	 * <pre>
-	 * journey.add( 'foo' ).add( 'bar' ).start();
-	 * </pre>
-	 */
-
-	/**
 	 * Navigate to the given <em>href</em>.
-	 *  <em>invincible</em>: true/false, <br/>
-	 *  <em>forceReload</em>: true/false <br/>
-	 * @param {type} href
-	 * @param {type} options
-	 * @returns {journey.goto.promise.journeygoto#=>#109|arg.goto.promise|journey.goto.promise|Promise}
+	 * <pre><code>
+	 * journey.goto( 'foo' );
+	 * journey.goto( 'foo', { forceReload: true, invisible: true });
+	 * </code></pre>
+	 * 
+	 * @param {string} href specifies a registered path of the route to navigate to
+	 * @param {Object} options specifies the route options:<pre><code>
+	 *  <em>invisible</em> (boolean): whether to update the url or not,<br/>
+	 *  <em>forceReload</em> (boolean): reload the route even if the given route is the current route,<br/>
+	 *  <em>redirect</em> (boolean): specifies that this route will redirect. Journey won't fire routeAbuseStart/routeAbuseEnd.<br/>
+	 * </code></pre>
+	 * @returns a promise that resolves after the route enters, or rejects if an error occurs
 	 */
 	goto ( href, options = {}) {
 		if (href == null) return journey.Promise.resolve();
@@ -175,44 +184,99 @@ const journey = {
 		return promise;
 	},
 
+	/**
+	 * Returns the data for the current route
+	 *
+	 * @returns the data for the current route
+	 */
 	getCurrentData () {
 		return currentData;
 	},
 
-	getCurrentRoute () {
+	/**
+	 * Returns the current route
+	 *
+	 * @returns the current route
+	 */
+	getCurrentRoute() {
 		return currentRoute;
-	},	
+	},
 
+	/**
+	 * Returns the base that was set during startup.
+	 *
+	 * @returns the base that was set during startup
+	 */
 	getBase ( ) {
 		return config.base;
 	},
-	
-	
-	/** 
-	 * 
-	 * @param {string} name of the event to listen to: <em>enter, entered, leave, left, beforeenter, beforeenterComplete, beforeleave, beforeleaveComplete,
+
+	/**
+	 * Start listening to the given event, one of <em>enter, entered, leave, left, beforeenter, beforeenterComplete, beforeleave, beforeleaveComplete,
 	 * update, updated, error, transitionAborted.
 	 * 
-	 * @param {function} the function to call when the event is fired. function receives an event argument: <b>journey.on ('enter', function ( event ) {});</b>
+	 * @param {string} event to listen to
+	 * @param {function} listener the function to call when the event is fired. function receives an event argument: <b>journey.on ('enter', function ( event ) {});</b>
+	 * @return {journey} Current instance of journey for chaining.
 	 */
 	on( event, listener ) {
 		eventer.on( event, listener );
+		return journey;
 	},
 
+	/**
+	 * Stop listening to the given event, one of <em>enter, entered, leave, left, beforeenter, beforeenterComplete, beforeleave, beforeleaveComplete,
+	 * update, updated, error, transitionAborted
+	 * @param {string} event top stop listening to
+	 * @param {function} listener optionally provide a specific listener to remove for the event
+	 * @return {journey} Current instance of journey for chaining.
+	 */
 	off( event, listener ) {
 		eventer.off( event, listener );
+		return journey;
 	},
 
+	/**
+	 * Listen to the given event once, after which the listener is removed. Event can be one of
+	 *  <em>enter, entered, leave, left, beforeenter, beforeenterComplete, beforeleave, beforeleaveComplete, update, updated, error, transitionAborted.
+	 *
+	 * @param {string} event to listen to
+	 * @param {function} listener the function to call when the event is fired. function receives an event argument: <b>journey.once ('enter', function ( event ) {});</b>
+	 * @return {journey} Current instance of journey for chaining.
+	 */
 	once( event, listener ) {
 		eventer.off( event, listener );
+		return journey;
 	},
 
-	emit() {
+	/**
+	 * Subtly different from emitEvent in that it will pass its arguments on to the listeners, as opposed to taking a single array of arguments to pass on.
+	 * As with emitEvent, you can pass a regex in place of the event name to emit to all events that match it.
+	 *
+	 * @param {String|RegExp} event Name of the event to emit and execute listeners for.
+	 * @param {...*} Optional additional arguments to be passed to each listener.
+	 * @return {journey} Current instance of journey for chaining.
+	 */
+	emit( event ) {
 		eventer.emit.apply( eventer, arguments );
+		return journey;
 	},
 
-	emitEvent () {
+	 /**
+     * Emits an event of your choice.
+     * When emitted, every listener attached to that event will be executed.
+     * If you pass the optional argument array then those arguments will be passed to every listener upon execution.
+     * Because it uses `apply`, your array of arguments will be passed as if you wrote them out separately.
+     * So they will not arrive within the array on the other side, they will be separate.
+     * You can also pass a regular expression to emit to all events that match it.
+     *
+     * @param {String|RegExp} event Name of the event to emit and execute listeners for.
+     * @param {Array} args Optional array of arguments to be passed to each listener.
+     * @return {journey} Current instance of EventEmitter for chaining.
+     */
+	emitEvent ( event, args ) {
 		eventer.emitEvent.apply( eventer, arguments );
+		return journey;
 	}
 };
 

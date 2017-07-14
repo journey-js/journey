@@ -18,7 +18,6 @@ var handler = {
 
 			if ( !busy ) {
 				busy = true;
-				options.startOptions = config;
 				eventer.emit( events.ROUTE_ABUSE_START, options );
 			}
 
@@ -34,7 +33,6 @@ var handler = {
 		callstack = [ ];
 		resetRequest = false;
 		busy = false;
-		options.startOptions = config;
 		eventer.emit( events.ROUTE_ABUSE_STOP, options );
 	},
 
