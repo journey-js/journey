@@ -484,8 +484,6 @@ journey.on("enter", function(event) {
     // event.from                 : the route we are leaving
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the enter handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 
     //When entering a route, let's show  a loading indicator
     loadIndicator.show();
@@ -495,8 +493,6 @@ journey.on("entered", function(event) {
 // event.from                   : the route we are leaving
     // event.to                    : the route we are entering
     // event.options               : the same options that was passed to the enter handler
-    // event.options.hasHandler    : true if the event has an associated handler implemented in the route
-    // event.options.startOptions  : the options that was passed to journey.start(options);
 
     // After we entered we hide the loading indicator
     loadIndicator.hide();
@@ -506,62 +502,46 @@ journey.on("leave", function(event) {
     // event.from                 : the route we are leaving
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the leave handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("left", function(event) {
 // event.from                   : the route we are leaving
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the leave handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("update", function(event) {
     // event.route                : the route being updated
     // event.options              : the same options that was passed to the update handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("updated", function(event) {
     // event.route                : the route being updated
     // event.options              : the same options that was passed to the update handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeleave", function(event) {
     // event.from                 : the route we are leaving
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeleave handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeleaveComplete", function(event) {
     // event.from                 : the route we are leaving
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeleave handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeenter", function(event) {
     // event.from                 : the route we are leaving
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeenter handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("beforeenterComplete", function(event) {
     // event.from                 : the route we are leaving
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the beforeenter handler
-    // event.options.hasHandler   : true if the event has an associated handler implemented in the route
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("transitionAborted", function(event) {
@@ -569,7 +549,6 @@ journey.on("transitionAborted", function(event) {
     // event.to                   : the route we are entering
     // event.options              : the same options that was passed to the last handler before the transitionAborted
     // event was raised
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("error", function(event) {
@@ -580,19 +559,16 @@ journey.on("error", function(event) {
     // on the type of event during which the error occurred
     // event.error : the Javascript error object
     // event.options : the same options that was passed to the handler where the error occurred
-    // event.options.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("routeAbuseStart", function(event) {
     // event.pathname: href  : the pathname of the route that caused the route abuse
     // event.href: location.href : the url when the route abuse started
-    // event.startOptions : the options that was passed to journey.start(options);
 });
 
 journey.on("routeAbuseStop", function(event) {
     // event.pathname: href  : the pathname of the route that caused the route abuse
     // event.href: location.href : the url when the route abuse started
-    // event.startOptions : the options that was passed to journey.start(options);
 });
 
 ```
@@ -813,10 +789,7 @@ route: {
 
 options: {
     //  the target provided through journey.start( { target: '#main' } ).
-    target (string): null,
-
-    // copy of the options given to journey.start( options ).
-    startOptions(object): {    debug: true, target: null },
+    target (string): null
 }
 ```
 
