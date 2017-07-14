@@ -27,7 +27,7 @@ let handler = {
 
 			promise.then( function () {
 				// Update currentRoute *after* update resolves
-				journey.updateCurrentRoute( target, newRoute, newData );
+				journey._updateCurrentRoute( target, newRoute, newData );
 
 				eventer.emit( journey, events.UPDATED, eventOptions );
 
@@ -149,7 +149,7 @@ let handler = {
 
 			promise.then( function () {
 				// Update currentRoute *after* leave resolves
-				journey.updateCurrentRoute( target, newRoute, newData );
+				journey._updateCurrentRoute( target, newRoute, newData );
 
 				eventer.emit( journey, events.LEFT, eventOptions );
 

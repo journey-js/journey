@@ -81,7 +81,7 @@ let watchHistory = {
 
 		hash = options.invisible ? window.location.hash : hash;
 
-		if (options.replace) {
+		if (options.replaceState) {
 			location.replace(hash);
 
 		} else {

@@ -10,19 +10,20 @@
 - [beforeenter](#beforeenter)
 - [beforeleave](#beforeleave)
 - [Handler Order](#order)
+- [Navigate Declaritively](#nav-declaratively)
 - [Navigate Programmatically](#goto)
 - [Events](#events)
 - [Error](#error)
 - [Base Path](#base)
 - [Hash](#hash)
 - [Route abuse](#routeabuse)
-- [API](#api)
+- [API](#api) 
   - [journey.add](#journey.add)
   - [journey.enter](#journey.enter)
   - [journey.leave](#journey.leave)
   - [journey.beforeenter](#journey.beforeenter)
   - [journey.beforeleave](#journey.beforeleave)
-  - [journey.update](#journey.updated)
+  - [journey.update](#journey.update)
   - [journey.start](#journey.start)
   - [journey.goto](#journey.goto)
 
@@ -377,6 +378,51 @@ When navigating to a new route the order is:
 When *updating* a view (occurs when query parameters change for the  same view) the order is:
 - *update* only *update* will be called, no other handlers are called
 
+## <a id="nav-declaratively"></a>Navigate Declaratively
+
+Generally we can navigate between routes through __links__ specified in our templates:
+
+```js
+journey.add('/client', {
+    enter() {
+         alert('Welcome to the Client view');
+});
+```
+
+```html
+<a href="/client">Client</a>.
+```
+
+When we click on this link, Journey routes to the _client_ view and if the transition is successful eg. none of the handlers throw an error or returns a rejected promise, Journey will update the URL to the new route.
+
+You might ask if the browser won't follow the above link. It won't because Journey intercepts all __click__ events on __links__ and instead route to the value specified in the link' __href attribute__. To navigate to the route specified in the __href attribute__ Journey calls [Journey.goto( path )](#goto).
+
+Journey will ignore the following __links__:
+  *  links to different origins eg. if our application is hosted on 
+  _http://myHost.com_ and the link is to_ http://yourHost.com_, Journey will ignore the link and allow the browser to follow the link as per normal.
+  * links with a _target_ attribute are ignored.
+  * links with the attributes _download_ or _rel="external"_ are ignored.
+  * links with an href attribute that contains _'mailto:'_ are ignored.
+  * links that _does not match_ any of the routes defined in the application are ignored.
+
+   If we have two applications deployed on same host but with a different [base path](#base) eg:
+   
+   > http://host/myApp   
+   > http://host/yourApp
+   
+   and from _myApp_ we have the __link__:
+
+   ```html
+   <a href="/yourApp/client">Client</a>
+   ```
+   Journey will try and find the route _yourApp/client_ in myApp and if not found Journey will ignore the link, so the browser will navigate to the url:
+
+   >htp://host/yourApp/client
+
+   If we do run into a situation where Journey intercepts a link that we don't want to, we can set the attribute _rel="external"_:
+   ```html
+   <a href="/client" rel="external">Exernal link</a>
+   ```
 
 ## <a id="goto"></a>Navigate Programmatically
 
@@ -521,7 +567,8 @@ journey.on("beforeenterComplete", function(event) {
 journey.on("transitionAborted", function(event) {
     // event.from                 : the route we are leaving
     // event.to                   : the route we are entering
-    // event.options              : the same options that was passed to the last handler before the transitionAborted event was raised
+    // event.options              : the same options that was passed to the last handler before the transitionAborted
+    // event was raised
     // event.options.startOptions : the options that was passed to journey.start(options);
 });
 

@@ -11,7 +11,7 @@ describe( 'on', ( ) => {
 
 	describe( 'navigating between routes before they complete', ( ) => {
 
-		it.only( 'should raise the transitionAborted event', ( function ( done ) {
+		it( 'should raise the transitionAborted event', ( function ( done ) {
 
 			util.createTestEnvironment( '#foo' ).then( function ( window ) {
 

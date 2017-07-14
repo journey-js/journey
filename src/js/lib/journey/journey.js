@@ -36,7 +36,26 @@ let currentID = uniqueID;
 const journey = {
 	Promise,
 
-	add ( path, options ) {
+	/**
+	 * Add a new route for the given path and transition options.
+	 * 
+	 * @param {string} path route url path eg. 'foo', '/foo', '#foo', '/foo:id', '/foo/:fooId/bar/:barId'
+	 * 
+	 * @param {Object} options specifies the route options:<pre><code> {<br/>
+	 *		&nbsp;&nbsp;<em>enter</em>: function( route, prevRoute, options ),<br/>
+	 *		&nbsp;&nbsp;<em>leave</em>: function( route, nextRoute, options ),<br/>
+	 *		&nbsp;&nbsp;<em>beforeleave</em>:  function( route, nextRoute, options ),<br/>
+	 *		&nbsp;&nbsp;<em>beforeenter</em> function( route, prevRoute, options ),<br/>
+	 *		&nbsp;&nbsp;<em>update</em>: function( route, options )<br/>
+	 *  }
+	 * </code></pre>
+	 * 
+	 * @returns {journey} returns the journey instance to allow chaining: 
+	 * <pre>
+	 * journey.add( 'foo' ).add( 'bar' ).start();
+	 * </pre>
+	 */
+	add( path, options ) {
 
 		if ( path == null ) {
 			throw new Error( "journey.add() requires a path argument!" );
@@ -64,17 +83,43 @@ const journey = {
 			path :
 			config.fallback;
 
-			const internalOptions = {
+			const gotoOptions = {
 				replaceState: true,
 				scrollX: window.scrollX,
 				scrollY: window.scrollY
 			};
-			const otherOptions = {};
 
-		return journey.goto( href, otherOptions, internalOptions);
+		return journey.goto( href, gotoOptions);
 	},
 
-	goto ( href, internalOptions = {}) {
+	/**
+	 * Add a new route for the given path and options.
+	 * 
+	 * @param {string} path route url path eg. 'foo', '/foo', '#foo', '/foo:id', '/foo/:fooId/bar/:barId'
+	 * 
+	 * @param {Object} options specifies the route options:<pre>
+	 *	<em>enter</em>: function( route, prevRoute, options ),<br/>
+	 *  <em>leave</em>: function( route, nextRoute, options ),<br/>
+	 *  <em>beforeleave</em>:  function( route, nextRoute, options ),<br/>
+	 *  <em>beforeenter</em> function( route, prevRoute, options ),<br/>
+	 *  <em>update</em>: function( route, options ),	 
+	 * </pre>
+	 * 
+	 * @returns {journey} returns the journey instance to allow chaining: 
+	 * <pre>
+	 * journey.add( 'foo' ).add( 'bar' ).start();
+	 * </pre>
+	 */
+
+	/**
+	 * Navigate to the given <em>href</em>.
+	 *  <em>invincible</em>: true/false, <br/>
+	 *  <em>forceReload</em>: true/false <br/>
+	 * @param {type} href
+	 * @param {type} options
+	 * @returns {journey.goto.promise.journeygoto#=>#109|arg.goto.promise|journey.goto.promise|Promise}
+	 */
+	goto ( href, options = {}) {
 		if (href == null) return journey.Promise.resolve();
 
 		href = pathHelper.getGotoPath(href);
@@ -88,9 +133,9 @@ const journey = {
 		const promise = new journey.Promise( ( fulfil, reject ) => {
 			target = _target = {
 				href,
-				scrollX: internalOptions.scrollX || 0,
-				scrollY: internalOptions.scrollY || 0,
-				internalOptions,
+				scrollX: options.scrollX || 0,
+				scrollY: options.scrollY || 0,
+				options,
 				fulfil,
 				reject,
 				currentRoute: currentRoute,
@@ -114,7 +159,7 @@ const journey = {
 		}
 
 		let emitOptions = {
-			redirect: internalOptions.redirect,
+			redirect: options.redirect,
 			pathname: href,
 			href: location.href
 		};
@@ -123,8 +168,8 @@ const journey = {
 	
 		promise.catch( function ( err ) {
 			// TODO should we catch this one here? If further inside the plumbing an error is also thrown we end up logging the error twice
-			let options = handler.gatherErrorOptions( null, currentRoute, null, null, err );
-			eventer.raiseError( options );
+			let errorOptions = handler.gatherErrorOptions( null, currentRoute, null, null, err );
+			eventer.raiseError( errorOptions );
 		} );
 
 		return promise;
@@ -140,6 +185,34 @@ const journey = {
 
 	getBase ( ) {
 		return config.base;
+	},
+	
+	
+	/** 
+	 * 
+	 * @param {string} name of the event to listen to: <em>enter, entered, leave, left, beforeenter, beforeenterComplete, beforeleave, beforeleaveComplete,
+	 * update, updated, error, transitionAborted.
+	 * 
+	 * @param {function} the function to call when the event is fired. function receives an event argument: <b>journey.on ('enter', function ( event ) {});</b>
+	 */
+	on( event, listener ) {
+		eventer.on( event, listener );
+	},
+
+	off( event, listener ) {
+		eventer.off( event, listener );
+	},
+
+	once( event, listener ) {
+		eventer.off( event, listener );
+	},
+
+	emit() {
+		eventer.emit.apply( eventer, arguments );
+	},
+
+	emitEvent () {
+		eventer.emitEvent.apply( eventer, arguments );
 	}
 };
 
@@ -176,18 +249,18 @@ function getNewData(target) {
 	};
 }
 
-function historyListener(options) {
+function historyListener( options ) {
 
 		let url = util.stripBase(options.url, journey.getBase());
 
-	const internalOptions = {};
+	const targetOptions = {};
 	let target;
 
 		target = _target = {
 			href: url,
 			hashChange: options.hashChange, // so we know not to manipulate the history
 			popState: options.popState, // so we know not to manipulate the history
-			internalOptions,
+			options: targetOptions,
 			fulfil: noop,
 			reject: noop,
 			currentRoute: currentRoute,
@@ -214,7 +287,7 @@ function historyListener(options) {
 function _goto ( target ) {
 	let newRoute;
 	let newData;
-	let forceReloadRoute = target.internalOptions.forceReload || false;
+	let forceReloadRoute = target.options.forceReload || false;
 
 	let targetHref = pathHelper.prefixWithSlash(target.href);
 	target.href = targetHref;
@@ -356,7 +429,7 @@ function updateHistory(target) {
 	
 	if ( target.popState || target.hashChange ) return;
 
-	const { replaceState, invisible } = target.internalOptions;
+	const { replaceState, invisible } = target.options;
 	if ( invisible ) return;
 	
 	const uid = replaceState ? currentID : ++uniqueID;
@@ -366,7 +439,7 @@ function updateHistory(target) {
 	if (watchHistory.useOnHashChange) {
 		targetHref = pathHelper.prefixWithHash(targetHref);
 		target.href = targetHref;
-		watchHistory.setHash( targetHref, target.internalOptions );
+		watchHistory.setHash( targetHref, target.options );
 
 	} else {
 
@@ -381,7 +454,7 @@ function updateHistory(target) {
 			target.href = targetHref;
 		}
 
-		history[ target.internalOptions.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
+		history[ target.options.replaceState ? 'replaceState' : 'pushState' ]( { uid }, '', target.href );
 	}
 
 	currentID = uid;
@@ -413,7 +486,16 @@ function continueTransition( target, newData ) {
 	return false;
 }
 
-journey.updateCurrentRoute = function( target, newRoute, newData) {
+/**
+ * Not for public use.
+ * 
+ * @private
+ * @param {type} target
+ * @param {type} newRoute
+ * @param {type} newData
+ * @returns {undefined}
+ */
+journey._updateCurrentRoute = function( target, newRoute, newData) {
 	// Only update currentRoute if the route hasn't changed in the meantime
 	if (continueTransition(target, newData)) {
 		currentRoute = newRoute;
