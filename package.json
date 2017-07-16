@@ -29,11 +29,9 @@
   "scripts": {
     "pretest": "npm run build",
     "test": "mocha --recursive",
-    "build": "cross-env mode=dev rollup -c",
+    "build": "cross-env mode=dev node build",
     "predist": "npm run test",
-    "dist": "cross-env mode=prod rollup -c",
-    "postdist": "node zip",
-    "prepublish.old": "npm run rm -rf dist",
+    "dist": "cross-env mode=prod node build",
     "lint": "eslint src"
   },
   "files": [

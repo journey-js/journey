@@ -15,6 +15,7 @@ module.exports = {
 	moduleName: 'journey',
 	targets: [
 		{
+			moduleName: 'journey',
 			dest: pkg.main,
 			format: 'iife',
 			banner: '/* journey version ' + pkg.version + ' */',
