@@ -5,6 +5,7 @@
   - [Setting up a development environment](dev-setup.md)
   - [Create a distribution](dist-setup.md)
 - [Usage](#usage)
+- [Router paramters](#params)
 - [Asynchronous transitions](#async)
 - [Full example](#example)
 - [beforeenter](#beforeenter)
@@ -55,7 +56,7 @@ To kickstart a project use [Journey Template](TODO) which provides a build envir
 ## <a id="usage"></a>Basic Usage
 Journey has the same API as  [Roadtrip](https://github.com/Rich-Harris/roadtrip) with some extras.
 
-To define a route, we add a mapping between URL path eg. *'/clients'* and a function that is called when the URL matches the mapping.
+To define a route, we add a mapping between URL path eg. *'/clients'* and handler methods that is called when the URL matches the mapping.
 
 Let's define a minimal route for our application:
 
@@ -116,6 +117,62 @@ journey.add( '/home', {
         route.view.teardown();
     }
  ```
+
+## <a id="params"></a>Route parameters
+
+When mapping a route we can specify __parameters__ that the route should match against. We can specify colons (:) in the __path__ to indicate __parameters__.
+
+```js
+journey.add('client/:id');
+```
+For a url to match it must contain a variable after the client segment:
+
+```js
+http://host/client/123
+```
+
+The variable _123_ will be made available to the handlers as __params__ on the __route__ parameter:
+
+```js
+journey.add('client/:id', {
+
+    enter( route, prevRoute, options) {
+        
+        //The id parameters is available on  the params property
+        let id = route.params.id
+        // id === 123
+    }
+});
+```
+
+We can also add further segments after the parameter:
+```js
+journey.add('client/:id/products');
+```
+
+A matching url must contain a variable and the path "_/products_" in order to match the route:
+```
+http://host/client/123/products
+```
+
+Route paths can specify more than one parameter:
+```js
+journey.add('client/:clientId/product/:productId', {
+
+    // Matching url -> http://host/client/123/product/789
+    enter( route, prevRoute, options ) {
+
+        let clientId = route.params.clientId;
+        // clientId === 123;
+
+        let productId = route.params.productId;
+        // productId === 789;
+    }
+});
+
+```
+
+
 
 ## <a id="async"></a>Asynchronous route transitions through promises
 If we need to perform asynchronous tasks when entering or leaving a route we can return a promise from the method. If a promise is returned from either *enter* or *leave*, Journey will wait until the promise resolves, before calling the next route.
@@ -298,9 +355,11 @@ If an error occurs while loading the clients, we are left with an empty view.
 
 A more common approach is to load the client data *before* we navigate to the *client* view. In other words we load the data while still on the current view. That way we already have the data when we render the client view. If an error occurs loading the data, we don't navigate to clients, and instead stay put on the current view. The user can then retry to load the clients or continue with another operation on the current view.
 
-This is where  **beforeenter** comes into play. This handler caters for exactly the above scenario. *beforeenter* is called **before** the current route' *leave* method is called.
+This is where  **beforeenter** comes into play. This handler caters for exactly the above scenario. 
 
-Similar to the other methods, *beforeenter* can return a promise (it generally will) and Journey will wait until this promise resolves before invoking *leave*. When *leave* completes the next route' *enter* is called.
+*beforeenter* is called **before** the new route' *enter* handler is called. In fact it is called even **before** the current route' *leave* handler is called. That way, if an error is thrown while loading data in the *beforeenter* handler, Journey won't call the *leave* handler of the current route and the new route is effectively cancelled.
+
+Similar to the other methods, *beforeenter* can return a promise (it generally will) and Journey will wait until this promise resolves before invoking *leave*. When *leave* completes the next route' *enter* is called. If this proise is rejected Journey won't transition to the new route.
 
 **Note:** the *beforeenter* behaves differently in Journey that in Roadtrip, which Journey is based on. In Roadtrip *beforeenter* is called at the same time that the current route' *leave* method is called. The next route *enter* is called once both *beforeenter* and *leave* completes. The problem with Roadtrip' version is that the current route *leave* handler will remove the current view. If the next route *beforeenter*  takes a while to load data from the server, the user will be left with a blank screen because the current view *leave* handler has already completed. If an error occurs loading data the user will be stuck with the blank screen.
 
@@ -333,7 +392,7 @@ let clients = {
 
 The *beforeleave* handler of the current route is called **before**  the route' *leave* handler is called. *beforeleave* is even called **before** the next route' *beforeenter*.
 
-If *beforeleave* returns a promise, Journey will wait for the promise to resolve before calling the next route' *beforeenter*. Only when the next route *beforeenter* completes will the current route'  *leave* method be called. If the *beforeleave* promise rejects, neither the next route' *beforeenter*  nor the current route' *leave* will be called.
+If *beforeleave* returns a promise, Journey will wait for the promise to resolve before calling the next route' *beforeenter*. Only when the next route *beforeenter* completes will the current route'  *leave* method be called. If the *beforeleave* promise rejects, neither the next route' *beforeenter*  nor the current route' *leave* will be called. Effectively the route transition is cancelled.
 
 If you need to stop navigation away from a route for some reason (user has unsaved changes or UI is in invalid state) this is the handler to perform these types of operations in. By returning a rejected promise the route navigation will effectively be cancelled.
 
@@ -698,7 +757,7 @@ journey.goto( '/clients' ); // note: an absolute path
 
 Alternatively we can skip the  **base** property and provide the **base** path in our routes instead.
 
-For eample:
+For example:
 ```js
 // given our application is hosted at: http://host/myapp/
 
@@ -710,8 +769,8 @@ journey.goto( '/myapp/clients' ); // we specify the base path in the route
 This approach requires more boilerplate code, however if for some reason we need to specify routes that execute on different applications (eg one route on '/appone', another route on '/apptwo'), this might be the only option available to us.
 
 ## <a id="api"></a>API
-#### <a id="journey.add"></a>journey.add(path, options)
-
+#### <a id="journey.add"></a>journey.add( path, options )
+Add a route mapping to Journey that can be navigated to.
 
 ```js
 path (string): the path used to match this route to a given URL.
@@ -742,25 +801,24 @@ options: {
 
 ```js
 // example
-journey.add( '/clients', { 
+journey.add( '/clients', {
     enter: function(route, prevRoute, options) {
         let target = options.target;
         route.view = document.createElement("div");
         route.view.innerHTML = "Hello world";
+        ...
     }
 });
 ```
 
 #### <a id="journey.enter"></a>enter: function(route, prevRoute, options)
-#### <a id="journey.leave"></a>leave: function(route, nextRoute, options)
-#### <a id="journey.update"></a>update: function(route, options)
-#### <a id="journey.beforeenter"></a>beforeenter: function(route, prevRoute, options)
-#### <a id="journey.beforeleave"></a>beforeleave: function(route, nextRoute, options)
 
-Note: Arguments below applies to the methods *enter*, *leave*, *beforeenter*, *beforeleave* and *update*.Also note: *route*, *prevRoute* and *nextRoute* are all route objects.
+The _enter_ handler is invoked upon entering a route. This handler is used to create and render the view for the route.
 
+<a id="handler.arguments"></a>
+_Note:_ __route__, __prevRoute__ and __nextRoute__ have the same properties.
 ```js
-route: {
+route / prevRoute / nextRoute: {
 
     // Any mapped URL parameters as a object of key/value pairs.
     params(object): {}
@@ -795,21 +853,96 @@ options: {
 
 ```js
 // example
-journey.add( '/clients', { enter: function(route, prevRoute, options) {
+journey.add( '/clients', { 
+    enter: function(route, prevRoute, options) {
+        let target = options.target;
+        route.view = document.createElement("div");
+        route.view.innerHTML = "Hello world";
+        ...
+    }
+});
+```
 
-    let target = options.target;
+#### <a id="journey.leave"></a>leave: function(route, nextRoute, options)
 
-    let id = route.query.id; // journey.add('/clients/:id, ...) -> http://host/clients/3
+The _leave_ handler is invoked when leaving a route. This handler is used to remove the view for the route.
 
-    let priority = route.params.priority; // journey.add('/clents', ...) -> http://host/clients?priority=3
+See [handler arguments](#handler.arguments) for properties available on __route__, __nextRoute__ and __options__.
 
-    // Set a view on the route for reference later on
-    route.view = document.createElement("div");
+```js
+// example
+journey.add( '/clients', { 
+    leave: function(route, nextRoute, options) {
+        let target = options.target;
+        let container = document.getElementById( options.target );
+        container.removeChild( route.view );
+        ...
+    }
+});
+```
+
+#### <a id="journey.update"></a>update: function(route, options)
+
+The _update_ handler is invoked when a route query paramters change eg. from http://host/client?x=1 to http://host/client?x=2.
+
+If a route query parameters change but the _update_ handler is not defined, the route will be reloaded instead.
+
+See [handler arguments](#handler.arguments) for properties available on __route__ and __options__.
+
+```js
+// example
+journey.add( '/clients', {
+    update: function(route,  options) {
+        let target = options.target;
+        let myValue = route.query.myParam;
+        route.view.innerHTML = "query string 'myParam' updated to " + myValue;
+        ...
+    }
+});
+```
+
+#### <a id="journey.beforeenter"></a>beforeenter: function(route, prevRoute, options)
+The _beforeenter_ handler is ideal for fetching data for the next route. It is invoked *before* the route *enter* handler is called, but also *before* the current route *leave* handler is called. If an error occurs in the _beforeenter_ handler, Journey won't continue with the transition to the next route.
+
+See [handler arguments](#handler.arguments) for properties available on __route__, __prevRoute__ and __options__.
+
+```js
+// example
+journey.add( '/clients', {
+    beforeenter: function(route,  options) {
+        $.getJSON("/data.json").then(function() {
+
+            // route.data will be available inside the 'enter' handler
+            route.data = JSON.stringify( response );
+
+        }).catch( function() {
+            // Journey won't transition to new route because the promise was rejected
+            alert('oops, something went wrong!');
+        });
+});
+```
+
+#### <a id="journey.beforeleave"></a>beforeleave: function(route, nextRoute, options)
+
+Beforeleave is the first handler called When transitioning between routes. It provides an opportunity to cancel the transition to the next route. For exmple if we want to stop the user from transitioning until a form is saved, or in a valid state, we can use the _beforeleave_ handler.
+
+See [handler arguments](#handler.arguments) for properties available on __route__, __nextRoute__ and __options__.
+
+
+```js
+// example
+journey.add( '/clients', { 
+    beforeleave: function(route, nextRoute, options) {
+        if (! form.isValid()) return Promise.reject("Form is not valid!");
 
 }});
 ```
 
 #### <a id="journey.start"></a>journey.start(options)
+
+Configure Journey with various options. Journey.start() will also activate the route that matches the current url.
+
+journey.start() must be called before Journey can be used.
 
 ```js
 options {
@@ -862,6 +995,8 @@ journey.start({ target: '#main' });
 ```
 
 #### <a id="journey.goto"></a>journey.goto( path, options )
+
+Programmatically navigate to a given path.
 
 ```js
 path (string): the route to navigate to eg. '/clients' or '/clients/1?limit=20'
