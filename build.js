@@ -59,7 +59,7 @@ function compileJs() {
 
 
 function zip() {
-	bestzip( releaseDir + '/journey-' + pkg.version + '.zip', [ 'src/', 'test/', 'dist/', 'LICENSE', 'README.md', 'package.json', 'rollup.config.js' ], function ( err ) {
+	bestzip( releaseDir + '/journey-' + pkg.version + '.zip', [ 'src/', 'test/', 'dist/', 'LICENSE', 'README.md', 'package.json', 'rollup.config.js', 'build.js' ], function ( err ) {
 		if ( err ) {
 			console.error( err.stack );
 			process.exit( 1 );
