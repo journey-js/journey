@@ -330,7 +330,7 @@ let includePathOptions = {
 
 module.exports = {
 
-    entry: 'src/js/app.js', // app.js is referenced from index.html <script> tag
+    entry: 'src/js/app/app.js', // app.js is referenced from index.html <script> tag
 
     // Ractive.js is loaded as an external library through index.html <script> tag. However
     // we want to import Ractive in our modules with: import Ractive fcrom 'Ractive.js'.
