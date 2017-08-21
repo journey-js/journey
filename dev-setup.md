@@ -109,7 +109,7 @@ We can place as many external libraries in the comments as we like. -->
 <script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 end PROD imports -->
 
-    <script src="js/app/app.js" defer nomodule></script> <!-- Entry point to our app -->
+    <script src="js/app/app.js" defer></script> <!-- Entry point to our app -->
 
 </html>
 ```
