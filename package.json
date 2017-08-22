@@ -3,7 +3,9 @@
   "description": "Journey-JS client-side router.",
   "version": "0.0.4",
   "main": "dist/journey.js",
+  "mainMin": "dist/journey.min.js",
   "module": "dist/journey.mjs.js",
+    "moduleMin": "dist/journey.mjs.min.js",
   "devDependencies": {
     "bestzip": "1.1.4",
     "body-parser": "^1.14.1",

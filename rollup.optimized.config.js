@@ -9,20 +9,21 @@ const pkg = require( './package.json' );
 module.exports = {
 	entry: 'src/js/lib/journey/journey.js',
 	plugins: [
-		buble(	)
+		buble(	),
+		uglify( { }, uglifyEs.minify )
 	],
 	moduleName: 'journey',
 	targets: [
 		{
 			moduleName: 'journey',
-			dest: pkg.main,
+			dest: pkg.mainMin,
 			format: 'iife',
 			banner: '/* journey version ' + pkg.version + ' */',
 			sourceMap: true
 		},
 
 		{
-			dest: pkg.module,
+			dest: pkg.moduleMin,
 			banner: '/* journey version ' + pkg.version + ' */',
 			format: 'es',
 			sourceMap: true
