@@ -109,7 +109,7 @@ We can place as many external libraries in the comments as we like. -->
 <script src="https://cdn.jsdelivr.net/npm/ractive@0.9.0/runtime.min.js"></script>
 end PROD imports -->
 
-    <script src="js/app/app.js" defer nomodule></script> <!-- Entry point to our app -->
+    <script src="js/app/app.js" defer></script> <!-- Entry point to our app -->
 
 </html>
 ```
@@ -330,7 +330,7 @@ let includePathOptions = {
 
 module.exports = {
 
-    entry: 'src/js/app.js', // app.js is referenced from index.html <script> tag
+    entry: 'src/js/app/app.js', // app.js is referenced from index.html <script> tag
 
     // Ractive.js is loaded as an external library through index.html <script> tag. However
     // we want to import Ractive in our modules with: import Ractive fcrom 'Ractive.js'.
